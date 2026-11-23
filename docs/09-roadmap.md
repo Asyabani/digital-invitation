@@ -27,17 +27,22 @@ kosong tampil untuk user login.
 ucapan. Semua masih mode trial (watermark), publish belum butuh bayar (sementara
 gratis untuk uji).
 
-- [ ] Galeri template + `createInvitation` dari template (F2).
-- [ ] Editor konten (F3) dengan validasi Zod + preview live.
-- [ ] Halaman publik `/u/[slug]` render section (cover, acara, countdown,
+- [x] Galeri template + `createInvitation` dari template (F2).
+- [x] Editor konten (F3) dengan validasi Zod + preview live.
+- [x] Halaman publik `/u/[slug]` render section (cover, acara, countdown,
       galeri, lokasi/maps, penutup).
-- [ ] Upload galeri via Cloudinary.
-- [ ] RSVP (F7): Route Handler + form + rekap dashboard.
-- [ ] Buku tamu (F8): kirim ucapan `PENDING` + moderasi + tampil `APPROVED`.
-- [ ] Rate limit + filter kata pada endpoint publik.
+- [~] Upload galeri via Cloudinary — saat ini input URL; signed-upload sudah
+      disiapkan di `src/lib/cloudinary.ts`, widget unggah menyusul (butuh kredensial).
+- [x] RSVP (F7): Route Handler + form + rekap dashboard.
+- [x] Buku tamu (F8): kirim ucapan `PENDING` + moderasi + tampil `APPROVED`.
+- [x] Rate limit + filter kata pada endpoint publik.
+- [x] (Sementara) `publishForTesting` — terbit tanpa bayar untuk uji; diganti
+      alur Xendit di Fase 2.
 
-**DoD:** alur buat → isi → preview → (tamu) RSVP & ucapan → moderasi → tampil,
-berjalan end-to-end di lokal.
+**DoD:** ✅ alur buat → isi → preview → (tamu) RSVP & ucapan → moderasi → tampil,
+terverifikasi end-to-end di lokal (halaman publik, API RSVP/ucapan, moderasi).
+Bagian ber-login (editor/publish) lolos build & typecheck; uji login penuh
+menunggu kredensial OAuth.
 
 ## Fase 2 — Monetisasi
 

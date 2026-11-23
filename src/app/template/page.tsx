@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import Link from "next/link";
+import { createInvitation } from "@/lib/actions/invitation";
 
 export const metadata = { title: "Galeri Template — Undangan Digital" };
 
@@ -41,11 +42,20 @@ export default async function TemplateGaleriPage() {
               <div className="flex aspect-[3/4] items-center justify-center bg-neutral-100 text-neutral-400">
                 Preview
               </div>
-              <div className="space-y-1 p-4">
+              <div className="space-y-2 p-4">
                 <p className="font-medium">{t.name}</p>
                 <p className="text-xs uppercase tracking-wide text-neutral-400">
                   {t.category}
                 </p>
+                <form action={createInvitation}>
+                  <input type="hidden" name="templateId" value={t.id} />
+                  <button
+                    type="submit"
+                    className="w-full rounded-lg bg-neutral-900 px-3 py-2 text-sm font-medium text-white hover:bg-neutral-700"
+                  >
+                    Pakai Template Ini
+                  </button>
+                </form>
               </div>
             </li>
           ))}

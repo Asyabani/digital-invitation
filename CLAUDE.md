@@ -2,7 +2,7 @@
 
 Platform web untuk membuat **undangan digital yang dapat dikustomisasi** (nikah, aqiqah, ulang tahun, acara korporat), menyasar pasar Indonesia. Model bisnis **B2C one-time per event**: user membuat & mengedit gratis (mode trial berwatermark), lalu membayar sekali untuk mem-*publish* dan membuka fitur premium.
 
-**Status saat ini: Fase 0 (fondasi) SELESAI.** Next.js 16 + Prisma 7 + Auth.js ter-scaffold; `typecheck`, `lint`, `build` hijau. Sebelum menulis kode, baca dokumen desain di `docs/`; semua keputusan produk dan teknis sudah final di sana. Fase berikutnya: Fase 1 (MVP inti) — lihat `docs/09-roadmap.md`.
+**Status saat ini: Fase 1 (MVP inti) SELESAI.** Fase 0 (fondasi) + Fase 1 beres: buat undangan dari template, editor konten + preview live, halaman publik `/u/[slug]`, RSVP, buku tamu + moderasi, semua `typecheck`/`lint`/`build` hijau dan alur publik terverifikasi end-to-end. Publish saat ini pakai `publishForTesting` (tanpa bayar) — akan diganti alur Xendit di Fase 2. Sebelum menulis kode, baca dokumen desain di `docs/`. Fase berikutnya: Fase 2 (monetisasi) — lihat `docs/09-roadmap.md`.
 
 Setup lokal:
 
