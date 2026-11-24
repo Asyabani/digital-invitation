@@ -9,13 +9,21 @@ type Props = {
   interactive?: boolean;
 };
 
+const STATUSES: [RsvpStatus, string][] = [
+  ["HADIR", "Hadir"],
+  ["TIDAK_HADIR", "Tidak hadir"],
+  ["RAGU", "Masih ragu"],
+];
+
+type RsvpStatus = "HADIR" | "TIDAK_HADIR" | "RAGU";
+
 export function RsvpForm({
   invitationId,
   personalSlug,
   defaultName,
   interactive = true,
 }: Props) {
-  const [status, setStatus] = useState<"HADIR" | "TIDAK_HADIR" | "RAGU">("HADIR");
+  const [status, setStatus] = useState<RsvpStatus>("HADIR");
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -50,63 +58,77 @@ export function RsvpForm({
 
   if (done) {
     return (
-      <p className="rounded-lg bg-black/5 p-4 text-center text-sm">
-        Terima kasih, konfirmasimu sudah kami terima 🙏
+      <p className="inv-card w-full max-w-sm p-5 text-sm">
+        Terima kasih, konfirmasimu sudah kami terima.
       </p>
     );
   }
 
-  const statuses: [typeof status, string][] = [
-    ["HADIR", "Hadir"],
-    ["TIDAK_HADIR", "Tidak hadir"],
-    ["RAGU", "Masih ragu"],
-  ];
-
   return (
-    <form onSubmit={onSubmit} className="mx-auto max-w-sm space-y-3">
-      <input
-        name="name"
-        required
-        defaultValue={defaultName}
-        placeholder="Nama Anda"
-        className="w-full rounded-lg border px-3 py-2 text-sm"
-      />
-      <div className="flex gap-2">
-        {statuses.map(([val, label]) => (
-          <button
-            key={val}
-            type="button"
-            onClick={() => setStatus(val)}
-            className={`flex-1 rounded-lg border px-2 py-2 text-xs ${
-              status === val ? "border-black bg-black text-white" : ""
-            }`}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
-      <input
-        name="headcount"
-        type="number"
-        min={1}
-        max={20}
-        defaultValue={1}
-        className="w-full rounded-lg border px-3 py-2 text-sm"
-        placeholder="Jumlah orang"
-      />
-      <textarea
-        name="message"
-        rows={2}
-        placeholder="Pesan (opsional)"
-        className="w-full rounded-lg border px-3 py-2 text-sm"
-      />
-      {error && <p className="text-sm text-red-600">{error}</p>}
+    <form onSubmit={onSubmit} className="w-full max-w-sm space-y-3 text-left">
+      <label className="block space-y-1.5">
+        <span className="inv-note text-xs">Nama Anda</span>
+        <input
+          name="name"
+          required
+          defaultValue={defaultName}
+          placeholder="Nama lengkap"
+          className="inv-field"
+        />
+      </label>
+
+      <fieldset className="space-y-1.5">
+        <legend className="inv-note text-xs">Kehadiran</legend>
+        <div className="flex gap-2">
+          {STATUSES.map(([val, label]) => (
+            <button
+              key={val}
+              type="button"
+              aria-pressed={status === val}
+              onClick={() => setStatus(val)}
+              className="inv-chip"
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      </fieldset>
+
+      {status !== "TIDAK_HADIR" && (
+        <label className="block space-y-1.5">
+          <span className="inv-note text-xs">Jumlah orang yang hadir</span>
+          <input
+            name="headcount"
+            type="number"
+            min={1}
+            max={20}
+            defaultValue={1}
+            className="inv-field"
+          />
+        </label>
+      )}
+
+      <label className="block space-y-1.5">
+        <span className="inv-note text-xs">Pesan (opsional)</span>
+        <textarea name="message" rows={2} className="inv-field" />
+      </label>
+
+      {error && (
+        <p className="text-sm" role="alert" style={{ color: "#b91c1c" }}>
+          {error}
+        </p>
+      )}
+
       <button
         type="submit"
         disabled={submitting || !interactive}
-        className="w-full rounded-lg bg-black px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
+        className="inv-button w-full"
       >
-        {interactive ? (submitting ? "Mengirim..." : "Kirim Konfirmasi") : "Pratinjau"}
+        {interactive
+          ? submitting
+            ? "Mengirim..."
+            : "Kirim Konfirmasi"
+          : "Pratinjau"}
       </button>
     </form>
   );

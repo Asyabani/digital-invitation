@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Check, Copy } from "lucide-react";
 import type { GiftConfig } from "@/lib/validation/invitation";
 
 type Props = {
@@ -9,7 +10,6 @@ type Props = {
   defaultName?: string;
   giftConfig: GiftConfig;
   interactive?: boolean;
-  accentColor?: string;
 };
 
 /**
@@ -23,7 +23,6 @@ export function GiftForm({
   defaultName,
   giftConfig,
   interactive = true,
-  accentColor,
 }: Props) {
   const [open, setOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -37,7 +36,7 @@ export function GiftForm({
       setCopied(text);
       setTimeout(() => setCopied(null), 2000);
     } catch {
-      setError("Gagal menyalin. Salin manual ya.");
+      setError("Gagal menyalin. Silakan salin nomornya secara manual.");
     }
   }
 
@@ -76,29 +75,34 @@ export function GiftForm({
     }
   }
 
-  const inputCls = "w-full rounded-lg border px-3 py-2 text-sm";
-
   return (
-    <div className="mx-auto max-w-md space-y-5">
-      <p className="text-sm opacity-80">
+    <div className="w-full max-w-sm space-y-5">
+      <p className="inv-note leading-relaxed">
         Doa restu Anda adalah hadiah terindah. Namun bila berkenan memberi tanda
         kasih, dapat melalui:
       </p>
 
       {giftConfig.banks && giftConfig.banks.length > 0 && (
-        <ul className="space-y-3">
+        <ul className="space-y-2.5 text-left">
           {giftConfig.banks.map((b, i) => (
-            <li key={i} className="rounded-lg bg-black/5 p-4 text-left text-sm">
-              <p className="font-medium">{b.bankName}</p>
-              <p className="font-mono text-base">{b.accountNumber}</p>
-              <p className="opacity-70">a.n. {b.accountName}</p>
+            <li key={i} className="inv-card p-4">
+              <p className="inv-heading text-sm font-medium">{b.bankName}</p>
+              <p className="tabular mt-0.5 text-lg">{b.accountNumber}</p>
+              <p className="inv-note text-sm">a.n. {b.accountName}</p>
               <button
                 type="button"
                 onClick={() => copy(b.accountNumber)}
-                className="mt-2 rounded-lg border px-3 py-1.5 text-xs"
-                style={accentColor ? { borderColor: accentColor } : undefined}
+                className="inv-button inv-button-outline mt-3 h-9 min-h-9 px-3 text-xs"
               >
-                {copied === b.accountNumber ? "Tersalin ✓" : "Salin nomor"}
+                {copied === b.accountNumber ? (
+                  <>
+                    <Check className="size-3.5" aria-hidden /> Tersalin
+                  </>
+                ) : (
+                  <>
+                    <Copy className="size-3.5" aria-hidden /> Salin nomor
+                  </>
+                )}
               </button>
             </li>
           ))}
@@ -107,69 +111,78 @@ export function GiftForm({
 
       {giftConfig.qrisUrl && (
         <div className="space-y-2">
-          <p className="text-sm font-medium">QRIS</p>
+          <p className="inv-note text-xs uppercase tracking-wider">QRIS</p>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={giftConfig.qrisUrl}
             alt="Kode QRIS untuk amplop digital"
             loading="lazy"
-            className="mx-auto w-56 rounded-lg"
+            decoding="async"
+            width={224}
+            height={224}
+            className="mx-auto w-56 rounded-xl bg-white p-2"
           />
         </div>
       )}
 
-      {giftConfig.note && (
-        <p className="text-sm opacity-70">{giftConfig.note}</p>
-      )}
+      {giftConfig.note && <p className="inv-note">{giftConfig.note}</p>}
 
       {!open ? (
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="rounded-lg border px-4 py-2 text-sm font-medium"
-          style={accentColor ? { borderColor: accentColor } : undefined}
+          className="inv-button inv-button-outline"
         >
           Konfirmasi Kado
         </button>
       ) : (
         <form onSubmit={onSubmit} className="space-y-3 text-left">
-          <input
-            name="name"
-            required
-            defaultValue={defaultName}
-            placeholder="Nama Anda"
-            className={inputCls}
-          />
-          <select name="method" className={inputCls} defaultValue="TRANSFER">
-            <option value="TRANSFER">Transfer bank</option>
-            <option value="QRIS">QRIS</option>
-          </select>
-          <input
-            name="amount"
-            type="number"
-            min={1}
-            placeholder="Nominal (opsional)"
-            className={inputCls}
-          />
-          <input
-            name="proofUrl"
-            type="url"
-            placeholder="Link bukti transfer (opsional)"
-            className={inputCls}
-          />
-          <input name="note" placeholder="Pesan (opsional)" className={inputCls} />
+          <label className="block space-y-1.5">
+            <span className="inv-note text-xs">Nama Anda</span>
+            <input
+              name="name"
+              required
+              defaultValue={defaultName}
+              className="inv-field"
+            />
+          </label>
+          <label className="block space-y-1.5">
+            <span className="inv-note text-xs">Metode</span>
+            <select name="method" className="inv-field" defaultValue="TRANSFER">
+              <option value="TRANSFER">Transfer bank</option>
+              <option value="QRIS">QRIS</option>
+            </select>
+          </label>
+          <label className="block space-y-1.5">
+            <span className="inv-note text-xs">Nominal (opsional)</span>
+            <input name="amount" type="number" min={1} className="inv-field" />
+          </label>
+          <label className="block space-y-1.5">
+            <span className="inv-note text-xs">
+              Link bukti transfer (opsional)
+            </span>
+            <input name="proofUrl" type="url" className="inv-field" />
+          </label>
+          <label className="block space-y-1.5">
+            <span className="inv-note text-xs">Pesan (opsional)</span>
+            <input name="note" className="inv-field" />
+          </label>
 
           {sent && (
-            <p className="text-sm text-green-700">
-              Terima kasih, konfirmasi kado Anda sudah kami terima 🙏
+            <p className="inv-card p-3 text-sm" role="status">
+              Terima kasih, konfirmasi kado Anda sudah kami terima.
             </p>
           )}
-          {error && <p className="text-sm text-red-600">{error}</p>}
+          {error && (
+            <p className="text-sm" role="alert" style={{ color: "#b91c1c" }}>
+              {error}
+            </p>
+          )}
 
           <button
             type="submit"
             disabled={submitting || !interactive}
-            className="w-full rounded-lg bg-black px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
+            className="inv-button w-full"
           >
             {interactive
               ? submitting
@@ -177,7 +190,7 @@ export function GiftForm({
                 : "Kirim Konfirmasi"
               : "Pratinjau"}
           </button>
-          <p className="text-xs opacity-60">
+          <p className="inv-note text-xs">
             Konfirmasi ini hanya dilihat oleh pemilik acara.
           </p>
         </form>

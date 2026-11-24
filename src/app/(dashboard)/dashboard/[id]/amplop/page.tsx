@@ -6,6 +6,17 @@ import { canUse } from "@/lib/packages";
 import { giftConfigSchema } from "@/lib/validation/invitation";
 import { GiftSettings } from "@/components/dashboard/GiftSettings";
 import { InvitationNav } from "@/components/dashboard/InvitationNav";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 export const instant = false;
 
@@ -18,6 +29,12 @@ const rupiah = new Intl.NumberFormat("id-ID", {
   style: "currency",
   currency: "IDR",
   maximumFractionDigits: 0,
+});
+
+const tanggal = new Intl.DateTimeFormat("id-ID", {
+  day: "numeric",
+  month: "short",
+  year: "numeric",
 });
 
 export default async function AmplopPage({
@@ -44,12 +61,17 @@ export default async function AmplopPage({
   const parsedConfig = giftConfigSchema.safeParse(inv.giftConfig);
 
   return (
-    <div className="mx-auto max-w-4xl space-y-6">
-      <div>
-        <Link href="/dashboard" className="text-sm text-neutral-500 hover:underline">
+    <div className="space-y-6">
+      <div className="space-y-1">
+        <Link
+          href="/dashboard"
+          className="text-sm text-muted-foreground hover:underline"
+        >
           ← Undangan Saya
         </Link>
-        <h1 className="text-xl font-semibold">{inv.title}</h1>
+        <h1 className="font-display text-2xl font-semibold tracking-tight">
+          {inv.title}
+        </h1>
       </div>
       <InvitationNav invitationId={id} active="amplop" />
 
@@ -60,67 +82,84 @@ export default async function AmplopPage({
       />
 
       <section className="space-y-3">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-neutral-500">
-            Konfirmasi Kado ({gifts.length})
+        <div className="flex flex-wrap items-end justify-between gap-2">
+          <h2 className="font-display text-xl font-semibold tracking-tight">
+            Konfirmasi kado{" "}
+            <span className="text-muted-foreground">({gifts.length})</span>
           </h2>
-          <p className="text-sm text-neutral-600">
+          <p className="text-sm text-muted-foreground">
             Total tercatat:{" "}
-            <strong className="text-neutral-900">{rupiah.format(total)}</strong>
+            <strong className="tabular text-foreground">
+              {rupiah.format(total)}
+            </strong>
           </p>
         </div>
-        <p className="rounded-lg bg-neutral-50 p-3 text-xs text-neutral-500">
-          Daftar dan nominal di bawah ini <strong>privat</strong> — hanya Anda
-          yang bisa melihatnya. Tamu tidak pernah melihat nominal siapa pun,
-          termasuk miliknya sendiri setelah terkirim.
-        </p>
+
+        <Alert>
+          <AlertDescription>
+            Daftar dan nominal di bawah ini <strong>privat</strong> — hanya Anda
+            yang bisa melihatnya. Tamu tidak pernah melihat nominal siapa pun,
+            termasuk miliknya sendiri setelah terkirim.
+          </AlertDescription>
+        </Alert>
 
         {gifts.length === 0 ? (
-          <p className="rounded-xl border border-dashed p-10 text-center text-neutral-500">
-            Belum ada konfirmasi kado.
-          </p>
+          <Card className="border-dashed">
+            <CardContent className="py-14 text-center text-muted-foreground">
+              Belum ada konfirmasi kado.
+            </CardContent>
+          </Card>
         ) : (
-          <ul className="divide-y rounded-xl border">
-            {gifts.map((g) => (
-              <li
-                key={g.id}
-                className="flex flex-wrap items-start justify-between gap-3 px-4 py-3 text-sm"
-              >
-                <div>
-                  <p className="font-medium">
-                    {g.name}
-                    {g.guest && (
-                      <span className="ml-2 rounded-full border px-2 py-0.5 text-xs text-neutral-500">
-                        tamu: {g.guest.name}
+          <div className="overflow-hidden rounded-xl border bg-card">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Nama</TableHead>
+                  <TableHead>Metode</TableHead>
+                  <TableHead>Tanggal</TableHead>
+                  <TableHead className="text-right">Nominal</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {gifts.map((g) => (
+                  <TableRow key={g.id}>
+                    <TableCell>
+                      <span className="flex flex-wrap items-center gap-2 font-medium">
+                        {g.name}
+                        {g.guest && (
+                          <Badge variant="outline">tamu: {g.guest.name}</Badge>
+                        )}
                       </span>
-                    )}
-                  </p>
-                  <p className="text-xs text-neutral-500">
-                    {METHOD_LABEL[g.method] ?? g.method} ·{" "}
-                    {g.createdAt.toLocaleDateString("id-ID", {
-                      day: "numeric",
-                      month: "short",
-                      year: "numeric",
-                    })}
-                  </p>
-                  {g.note && <p className="mt-1 text-neutral-700">{g.note}</p>}
-                  {g.proofUrl && (
-                    <a
-                      href={g.proofUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-xs text-neutral-600 underline"
-                    >
-                      Lihat bukti
-                    </a>
-                  )}
-                </div>
-                <p className="font-medium">
-                  {g.amount ? rupiah.format(g.amount) : "—"}
-                </p>
-              </li>
-            ))}
-          </ul>
+                      {g.note && (
+                        <span className="mt-0.5 block text-sm text-muted-foreground">
+                          {g.note}
+                        </span>
+                      )}
+                      {g.proofUrl && (
+                        <a
+                          href={g.proofUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs underline"
+                        >
+                          Lihat bukti
+                        </a>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">
+                      {METHOD_LABEL[g.method] ?? g.method}
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">
+                      {tanggal.format(g.createdAt)}
+                    </TableCell>
+                    <TableCell className="tabular text-right font-medium">
+                      {g.amount ? rupiah.format(g.amount) : "—"}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         )}
       </section>
     </div>

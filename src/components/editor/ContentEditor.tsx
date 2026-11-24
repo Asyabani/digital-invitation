@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { Loader2, Smartphone } from "lucide-react";
+import { toast } from "sonner";
 import type {
   Content,
   Theme,
@@ -8,6 +10,16 @@ import type {
 } from "@/lib/validation/invitation";
 import { InvitationView } from "@/components/invitation/InvitationView";
 import { updateInvitationContent } from "@/lib/actions/invitation";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 type Props = {
   invitationId: string;
@@ -21,20 +33,23 @@ type Props = {
 
 function Field({
   label,
+  htmlFor,
+  hint,
   children,
 }: {
   label: string;
+  htmlFor: string;
+  hint?: string;
   children: React.ReactNode;
 }) {
   return (
-    <label className="block space-y-1">
-      <span className="text-sm font-medium text-neutral-700">{label}</span>
+    <div className="space-y-1.5">
+      <Label htmlFor={htmlFor}>{label}</Label>
       {children}
-    </label>
+      {hint && <p className="text-xs text-muted-foreground">{hint}</p>}
+    </div>
   );
 }
-
-const inputCls = "w-full rounded-lg border px-3 py-2 text-sm";
 
 export function ContentEditor({
   invitationId,
@@ -45,8 +60,6 @@ export function ContentEditor({
   showWatermark,
 }: Props) {
   const [content, setContent] = useState<Content>(initialContent);
-  const [savedAt, setSavedAt] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
   function patchSubject(patch: Partial<Content["subject"]>) {
@@ -57,163 +70,163 @@ export function ContentEditor({
   }
 
   function save() {
-    setError(null);
     startTransition(async () => {
       try {
         await updateInvitationContent(invitationId, content);
-        setSavedAt(new Date().toLocaleTimeString("id-ID"));
+        toast.success("Perubahan tersimpan.");
       } catch {
-        setError("Gagal menyimpan. Periksa isian (field wajib tidak boleh kosong).");
+        toast.error("Gagal menyimpan.", {
+          description: "Periksa isian — field wajib tidak boleh kosong.",
+        });
       }
     });
   }
 
   return (
-    <div className="grid gap-6 lg:grid-cols-2">
-      {/* FORM */}
+    <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,24rem)]">
       <div className="space-y-5">
-        <div className="flex flex-wrap items-center gap-3">
-          <button
-            onClick={save}
-            disabled={pending}
-            className="rounded-lg bg-neutral-900 px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
-          >
-            {pending ? "Menyimpan..." : "Simpan"}
-          </button>
-          {savedAt && (
-            <span className="text-xs text-neutral-400">Tersimpan {savedAt}</span>
-          )}
-        </div>
-
-        {error && <p className="text-sm text-red-600">{error}</p>}
-
-        <div className="space-y-4 rounded-xl border p-4">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-neutral-500">
-            Mempelai / Subjek
-          </h2>
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="Nama Pria">
-              <input
-                className={inputCls}
+        <Card>
+          <CardHeader>
+            <CardTitle>Mempelai / Subjek</CardTitle>
+          </CardHeader>
+          <CardContent className="grid gap-4 sm:grid-cols-2">
+            <Field label="Nama pria" htmlFor="groomName">
+              <Input
+                id="groomName"
                 value={content.subject.groomName ?? ""}
                 onChange={(e) => patchSubject({ groomName: e.target.value })}
               />
             </Field>
-            <Field label="Nama Wanita">
-              <input
-                className={inputCls}
+            <Field label="Nama wanita" htmlFor="brideName">
+              <Input
+                id="brideName"
                 value={content.subject.brideName ?? ""}
                 onChange={(e) => patchSubject({ brideName: e.target.value })}
               />
             </Field>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
 
-        <div className="space-y-4 rounded-xl border p-4">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-neutral-500">
-            Acara
-          </h2>
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="Tanggal">
-              <input
-                type="date"
-                className={inputCls}
-                value={content.event.date}
-                onChange={(e) => patchEvent({ date: e.target.value })}
+        <Card>
+          <CardHeader>
+            <CardTitle>Acara</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field label="Tanggal" htmlFor="date">
+                <Input
+                  id="date"
+                  type="date"
+                  value={content.event.date}
+                  onChange={(e) => patchEvent({ date: e.target.value })}
+                />
+              </Field>
+              <Field label="Waktu" htmlFor="time">
+                <Input
+                  id="time"
+                  type="time"
+                  value={content.event.time}
+                  onChange={(e) => patchEvent({ time: e.target.value })}
+                />
+              </Field>
+            </div>
+            <Field label="Nama tempat" htmlFor="venueName">
+              <Input
+                id="venueName"
+                value={content.event.venueName}
+                onChange={(e) => patchEvent({ venueName: e.target.value })}
               />
             </Field>
-            <Field label="Waktu">
-              <input
-                type="time"
-                className={inputCls}
-                value={content.event.time}
-                onChange={(e) => patchEvent({ time: e.target.value })}
+            <Field label="Alamat" htmlFor="address">
+              <Input
+                id="address"
+                value={content.event.address}
+                onChange={(e) => patchEvent({ address: e.target.value })}
               />
             </Field>
-          </div>
-          <Field label="Nama Tempat">
-            <input
-              className={inputCls}
-              value={content.event.venueName}
-              onChange={(e) => patchEvent({ venueName: e.target.value })}
-            />
-          </Field>
-          <Field label="Alamat">
-            <input
-              className={inputCls}
-              value={content.event.address}
-              onChange={(e) => patchEvent({ address: e.target.value })}
-            />
-          </Field>
-          <Field label="Link Google Maps (opsional)">
-            <input
-              className={inputCls}
-              placeholder="https://maps.app.goo.gl/..."
-              value={content.event.maps?.url ?? ""}
-              onChange={(e) =>
-                patchEvent({
-                  maps: {
-                    lat: content.event.maps?.lat ?? 0,
-                    lng: content.event.maps?.lng ?? 0,
-                    url: e.target.value || undefined,
-                  },
-                })
-              }
-            />
-          </Field>
-        </div>
+            <Field
+              label="Link Google Maps"
+              htmlFor="maps"
+              hint="Opsional. Tempel tautan berbagi dari aplikasi Maps."
+            >
+              <Input
+                id="maps"
+                placeholder="https://maps.app.goo.gl/..."
+                value={content.event.maps?.url ?? ""}
+                onChange={(e) =>
+                  patchEvent({
+                    maps: {
+                      lat: content.event.maps?.lat ?? 0,
+                      lng: content.event.maps?.lng ?? 0,
+                      url: e.target.value || undefined,
+                    },
+                  })
+                }
+              />
+            </Field>
+          </CardContent>
+        </Card>
 
-        <div className="space-y-4 rounded-xl border p-4">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-neutral-500">
-            Galeri
-          </h2>
-          <Field label="URL gambar (satu per baris)">
-            <textarea
-              rows={4}
-              className={inputCls}
-              value={content.gallery.join("\n")}
-              onChange={(e) =>
-                setContent((c) => ({
-                  ...c,
-                  gallery: e.target.value
-                    .split("\n")
-                    .map((s) => s.trim())
-                    .filter(Boolean),
-                }))
-              }
-              placeholder="https://.../foto1.jpg"
-            />
-          </Field>
-          <p className="text-xs text-neutral-400">
-            Fase berikutnya: unggah langsung via Cloudinary.
-          </p>
-        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>Galeri</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Field
+              label="URL gambar"
+              htmlFor="gallery"
+              hint="Satu tautan per baris. Unggah langsung via Cloudinary menyusul."
+            >
+              <Textarea
+                id="gallery"
+                rows={4}
+                placeholder="https://.../foto1.jpg"
+                value={content.gallery.join("\n")}
+                onChange={(e) =>
+                  setContent((c) => ({
+                    ...c,
+                    gallery: e.target.value
+                      .split("\n")
+                      .map((s) => s.trim())
+                      .filter(Boolean),
+                  }))
+                }
+              />
+            </Field>
+          </CardContent>
+        </Card>
 
-        <div className="space-y-4 rounded-xl border p-4">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-neutral-500">
-            Kutipan Pembuka (opsional)
-          </h2>
-          <Field label="Teks">
-            <textarea
-              rows={2}
-              className={inputCls}
-              value={content.quote?.text ?? ""}
-              onChange={(e) =>
-                setContent((c) => ({
-                  ...c,
-                  quote: e.target.value
-                    ? { text: e.target.value, source: c.quote?.source }
-                    : undefined,
-                }))
-              }
-            />
-          </Field>
-        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>Kutipan pembuka</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Field label="Teks" htmlFor="quote" hint="Opsional.">
+              <Textarea
+                id="quote"
+                rows={2}
+                value={content.quote?.text ?? ""}
+                onChange={(e) =>
+                  setContent((c) => ({
+                    ...c,
+                    quote: e.target.value
+                      ? { text: e.target.value, source: c.quote?.source }
+                      : undefined,
+                  }))
+                }
+              />
+            </Field>
+          </CardContent>
+        </Card>
       </div>
 
-      {/* PREVIEW */}
-      <div className="lg:sticky lg:top-6 lg:h-[calc(100vh-6rem)]">
-        <div className="h-full overflow-y-auto rounded-xl border">
+      {/* PRATINJAU */}
+      <div className="lg:sticky lg:top-20 lg:self-start">
+        <div className="mb-2 flex items-center gap-1.5 text-xs text-muted-foreground">
+          <Smartphone className="size-3.5" aria-hidden />
+          Pratinjau tampilan di HP tamu
+        </div>
+        <div className="h-[32rem] overflow-y-auto rounded-xl border bg-card shadow-sm lg:h-[calc(100vh-14rem)]">
           <InvitationView
             invitationId={invitationId}
             slug={slug}
@@ -224,6 +237,21 @@ export function ContentEditor({
             interactive={false}
             showWatermark={showWatermark}
           />
+        </div>
+      </div>
+
+      {/* Bilah simpan — selalu terjangkau tanpa menggulir ke atas. */}
+      <div className="sticky bottom-0 z-20 -mx-4 border-t border-border/70 bg-background/90 px-4 py-3 backdrop-blur lg:col-span-2 sm:-mx-6 sm:px-6">
+        <div className="flex items-center justify-between gap-3">
+          <p className="text-xs text-muted-foreground">
+            Perubahan baru tersimpan setelah ditekan Simpan.
+          </p>
+          <Button onClick={save} disabled={pending} size="lg">
+            {pending && (
+              <Loader2 data-icon="inline-start" className="animate-spin" />
+            )}
+            {pending ? "Menyimpan..." : "Simpan"}
+          </Button>
         </div>
       </div>
     </div>

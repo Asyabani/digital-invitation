@@ -51,6 +51,9 @@ Yang **wajib** untuk menjalankan editor hanya `DATABASE_URL` (Postgres). Kunci X
 - **`pnpm dev` bisa gagal `Too many open files`** di mesin ini (`fs.inotify.max_user_instances` = 128 dipakai dev server project lain). Tutup dev server lain, atau uji lewat `pnpm build && PORT=xxxx pnpm start`.
 - **Status bayar hanya dari webhook.** Jangan pernah menetapkan `PAID`/`PUBLISHED` dari redirect `?pay=success` — itu cuma pesan UI.
 - **Gating fitur paket lewat `canUse()`** di `src/lib/packages.ts`, bukan `if (package === ...)` yang tersebar. Saat trial (`package = null`) semua fitur boleh dicoba KECUALI `removeWatermark`.
+- **UI punya dua dunia visual** (lihat `docs/06` §0): dashboard/marketing pakai token shadcn + Geist/Playfair; halaman undangan pakai `themeConfig` tiap undangan lewat kelas `.inv-*`. Jangan mencampur keduanya, dan jangan pakai kelas warna Tailwind mentah (`text-neutral-500`, `bg-green-50`) di dashboard.
+- **Font undangan harus benar-benar dimuat.** `HEADING_FONTS`/`BODY_FONTS` di `src/lib/font-stacks.ts` adalah satu-satunya daftar yang boleh ditawarkan editor tema; menambah nama tanpa mendeklarasikannya di `fonts-invitation.ts` membuat pilihan pemilik diam-diam jatuh ke font bawaan browser. Font undangan sengaja dipisah dari `fonts.ts` agar halaman marketing tidak ikut mengunduhnya.
+- **Jangan taruh font di `@theme inline`** — Tailwind v4 menyelesaikannya saat parse, sehingga variabel runtime dari `next/font` tidak terbaca. Pasang di `@layer base` sebagai CSS biasa.
 - **Helper owner ada di `src/lib/owner.ts`** (`ownInvitation`, `ownGuest`) — sengaja di luar file `"use server"`, karena setiap export di file `"use server"` menjadi endpoint yang bisa dipanggil dari browser.
 
 ## Konvensi

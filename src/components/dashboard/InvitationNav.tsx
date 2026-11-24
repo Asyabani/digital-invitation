@@ -1,12 +1,20 @@
 import Link from "next/link";
+import {
+  FileText,
+  Palette,
+  Users,
+  CalendarCheck,
+  MessageSquare,
+  Gift,
+} from "lucide-react";
 
 const TABS = [
-  { href: "edit", label: "Konten" },
-  { href: "tema", label: "Tema" },
-  { href: "tamu", label: "Tamu" },
-  { href: "rsvp", label: "RSVP" },
-  { href: "ucapan", label: "Ucapan" },
-  { href: "amplop", label: "Amplop" },
+  { href: "edit", label: "Konten", Icon: FileText },
+  { href: "tema", label: "Tema", Icon: Palette },
+  { href: "tamu", label: "Tamu", Icon: Users },
+  { href: "rsvp", label: "RSVP", Icon: CalendarCheck },
+  { href: "ucapan", label: "Ucapan", Icon: MessageSquare },
+  { href: "amplop", label: "Amplop", Icon: Gift },
 ] as const;
 
 /** Navigasi antar halaman pengelolaan satu undangan (docs/06 §3). */
@@ -18,21 +26,28 @@ export function InvitationNav({
   active: (typeof TABS)[number]["href"];
 }) {
   return (
-    <nav className="flex flex-wrap gap-1 text-sm">
-      {TABS.map((t) => (
-        <Link
-          key={t.href}
-          href={`/dashboard/${invitationId}/${t.href}`}
-          aria-current={t.href === active ? "page" : undefined}
-          className={
-            t.href === active
-              ? "rounded-lg bg-neutral-900 px-3 py-1.5 font-medium text-white"
-              : "rounded-lg px-3 py-1.5 text-neutral-600 hover:bg-neutral-100"
-          }
-        >
-          {t.label}
-        </Link>
-      ))}
+    <nav
+      aria-label="Bagian undangan"
+      className="-mx-1 flex gap-1 overflow-x-auto rounded-xl bg-muted/70 p-1"
+    >
+      {TABS.map(({ href, label, Icon }) => {
+        const isActive = href === active;
+        return (
+          <Link
+            key={href}
+            href={`/dashboard/${invitationId}/${href}`}
+            aria-current={isActive ? "page" : undefined}
+            className={`flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm transition-colors ${
+              isActive
+                ? "bg-card font-medium text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <Icon className="size-4" aria-hidden />
+            {label}
+          </Link>
+        );
+      })}
     </nav>
   );
 }

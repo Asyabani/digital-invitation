@@ -3,14 +3,33 @@ import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { InvitationNav } from "@/components/dashboard/InvitationNav";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 export const instant = false;
 
-const STATUS_LABEL: Record<string, string> = {
-  HADIR: "Hadir",
-  TIDAK_HADIR: "Tidak hadir",
-  RAGU: "Ragu",
+const STATUS: Record<
+  string,
+  { label: string; variant: "success" | "warning" | "outline" }
+> = {
+  HADIR: { label: "Hadir", variant: "success" },
+  TIDAK_HADIR: { label: "Tidak hadir", variant: "outline" },
+  RAGU: { label: "Ragu", variant: "warning" },
 };
+
+const tanggal = new Intl.DateTimeFormat("id-ID", {
+  day: "numeric",
+  month: "short",
+  year: "numeric",
+});
 
 export default async function RsvpRekapPage({
   params,
@@ -33,53 +52,97 @@ export default async function RsvpRekapPage({
   });
 
   const hadir = rsvps.filter((r) => r.status === "HADIR");
-  const totalHeadcount = hadir.reduce((sum, r) => sum + r.headcount, 0);
-
   const summary = [
     { label: "Hadir", value: hadir.length },
-    { label: "Tidak hadir", value: rsvps.filter((r) => r.status === "TIDAK_HADIR").length },
+    {
+      label: "Tidak hadir",
+      value: rsvps.filter((r) => r.status === "TIDAK_HADIR").length,
+    },
     { label: "Ragu", value: rsvps.filter((r) => r.status === "RAGU").length },
-    { label: "Total orang (hadir)", value: totalHeadcount },
+    {
+      label: "Total orang",
+      value: hadir.reduce((sum, r) => sum + r.headcount, 0),
+    },
   ];
 
   return (
-    <div className="mx-auto max-w-3xl space-y-6">
-      <div>
-        <Link href={`/dashboard/${id}/edit`} className="text-sm text-neutral-500 hover:underline">
-          ← {inv.title}
+    <div className="space-y-6">
+      <div className="space-y-1">
+        <Link
+          href="/dashboard"
+          className="text-sm text-muted-foreground hover:underline"
+        >
+          ← Undangan Saya
         </Link>
-        <h1 className="text-xl font-semibold">Rekap RSVP</h1>
+        <h1 className="font-display text-2xl font-semibold tracking-tight">
+          {inv.title}
+        </h1>
       </div>
       <InvitationNav invitationId={id} active="rsvp" />
 
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         {summary.map((s) => (
-          <div key={s.label} className="rounded-xl border p-4 text-center">
-            <p className="text-2xl font-semibold">{s.value}</p>
-            <p className="text-xs text-neutral-500">{s.label}</p>
-          </div>
+          <Card key={s.label}>
+            <CardContent className="p-4">
+              <p className="tabular text-2xl font-semibold">{s.value}</p>
+              <p className="text-xs text-muted-foreground">{s.label}</p>
+            </CardContent>
+          </Card>
         ))}
       </div>
 
       {rsvps.length === 0 ? (
-        <p className="text-neutral-500">Belum ada konfirmasi.</p>
+        <Card className="border-dashed">
+          <CardContent className="flex flex-col items-center gap-2 py-14 text-center">
+            <p className="font-medium">Belum ada konfirmasi</p>
+            <p className="max-w-sm text-sm text-muted-foreground">
+              Jawaban tamu muncul di sini begitu mereka mengisi form RSVP di
+              undangan.
+            </p>
+          </CardContent>
+        </Card>
       ) : (
-        <ul className="divide-y rounded-xl border">
-          {rsvps.map((r) => (
-            <li key={r.id} className="flex items-center justify-between px-4 py-3 text-sm">
-              <div>
-                <p className="font-medium">{r.name}</p>
-                {r.message && <p className="text-neutral-500">{r.message}</p>}
-              </div>
-              <div className="text-right">
-                <span className="rounded-full border px-2 py-0.5 text-xs">
-                  {STATUS_LABEL[r.status] ?? r.status}
-                </span>
-                <p className="text-xs text-neutral-400">{r.headcount} orang</p>
-              </div>
-            </li>
-          ))}
-        </ul>
+        <div className="overflow-hidden rounded-xl border bg-card">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Nama</TableHead>
+                <TableHead>Kehadiran</TableHead>
+                <TableHead className="text-right">Jumlah</TableHead>
+                <TableHead className="text-right">Tanggal</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {rsvps.map((r) => {
+                const status = STATUS[r.status] ?? {
+                  label: r.status,
+                  variant: "outline" as const,
+                };
+                return (
+                  <TableRow key={r.id}>
+                    <TableCell>
+                      <span className="font-medium">{r.name}</span>
+                      {r.message && (
+                        <span className="mt-0.5 block text-sm text-muted-foreground">
+                          {r.message}
+                        </span>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={status.variant}>{status.label}</Badge>
+                    </TableCell>
+                    <TableCell className="tabular text-right">
+                      {r.status === "HADIR" ? `${r.headcount} orang` : "—"}
+                    </TableCell>
+                    <TableCell className="text-right text-muted-foreground">
+                      {tanggal.format(r.createdAt)}
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </div>
       )}
     </div>
   );

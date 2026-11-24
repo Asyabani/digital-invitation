@@ -32,13 +32,16 @@ export function Countdown({ target }: { target: string }) {
   ];
 
   return (
-    <div className="flex justify-center gap-4">
+    <div className="flex justify-center gap-2.5">
       {items.map(([label, value]) => (
-        <div key={label} className="flex flex-col items-center">
-          <span className="text-3xl font-semibold tabular-nums">
+        <div
+          key={label}
+          className="inv-card flex min-w-[4.25rem] flex-col items-center px-3 py-3"
+        >
+          <span className="inv-heading text-3xl font-semibold tabular-nums">
             {String(value).padStart(2, "0")}
           </span>
-          <span className="text-xs uppercase tracking-wide opacity-70">
+          <span className="inv-note text-[0.6875rem] uppercase tracking-wider">
             {label}
           </span>
         </div>

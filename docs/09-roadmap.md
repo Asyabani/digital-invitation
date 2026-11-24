@@ -11,15 +11,18 @@ berurutan; jangan loncat fase tanpa alasan.
 
 **Tujuan:** proyek jalan lokal dengan DB, auth, dan struktur sesuai `docs/02`.
 
-- [ ] Scaffold Next.js (App Router, TS strict, Tailwind v4, src dir, pnpm).
-- [ ] shadcn/ui init.
-- [ ] Prisma + `schema.prisma` sesuai `docs/03`; `docker-compose` DB lokal.
-- [ ] `prisma migrate` sukses; `prisma/seed.ts` isi ≥1 template.
-- [ ] Auth.js (Google + email) — login & dashboard kosong terlindungi.
-- [ ] `.env.example` lengkap; `src/lib/{db,auth,xendit,cloudinary,slug,validation}` kerangka.
+- [x] Scaffold Next.js (App Router, TS strict, Tailwind v4, src dir, pnpm).
+- [x] shadcn/ui init (style `base-nova`, primitif Base UI, ikon Lucide) +
+      sistem token & font — lihat `docs/06` §0.
+- [x] Prisma + `schema.prisma` sesuai `docs/03`; `docker-compose` DB lokal.
+- [x] `prisma migrate` sukses; `prisma/seed.ts` isi 3 template.
+- [x] Auth.js (Google + email) — dashboard terlindungi (guard terpasang).
+- [x] `.env.example` lengkap; `src/lib/{db,auth,xendit,cloudinary,slug,validation}` terisi.
 
-**DoD:** login berhasil, `pnpm typecheck && lint && build` hijau, dashboard
-kosong tampil untuk user login.
+**DoD:** ⚠️ sebagian. `pnpm typecheck && lint && build` hijau dan guard dashboard
+terpasang, tetapi **login belum pernah diuji sungguhan** — menunggu
+`AUTH_GOOGLE_ID/SECRET` atau `AUTH_RESEND_KEY` diisi. Ini blocker yang sama
+untuk semua alur ber-login di Fase 1–3.
 
 ## Fase 1 — MVP Inti (undangan + tamu + interaksi, belum bayar)
 

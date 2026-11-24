@@ -6,6 +6,31 @@
 
 ---
 
+## 0. Sistem Desain (implementasi)
+
+**Dua dunia visual yang sengaja dipisah:**
+
+| | Dashboard & marketing | Halaman undangan `/u/[slug]` |
+|---|---|---|
+| Warna | Token shadcn di `globals.css` — netral hangat + aksen rosewood, plus token status `success`/`warning` | `themeConfig.palette` milik tiap undangan |
+| Font | Geist (antarmuka) + Playfair Display (`.font-display`, judul) | `themeConfig.font`, dimuat via `src/lib/fonts-invitation.ts` |
+| Komponen | shadcn/ui (`src/components/ui`, style `base-nova`, primitif Base UI, ikon Lucide) | kelas `.inv-*` di `globals.css` yang menurunkan variabel `--inv-*` |
+
+Aturan yang mengikat:
+
+- **Jangan pakai kelas warna Tailwind mentah** (`text-neutral-500`, `bg-green-50`) di
+  dashboard/marketing. Pakai token: `text-muted-foreground`, `bg-success-surface`, dst.
+  Satu arti warna di seluruh aplikasi.
+- **Form tamu di halaman undangan tidak boleh memakai token dashboard** — warnanya
+  harus ikut tema undangan lewat kelas `.inv-field`, `.inv-button`, `.inv-chip`,
+  `.inv-card`. Jangan meneruskan warna sebagai prop ke tiap komponen.
+- **Editor tema hanya boleh menawarkan font yang benar-benar dimuat.** Sumbernya
+  `HEADING_FONTS`/`BODY_FONTS` di `src/lib/font-stacks.ts`; menambah pilihan di
+  sana wajib disertai deklarasi `next/font` di `fonts-invitation.ts`, kalau tidak
+  pilihan pemilik diam-diam jatuh ke font bawaan browser.
+- **Ikon dari Lucide**, bukan emoji atau glyph Unicode.
+- Angka pada tabel & rekap memakai kelas `.tabular` agar kolomnya sejajar.
+
 ## 1. Prinsip Desain
 
 - **Mobile-first.** Tamu hampir selalu membuka dari HP via WhatsApp. Semua
@@ -91,7 +116,9 @@ Urutan section mengikuti `sectionsOrder` (default):
 Elemen global:
 - **Musik latar**: tombol play/pause mengambang; tidak autoplay memaksa (hormati
   kebijakan browser), mulai saat "Buka Undangan" ditekan.
-- **Tombol share WhatsApp**.
+- **Tombol share WhatsApp** di section penutup.
+- **Metadata share** (`generateMetadata`): judul + tanggal + venue, gambar galeri
+  pertama sebagai `og:image`, supaya pratinjau di WhatsApp rapi.
 - **Watermark** tampil selama paket belum memuat `removeWatermark` (trial dan
   paket Basic). Lihat `docs/05` §2.
 - Jika `EXPIRED`: tampilkan pesan sopan "Undangan sudah tidak aktif".

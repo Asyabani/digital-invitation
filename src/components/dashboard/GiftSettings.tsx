@@ -1,8 +1,21 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { Loader2, Plus, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 import type { GiftConfig } from "@/lib/validation/invitation";
 import { updateGiftConfig } from "@/lib/actions/invitation";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 type Bank = { bankName: string; accountNumber: string; accountName: string };
 
@@ -13,14 +26,10 @@ type Props = {
   canUseGift: boolean;
 };
 
-const inputCls = "w-full rounded-lg border px-3 py-2 text-sm";
-
 export function GiftSettings({ invitationId, initialConfig, canUseGift }: Props) {
   const [banks, setBanks] = useState<Bank[]>(initialConfig?.banks ?? []);
   const [qrisUrl, setQrisUrl] = useState(initialConfig?.qrisUrl ?? "");
   const [note, setNote] = useState(initialConfig?.note ?? "");
-  const [savedAt, setSavedAt] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
   function patchBank(i: number, patch: Partial<Bank>) {
@@ -28,7 +37,6 @@ export function GiftSettings({ invitationId, initialConfig, canUseGift }: Props)
   }
 
   function save(clear = false) {
-    setError(null);
     startTransition(async () => {
       try {
         if (clear) {
@@ -36,129 +44,141 @@ export function GiftSettings({ invitationId, initialConfig, canUseGift }: Props)
           setBanks([]);
           setQrisUrl("");
           setNote("");
-        } else {
-          const filled = banks.filter(
-            (b) => b.bankName && b.accountNumber && b.accountName,
-          );
-          await updateGiftConfig(invitationId, {
-            banks: filled.length > 0 ? filled : undefined,
-            qrisUrl: qrisUrl.trim() || undefined,
-            note: note.trim() || undefined,
-          });
+          toast.success("Konfigurasi amplop dikosongkan.");
+          return;
         }
-        setSavedAt(new Date().toLocaleTimeString("id-ID"));
-      } catch {
-        setError(
-          "Gagal menyimpan. Pastikan URL QRIS valid dan data rekening lengkap.",
+        const filled = banks.filter(
+          (b) => b.bankName && b.accountNumber && b.accountName,
         );
+        await updateGiftConfig(invitationId, {
+          banks: filled.length > 0 ? filled : undefined,
+          qrisUrl: qrisUrl.trim() || undefined,
+          note: note.trim() || undefined,
+        });
+        toast.success("Tersimpan.");
+      } catch {
+        toast.error("Gagal menyimpan.", {
+          description: "Pastikan URL QRIS valid dan data rekening lengkap.",
+        });
       }
     });
   }
 
   return (
-    <div className="space-y-4 rounded-xl border p-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-neutral-500">
-          Rekening & QRIS
-        </h2>
-        <div className="flex gap-2">
-          <button
-            onClick={() => save(false)}
-            disabled={pending}
-            className="rounded-lg bg-neutral-900 px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
-          >
-            {pending ? "Menyimpan..." : "Simpan"}
-          </button>
-          <button
-            onClick={() => save(true)}
-            disabled={pending}
-            className="rounded-lg border px-4 py-2 text-sm font-medium disabled:opacity-50"
-          >
+    <Card>
+      <CardHeader>
+        <CardTitle>Rekening & QRIS</CardTitle>
+        <CardDescription>
+          Data ini yang dilihat tamu di section amplop digital.
+        </CardDescription>
+        <div data-slot="card-action" className="flex gap-2">
+          <Button onClick={() => save(false)} disabled={pending}>
+            {pending && (
+              <Loader2 data-icon="inline-start" className="animate-spin" />
+            )}
+            Simpan
+          </Button>
+          <Button onClick={() => save(true)} disabled={pending} variant="outline">
             Kosongkan
-          </button>
+          </Button>
         </div>
-      </div>
+      </CardHeader>
 
-      {!canUseGift && (
-        <p className="rounded-lg bg-amber-50 p-3 text-sm text-amber-900">
-          Amplop digital tersedia mulai paket <strong>Premium</strong>. Anda tetap
-          bisa menyiapkan datanya sekarang; section ini baru tampil ke tamu
-          setelah paketnya aktif.
-        </p>
-      )}
+      <CardContent className="space-y-5">
+        {!canUseGift && (
+          <Alert>
+            <AlertDescription>
+              Amplop digital tersedia mulai paket <strong>Premium</strong>. Anda
+              tetap bisa menyiapkan datanya sekarang; section ini baru tampil ke
+              tamu setelah paketnya aktif.
+            </AlertDescription>
+          </Alert>
+        )}
 
-      <div className="space-y-3">
-        {banks.map((b, i) => (
-          <div key={i} className="grid gap-2 rounded-lg border p-3 sm:grid-cols-4">
-            <input
-              className={inputCls}
-              placeholder="Nama bank (BCA)"
-              value={b.bankName}
-              onChange={(e) => patchBank(i, { bankName: e.target.value })}
-            />
-            <input
-              className={inputCls}
-              placeholder="Nomor rekening"
-              value={b.accountNumber}
-              onChange={(e) => patchBank(i, { accountNumber: e.target.value })}
-            />
-            <input
-              className={inputCls}
-              placeholder="Atas nama"
-              value={b.accountName}
-              onChange={(e) => patchBank(i, { accountName: e.target.value })}
-            />
-            <button
-              type="button"
-              onClick={() => setBanks((l) => l.filter((_, idx) => idx !== i))}
-              className="rounded-lg border px-3 py-2 text-sm text-red-600"
+        <div className="space-y-3">
+          {banks.map((b, i) => (
+            <div
+              key={i}
+              className="grid items-end gap-3 rounded-xl border p-4 sm:grid-cols-[1fr_1.2fr_1.2fr_auto]"
             >
-              Hapus
-            </button>
+              <div className="space-y-1.5">
+                <Label htmlFor={`bank-${i}`}>Bank</Label>
+                <Input
+                  id={`bank-${i}`}
+                  placeholder="BCA"
+                  value={b.bankName}
+                  onChange={(e) => patchBank(i, { bankName: e.target.value })}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor={`rek-${i}`}>Nomor rekening</Label>
+                <Input
+                  id={`rek-${i}`}
+                  className="font-mono"
+                  placeholder="1234567890"
+                  value={b.accountNumber}
+                  onChange={(e) =>
+                    patchBank(i, { accountNumber: e.target.value })
+                  }
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor={`an-${i}`}>Atas nama</Label>
+                <Input
+                  id={`an-${i}`}
+                  placeholder="Budi Santoso"
+                  value={b.accountName}
+                  onChange={(e) => patchBank(i, { accountName: e.target.value })}
+                />
+              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label={`Hapus rekening ${b.bankName || i + 1}`}
+                onClick={() => setBanks((l) => l.filter((_, idx) => idx !== i))}
+              >
+                <Trash2 className="text-destructive" />
+              </Button>
+            </div>
+          ))}
+          <Button
+            variant="outline"
+            onClick={() =>
+              setBanks((l) => [
+                ...l,
+                { bankName: "", accountNumber: "", accountName: "" },
+              ])
+            }
+          >
+            <Plus data-icon="inline-start" />
+            Tambah rekening
+          </Button>
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="space-y-1.5">
+            <Label htmlFor="qris">URL gambar QRIS</Label>
+            <Input
+              id="qris"
+              type="url"
+              placeholder="https://.../qris.png"
+              value={qrisUrl}
+              onChange={(e) => setQrisUrl(e.target.value)}
+            />
+            <p className="text-xs text-muted-foreground">Opsional.</p>
           </div>
-        ))}
-        <button
-          type="button"
-          onClick={() =>
-            setBanks((l) => [
-              ...l,
-              { bankName: "", accountNumber: "", accountName: "" },
-            ])
-          }
-          className="rounded-lg border px-4 py-2 text-sm font-medium"
-        >
-          + Tambah rekening
-        </button>
-      </div>
-
-      <label className="block space-y-1">
-        <span className="text-sm font-medium text-neutral-700">
-          URL gambar QRIS (opsional)
-        </span>
-        <input
-          className={inputCls}
-          placeholder="https://.../qris.png"
-          value={qrisUrl}
-          onChange={(e) => setQrisUrl(e.target.value)}
-        />
-      </label>
-
-      <label className="block space-y-1">
-        <span className="text-sm font-medium text-neutral-700">
-          Catatan untuk tamu (opsional)
-        </span>
-        <input
-          className={inputCls}
-          placeholder="Terima kasih atas doa dan perhatiannya."
-          value={note}
-          onChange={(e) => setNote(e.target.value)}
-        />
-      </label>
-
-      {savedAt && (
-        <p className="text-xs text-neutral-400">Tersimpan {savedAt}</p>
-      )}
-      {error && <p className="text-sm text-red-600">{error}</p>}
-    </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="note">Catatan untuk tamu</Label>
+            <Input
+              id="note"
+              placeholder="Terima kasih atas doa dan perhatiannya."
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+            />
+            <p className="text-xs text-muted-foreground">Opsional.</p>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 }

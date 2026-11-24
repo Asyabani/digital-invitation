@@ -46,12 +46,17 @@ export default async function TamuPage({
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "";
 
   return (
-    <div className="mx-auto max-w-4xl space-y-6">
-      <div>
-        <Link href="/dashboard" className="text-sm text-neutral-500 hover:underline">
+    <div className="space-y-6">
+      <div className="space-y-1">
+        <Link
+          href="/dashboard"
+          className="text-sm text-muted-foreground hover:underline"
+        >
           ← Undangan Saya
         </Link>
-        <h1 className="text-xl font-semibold">{inv.title}</h1>
+        <h1 className="font-display text-2xl font-semibold tracking-tight">
+          {inv.title}
+        </h1>
       </div>
       <InvitationNav invitationId={id} active="tamu" />
 

@@ -1,12 +1,22 @@
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
+import { TriangleAlert } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { moderateGreeting } from "@/lib/actions/greeting";
 import { containsProfanity } from "@/lib/moderation";
 import { InvitationNav } from "@/components/dashboard/InvitationNav";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 
 export const instant = false;
+
+const tanggal = new Intl.DateTimeFormat("id-ID", {
+  day: "numeric",
+  month: "short",
+  year: "numeric",
+});
 
 export default async function UcapanModerasiPage({
   params,
@@ -33,56 +43,83 @@ export default async function UcapanModerasiPage({
   });
 
   return (
-    <div className="mx-auto max-w-3xl space-y-8">
-      <div>
-        <Link href={`/dashboard/${id}/edit`} className="text-sm text-neutral-500 hover:underline">
-          ← {inv.title}
+    <div className="space-y-6">
+      <div className="space-y-1">
+        <Link
+          href="/dashboard"
+          className="text-sm text-muted-foreground hover:underline"
+        >
+          ← Undangan Saya
         </Link>
-        <h1 className="text-xl font-semibold">Moderasi Ucapan</h1>
+        <h1 className="font-display text-2xl font-semibold tracking-tight">
+          {inv.title}
+        </h1>
       </div>
       <InvitationNav invitationId={id} active="ucapan" />
 
       <section className="space-y-3">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-neutral-500">
-          Menunggu Persetujuan ({pending.length})
-        </h2>
+        <div className="flex items-center gap-2">
+          <h2 className="font-display text-xl font-semibold tracking-tight">
+            Menunggu persetujuan
+          </h2>
+          {pending.length > 0 && (
+            <Badge variant="warning">{pending.length}</Badge>
+          )}
+        </div>
+        <p className="text-sm text-muted-foreground">
+          Ucapan tidak langsung tampil. Setujui dulu agar muncul di halaman
+          undangan.
+        </p>
+
         {pending.length === 0 ? (
-          <p className="text-neutral-500">Tidak ada ucapan yang menunggu.</p>
+          <Card className="border-dashed">
+            <CardContent className="py-10 text-center text-muted-foreground">
+              Tidak ada ucapan yang menunggu.
+            </CardContent>
+          </Card>
         ) : (
           <ul className="space-y-3">
             {pending.map((g) => (
-              <li key={g.id} className="rounded-xl border p-4">
-                <div className="flex items-center gap-2">
-                  <p className="font-medium">{g.name}</p>
-                  {containsProfanity(g.message) && (
-                    <span className="rounded bg-red-100 px-1.5 py-0.5 text-xs text-red-700">
-                      ⚠ kata sensitif
-                    </span>
-                  )}
-                </div>
-                <p className="mt-1 text-sm text-neutral-700">{g.message}</p>
-                <div className="mt-3 flex gap-2">
-                  <form
-                    action={async () => {
-                      "use server";
-                      await moderateGreeting(g.id, "APPROVED");
-                    }}
-                  >
-                    <button className="rounded-lg bg-green-600 px-3 py-1.5 text-xs font-medium text-white">
-                      Setujui
-                    </button>
-                  </form>
-                  <form
-                    action={async () => {
-                      "use server";
-                      await moderateGreeting(g.id, "REJECTED");
-                    }}
-                  >
-                    <button className="rounded-lg border px-3 py-1.5 text-xs font-medium">
-                      Tolak
-                    </button>
-                  </form>
-                </div>
+              <li key={g.id}>
+                <Card>
+                  <CardContent className="space-y-3 p-4">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="font-medium">{g.name}</p>
+                      <span className="text-xs text-muted-foreground">
+                        {tanggal.format(g.createdAt)}
+                      </span>
+                      {containsProfanity(g.message) && (
+                        <Badge variant="destructive">
+                          <TriangleAlert aria-hidden />
+                          Kata sensitif
+                        </Badge>
+                      )}
+                    </div>
+                    <p className="leading-relaxed">{g.message}</p>
+                    <div className="flex gap-2">
+                      <form
+                        action={async () => {
+                          "use server";
+                          await moderateGreeting(g.id, "APPROVED");
+                        }}
+                      >
+                        <Button type="submit" size="sm">
+                          Setujui
+                        </Button>
+                      </form>
+                      <form
+                        action={async () => {
+                          "use server";
+                          await moderateGreeting(g.id, "REJECTED");
+                        }}
+                      >
+                        <Button type="submit" size="sm" variant="outline">
+                          Tolak
+                        </Button>
+                      </form>
+                    </div>
+                  </CardContent>
+                </Card>
               </li>
             ))}
           </ul>
@@ -90,17 +127,33 @@ export default async function UcapanModerasiPage({
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-neutral-500">
-          Tampil di Undangan ({approved.length})
-        </h2>
+        <div className="flex items-center gap-2">
+          <h2 className="font-display text-xl font-semibold tracking-tight">
+            Tampil di undangan
+          </h2>
+          {approved.length > 0 && (
+            <Badge variant="success">{approved.length}</Badge>
+          )}
+        </div>
+
         {approved.length === 0 ? (
-          <p className="text-neutral-500">Belum ada ucapan yang disetujui.</p>
+          <Card className="border-dashed">
+            <CardContent className="py-10 text-center text-muted-foreground">
+              Belum ada ucapan yang disetujui.
+            </CardContent>
+          </Card>
         ) : (
-          <ul className="space-y-3">
+          <ul className="grid gap-3 sm:grid-cols-2">
             {approved.map((g) => (
-              <li key={g.id} className="rounded-xl border bg-neutral-50 p-4">
-                <p className="font-medium">{g.name}</p>
-                <p className="mt-1 text-sm text-neutral-700">{g.message}</p>
+              <li key={g.id}>
+                <Card className="h-full bg-muted/40">
+                  <CardContent className="p-4">
+                    <p className="font-medium">{g.name}</p>
+                    <p className="mt-1 leading-relaxed text-muted-foreground">
+                      {g.message}
+                    </p>
+                  </CardContent>
+                </Card>
               </li>
             ))}
           </ul>

@@ -10,6 +10,7 @@ import {
 } from "@/lib/validation/invitation";
 import { ThemeEditor } from "@/components/editor/ThemeEditor";
 import { InvitationNav } from "@/components/dashboard/InvitationNav";
+import { invitationFontVars } from "@/lib/fonts-invitation";
 
 export const instant = false;
 
@@ -31,12 +32,19 @@ export default async function TemaPage({
   if (!content.success || !theme.success || !sections.success) notFound();
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6">
-      <div>
-        <Link href="/dashboard" className="text-sm text-neutral-500 hover:underline">
+    // Variabel font tema dipasang di sini agar pratinjau memakai font yang
+    // sama persis dengan halaman undangan (src/lib/fonts-invitation.ts).
+    <div className={`${invitationFontVars} space-y-6`}>
+      <div className="space-y-1">
+        <Link
+          href="/dashboard"
+          className="text-sm text-muted-foreground hover:underline"
+        >
           ← Undangan Saya
         </Link>
-        <h1 className="text-xl font-semibold">{inv.title}</h1>
+        <h1 className="font-display text-2xl font-semibold tracking-tight">
+          {inv.title}
+        </h1>
       </div>
       <InvitationNav invitationId={id} active="tema" />
 

@@ -5,6 +5,8 @@ import type {
   GiftConfig,
 } from "@/lib/validation/invitation";
 import { googleCalendarUrl, whatsappShareUrl } from "@/lib/calendar";
+import { fontStack } from "@/lib/font-stacks";
+import { invitationTitle, prettyEventDate } from "@/lib/invitation-title";
 import { Countdown } from "./Countdown";
 import { RsvpForm } from "./RsvpForm";
 import { GreetingForm } from "./GreetingForm";
@@ -28,28 +30,43 @@ export type InvitationViewProps = {
   publicUrl?: string;
   interactive?: boolean;
   showWatermark?: boolean;
-  /** Teks watermark; default = pesan pratinjau untuk undangan yang belum terbit. */
-  watermarkLabel?: string;
+  /**
+   * `preview` = bilah "mode pratinjau" untuk pemilik di editor.
+   * `brand` = baris branding halus di kaki undangan yang sudah terbit.
+   */
+  watermarkVariant?: "preview" | "brand";
 };
-
-function subjectTitle(c: Content): string {
-  const s = c.subject;
-  if (s.groomName && s.brideName) return `${s.groomName} & ${s.brideName}`;
-  if (s.childName) return s.childName;
-  return s.title ?? "Undangan";
-}
 
 function Section({
   children,
-  style,
+  first = false,
 }: {
   children: React.ReactNode;
-  style?: React.CSSProperties;
+  first?: boolean;
 }) {
   return (
-    <section className="px-6 py-16 text-center" style={style}>
-      <div className="mx-auto max-w-xl space-y-6">{children}</div>
+    <section
+      className={`px-6 text-center ${first ? "pb-16 pt-20 sm:pt-28" : "py-16"}`}
+    >
+      <div className="mx-auto flex max-w-lg flex-col items-center gap-6">
+        {children}
+      </div>
     </section>
+  );
+}
+
+function Heading({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="flex flex-col items-center gap-3">
+      <h2 className="inv-heading text-2xl font-semibold sm:text-3xl">
+        {children}
+      </h2>
+      <span className="inv-rule" aria-hidden>
+        <svg width="7" height="7" viewBox="0 0 7 7" fill="currentColor">
+          <path d="M3.5 0 7 3.5 3.5 7 0 3.5z" />
+        </svg>
+      </span>
+    </div>
   );
 }
 
@@ -66,36 +83,28 @@ export function InvitationView(props: InvitationViewProps) {
     publicUrl,
     interactive = true,
     showWatermark = false,
-    watermarkLabel = "Mode pratinjau — terbitkan untuk membagikan ke tamu.",
+    watermarkVariant = "preview",
   } = props;
 
   const ordered = [...sections]
     .filter((s) => s.enabled)
     .sort((a, b) => a.order - b.order);
 
-  const title = subjectTitle(content);
+  const title = invitationTitle(content);
   const eventDateTime = `${content.event.date}T${content.event.time || "00:00"}:00`;
-  const prettyDate = (() => {
-    const d = new Date(content.event.date);
-    return Number.isNaN(d.getTime())
-      ? content.event.date
-      : d.toLocaleDateString("id-ID", {
-          weekday: "long",
-          day: "numeric",
-          month: "long",
-          year: "numeric",
-        });
-  })();
+  const prettyDate = prettyEventDate(content.event.date);
 
-  const rootStyle: React.CSSProperties = {
+  const rootStyle = {
+    "--inv-primary": theme.palette.primary,
+    "--inv-secondary": theme.palette.secondary,
+    "--inv-bg": theme.palette.background,
+    "--inv-text": theme.palette.text,
+    "--inv-heading": fontStack(theme.font.heading, "serif"),
+    "--inv-body": fontStack(theme.font.body, "sans"),
     backgroundColor: theme.palette.background,
     color: theme.palette.text,
-    fontFamily: theme.font.body,
-  };
-  const headingStyle: React.CSSProperties = {
-    fontFamily: theme.font.heading,
-    color: theme.palette.primary,
-  };
+    fontFamily: fontStack(theme.font.body, "sans"),
+  } as React.CSSProperties;
 
   const calendarUrl = googleCalendarUrl({
     title,
@@ -110,97 +119,112 @@ export function InvitationView(props: InvitationViewProps) {
     switch (key) {
       case "cover":
         return (
-          <Section key={key}>
+          <Section key={key} first>
             {guestName && (
-              <p className="text-sm opacity-70">
-                Kepada Yth. Bapak/Ibu/Saudara/i
+              <p className="inv-card px-5 py-3 text-sm">
+                <span className="opacity-70">
+                  Kepada Yth. Bapak/Ibu/Saudara/i
+                </span>
                 <br />
                 <span className="font-medium">{guestName}</span>
               </p>
             )}
-            <h1 className="text-4xl font-semibold" style={headingStyle}>
+            <p className="text-xs uppercase tracking-[0.25em] opacity-60">
+              Undangan
+            </p>
+            <h1 className="inv-heading text-4xl font-semibold leading-tight sm:text-5xl">
               {title}
             </h1>
-            <p className="opacity-80">{prettyDate}</p>
+            <span className="inv-rule" aria-hidden>
+              <svg width="7" height="7" viewBox="0 0 7 7" fill="currentColor">
+                <path d="M3.5 0 7 3.5 3.5 7 0 3.5z" />
+              </svg>
+            </span>
+            <p className="text-base">{prettyDate}</p>
           </Section>
         );
+
       case "opening":
         return content.quote ? (
           <Section key={key}>
-            <p className="text-lg italic">“{content.quote.text}”</p>
+            <p className="inv-heading text-xl italic leading-relaxed sm:text-2xl">
+              “{content.quote.text}”
+            </p>
             {content.quote.source && (
-              <p className="text-sm opacity-70">— {content.quote.source}</p>
+              <p className="inv-note text-sm">— {content.quote.source}</p>
             )}
           </Section>
         ) : null;
+
       case "couple":
         return (
           <Section key={key}>
-            <h2 className="text-2xl font-semibold" style={headingStyle}>
-              {title}
-            </h2>
+            <Heading>{title}</Heading>
             {content.story && content.story.length > 0 && (
-              <div className="space-y-4 text-left">
+              <div className="w-full space-y-5 text-left">
                 {content.story.map((item, i) => (
-                  <div key={i}>
-                    <h3 className="font-medium" style={headingStyle}>
+                  <div key={i} className="inv-card p-4">
+                    <h3 className="inv-heading text-base font-medium">
                       {item.title}
                     </h3>
-                    <p className="text-sm opacity-80">{item.body}</p>
+                    <p className="inv-note mt-1 leading-relaxed">{item.body}</p>
                   </div>
                 ))}
               </div>
             )}
           </Section>
         );
+
       case "countdown":
         return (
           <Section key={key}>
-            <h2 className="text-xl font-semibold" style={headingStyle}>
-              Menuju Hari Bahagia
-            </h2>
+            <Heading>Menuju Hari Bahagia</Heading>
             <Countdown target={eventDateTime} />
           </Section>
         );
+
       case "gallery":
         return content.gallery.length > 0 ? (
           <Section key={key}>
-            <h2 className="text-xl font-semibold" style={headingStyle}>
-              Galeri
-            </h2>
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+            <Heading>Galeri</Heading>
+            <div className="grid w-full grid-cols-2 gap-2.5 sm:grid-cols-3">
               {content.gallery.map((url, i) => (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
                   key={i}
                   src={url}
-                  alt={`Galeri ${i + 1}`}
+                  alt={`Foto ${i + 1} dari ${title}`}
                   loading="lazy"
-                  className="aspect-square w-full rounded-lg object-cover"
+                  decoding="async"
+                  width={400}
+                  height={400}
+                  className="aspect-square w-full rounded-xl bg-black/5 object-cover"
                 />
               ))}
             </div>
           </Section>
         ) : null;
+
       case "location":
         return (
           <Section key={key}>
-            <h2 className="text-xl font-semibold" style={headingStyle}>
-              Lokasi Acara
-            </h2>
-            <p className="font-medium">{content.event.venueName}</p>
-            <p className="text-sm opacity-80">{content.event.address}</p>
-            <p className="text-sm opacity-80">
-              {prettyDate} · {content.event.time} {content.event.timezone}
-            </p>
-            <div className="flex flex-wrap justify-center gap-2">
+            <Heading>Lokasi Acara</Heading>
+            <div className="inv-card w-full space-y-1 p-5">
+              <p className="inv-heading text-lg font-medium">
+                {content.event.venueName}
+              </p>
+              <p className="inv-note">{content.event.address}</p>
+              <p className="inv-note">
+                {prettyDate} · {content.event.time} {content.event.timezone}
+              </p>
+            </div>
+            <div className="flex flex-wrap justify-center gap-2.5">
               {content.event.maps?.url && (
                 <a
                   href={content.event.maps.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-block rounded-lg border px-4 py-2 text-sm"
-                  style={{ borderColor: theme.palette.primary }}
+                  className="inv-button inv-button-outline"
                 >
                   Buka Google Maps
                 </a>
@@ -210,8 +234,7 @@ export function InvitationView(props: InvitationViewProps) {
                   href={calendarUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-block rounded-lg border px-4 py-2 text-sm"
-                  style={{ borderColor: theme.palette.primary }}
+                  className="inv-button inv-button-outline"
                 >
                   Tambah ke Kalender
                 </a>
@@ -219,12 +242,15 @@ export function InvitationView(props: InvitationViewProps) {
             </div>
           </Section>
         );
+
       case "rsvp":
         return (
           <Section key={key}>
-            <h2 className="text-xl font-semibold" style={headingStyle}>
-              Konfirmasi Kehadiran
-            </h2>
+            <Heading>Konfirmasi Kehadiran</Heading>
+            <p className="inv-note">
+              Mohon konfirmasi kehadiran Anda agar kami dapat menyiapkan tempat
+              dengan baik.
+            </p>
             <RsvpForm
               invitationId={invitationId}
               personalSlug={personalSlug}
@@ -233,12 +259,11 @@ export function InvitationView(props: InvitationViewProps) {
             />
           </Section>
         );
+
       case "greetings":
         return (
           <Section key={key}>
-            <h2 className="text-xl font-semibold" style={headingStyle}>
-              Ucapan & Doa
-            </h2>
+            <Heading>Ucapan & Doa</Heading>
             <GreetingForm
               invitationId={invitationId}
               personalSlug={personalSlug}
@@ -248,34 +273,32 @@ export function InvitationView(props: InvitationViewProps) {
             />
           </Section>
         );
+
       case "gift":
         // Hanya dirender bila pemilik sudah mengisi rekening/QRIS dan paketnya
         // memuat fitur amplop digital (ditentukan pemanggil lewat `giftConfig`).
         return giftConfig ? (
           <Section key={key}>
-            <h2 className="text-xl font-semibold" style={headingStyle}>
-              Amplop Digital
-            </h2>
+            <Heading>Amplop Digital</Heading>
             <GiftForm
               invitationId={invitationId}
               personalSlug={personalSlug}
               defaultName={guestName}
               giftConfig={giftConfig}
               interactive={interactive}
-              accentColor={theme.palette.primary}
             />
           </Section>
         ) : null;
+
       case "closing":
         return (
           <Section key={key}>
-            <p className="opacity-80">
+            <p className="inv-note leading-relaxed">
               Merupakan suatu kehormatan dan kebahagiaan bagi kami apabila
               Bapak/Ibu/Saudara/i berkenan hadir.
             </p>
-            <h2 className="text-2xl font-semibold" style={headingStyle}>
-              Terima Kasih
-            </h2>
+            <h2 className="inv-heading text-3xl font-semibold">Terima Kasih</h2>
+            <p className="inv-heading text-lg">{title}</p>
             {publicUrl && (
               <a
                 href={whatsappShareUrl(
@@ -284,14 +307,14 @@ export function InvitationView(props: InvitationViewProps) {
                 )}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-block rounded-lg border px-4 py-2 text-sm"
-                style={{ borderColor: theme.palette.primary }}
+                className="inv-button inv-button-outline"
               >
                 Bagikan lewat WhatsApp
               </a>
             )}
           </Section>
         );
+
       default:
         return null;
     }
@@ -299,17 +322,36 @@ export function InvitationView(props: InvitationViewProps) {
 
   return (
     <div style={rootStyle} className="relative min-h-full">
-      {showWatermark && (
-        <div className="sticky top-0 z-10 bg-amber-100 px-4 py-2 text-center text-xs text-amber-900">
-          {watermarkLabel}
+      {showWatermark && watermarkVariant === "preview" && (
+        <div
+          className="sticky top-0 z-10 px-4 py-2 text-center text-xs"
+          style={{
+            background: "color-mix(in oklab, var(--inv-primary) 12%, white)",
+            color: "var(--inv-primary)",
+          }}
+        >
+          Mode pratinjau — terbitkan untuk membagikan ke tamu.
         </div>
       )}
+
       {ordered.map((s) => render(s.key))}
+
+      {showWatermark && watermarkVariant === "brand" && (
+        <p
+          className="border-t px-6 py-5 text-center text-xs"
+          style={{
+            borderColor: "color-mix(in oklab, var(--inv-text) 10%, transparent)",
+            color: "color-mix(in oklab, var(--inv-text) 55%, transparent)",
+          }}
+        >
+          Dibuat dengan Undangan Digital
+        </p>
+      )}
+
       {theme.music?.url && (
         <MusicPlayer
           url={theme.music.url}
           autoplay={interactive && theme.music.autoplay}
-          accentColor={theme.palette.primary}
         />
       )}
     </div>

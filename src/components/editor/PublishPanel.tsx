@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { Check, ExternalLink, Loader2 } from "lucide-react";
 import type { Package } from "@prisma/client";
 import { PACKAGES, ACTIVE_MONTHS, getPackage } from "@/lib/packages";
 import { createPayment, extendInvitation } from "@/lib/actions/payment";
@@ -8,6 +9,17 @@ import {
   unpublishInvitation,
   republishInvitation,
 } from "@/lib/actions/invitation";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Separator } from "@/components/ui/separator";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 type Props = {
   invitationId: string;
@@ -26,13 +38,11 @@ const rupiah = new Intl.NumberFormat("id-ID", {
   maximumFractionDigits: 0,
 });
 
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString("id-ID", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
-}
+const tanggal = new Intl.DateTimeFormat("id-ID", {
+  day: "numeric",
+  month: "long",
+  year: "numeric",
+});
 
 const FEATURE_LABEL: Record<string, string> = {
   giftEnvelope: "Amplop digital",
@@ -95,123 +105,144 @@ export function PublishPanel({
   }
 
   return (
-    <section className="space-y-4 rounded-xl border p-5">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-neutral-500">
-            Status & Publikasi
-          </h2>
-          <p className="mt-1 text-sm">
-            {status === "PUBLISHED" ? (
-              <span className="font-medium text-green-700">Aktif</span>
-            ) : status === "EXPIRED" ? (
-              <span className="font-medium text-amber-700">
-                Masa aktif berakhir
-              </span>
-            ) : (
-              <span className="font-medium text-neutral-700">
-                Draft — mode pratinjau
-              </span>
-            )}
-            {info && <span className="text-neutral-500"> · Paket {info.name}</span>}
-            {activeUntil && (
-              <span className="text-neutral-500">
-                {" "}
-                · aktif s/d {formatDate(activeUntil)}
-              </span>
-            )}
-          </p>
-        </div>
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex flex-wrap items-center gap-2">
+          Status undangan
+          {status === "PUBLISHED" ? (
+            <Badge variant="success">Aktif</Badge>
+          ) : status === "EXPIRED" ? (
+            <Badge variant="warning">Masa aktif berakhir</Badge>
+          ) : (
+            <Badge variant="outline">Draft — mode pratinjau</Badge>
+          )}
+        </CardTitle>
+        <CardDescription>
+          {info ? `Paket ${info.name}` : "Belum dibayar"}
+          {activeUntil && ` · aktif sampai ${tanggal.format(new Date(activeUntil))}`}
+        </CardDescription>
         {isPaid && (
-          <button
-            onClick={toggleActive}
-            disabled={pending || status === "EXPIRED"}
-            className="rounded-lg border px-4 py-2 text-sm font-medium disabled:opacity-50"
-          >
-            {status === "PUBLISHED" ? "Jadikan Draft" : "Aktifkan Kembali"}
-          </button>
+          <div data-slot="card-action">
+            <Button
+              onClick={toggleActive}
+              disabled={pending || status === "EXPIRED"}
+              variant="outline"
+              size="sm"
+            >
+              {status === "PUBLISHED" ? "Jadikan Draft" : "Aktifkan Kembali"}
+            </Button>
+          </div>
         )}
-      </div>
+      </CardHeader>
 
-      {payResult === "success" && (
-        <p className="rounded-lg bg-blue-50 p-3 text-sm text-blue-800">
-          Terima kasih! Pembayaran sedang kami konfirmasi. Undangan otomatis
-          aktif begitu konfirmasi dari Xendit diterima (biasanya beberapa
-          menit). Muat ulang halaman ini untuk melihat statusnya.
-        </p>
-      )}
-      {payResult === "failed" && (
-        <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">
-          Pembayaran belum selesai atau dibatalkan. Anda bisa mencoba lagi.
-        </p>
-      )}
+      <CardContent className="space-y-5">
+        {payResult === "success" && (
+          <Alert>
+            <AlertTitle>Pembayaran sedang dikonfirmasi</AlertTitle>
+            <AlertDescription>
+              Terima kasih! Undangan otomatis aktif begitu konfirmasi dari
+              Xendit diterima — biasanya beberapa menit. Muat ulang halaman ini
+              untuk melihat statusnya.
+            </AlertDescription>
+          </Alert>
+        )}
+        {payResult === "failed" && (
+          <Alert variant="destructive">
+            <AlertTitle>Pembayaran belum selesai</AlertTitle>
+            <AlertDescription>
+              Tagihan dibatalkan atau kedaluwarsa. Anda bisa mencoba lagi di
+              bawah.
+            </AlertDescription>
+          </Alert>
+        )}
 
-      {status === "PUBLISHED" && (
-        <div className="rounded-lg border bg-green-50 p-3 text-sm">
-          <p className="font-medium text-green-800">Tautan undangan</p>
-          <a
-            href={publicUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="break-all text-green-700 underline"
-          >
-            {publicUrl}
-          </a>
-        </div>
-      )}
+        {status === "PUBLISHED" && (
+          <div className="rounded-xl border border-success/30 bg-success-surface p-4">
+            <p className="text-sm font-medium text-success-foreground">
+              Tautan undangan Anda
+            </p>
+            <a
+              href={publicUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-1 inline-flex items-center gap-1.5 break-all font-mono text-sm text-success-foreground underline"
+            >
+              {publicUrl}
+              <ExternalLink className="size-3.5 shrink-0" aria-hidden />
+            </a>
+          </div>
+        )}
 
-      {pendingInvoiceUrl && (
-        <div className="rounded-lg border bg-amber-50 p-3 text-sm">
-          <p className="font-medium text-amber-900">
-            Menunggu konfirmasi pembayaran
-          </p>
-          <p className="text-amber-800">
-            Tagihan sudah dibuat. Undangan terbit otomatis setelah pembayaran
-            dikonfirmasi.
-          </p>
-          <a
-            href={pendingInvoiceUrl}
-            className="mt-1 inline-block font-medium text-amber-900 underline"
-          >
-            Lanjutkan pembayaran →
-          </a>
-        </div>
-      )}
+        {pendingInvoiceUrl && (
+          <Alert>
+            <AlertTitle>Menunggu konfirmasi pembayaran</AlertTitle>
+            <AlertDescription>
+              Tagihan sudah dibuat. Undangan terbit otomatis setelah pembayaran
+              dikonfirmasi.{" "}
+              <a
+                href={pendingInvoiceUrl}
+                className="font-medium underline underline-offset-4"
+              >
+                Lanjutkan pembayaran
+              </a>
+            </AlertDescription>
+          </Alert>
+        )}
 
-      <div className="space-y-3">
-        <p className="text-sm text-neutral-600">
+        <Separator />
+
+        <div className="space-y-4">
+          <p className="text-sm text-muted-foreground">
             {isPaid
               ? `Perpanjang masa aktif ${ACTIVE_MONTHS} bulan lagi:`
-              : `Pilih paket untuk menerbitkan undangan (masa aktif ${ACTIVE_MONTHS} bulan):`}
+              : `Pilih paket untuk menerbitkan undangan. Sekali bayar, aktif ${ACTIVE_MONTHS} bulan.`}
           </p>
-          <div className="grid gap-3 sm:grid-cols-3">
+
+          <div
+            role="radiogroup"
+            aria-label="Paket undangan"
+            className="grid gap-3 sm:grid-cols-3"
+          >
             {packages.map((p) => {
               const active = selected === p.key;
               return (
                 <button
                   key={p.key}
                   type="button"
+                  role="radio"
+                  aria-checked={active}
                   onClick={() => setSelected(p.key)}
-                  className={`rounded-xl border p-4 text-left transition ${
+                  className={`rounded-xl border p-4 text-left transition-colors ${
                     active
-                      ? "border-neutral-900 ring-1 ring-neutral-900"
-                      : "hover:border-neutral-400"
+                      ? "border-primary bg-accent/60 ring-1 ring-primary"
+                      : "hover:border-foreground/25"
                   }`}
                 >
-                  <p className="font-medium">{p.name}</p>
-                  <p className="text-lg font-semibold">
+                  <span className="flex items-center justify-between gap-2">
+                    <span className="font-medium">{p.name}</span>
+                    {active && (
+                      <Check className="size-4 text-primary" aria-hidden />
+                    )}
+                  </span>
+                  <span className="tabular mt-1 block text-lg font-semibold">
                     {rupiah.format(p.price)}
-                  </p>
-                  <p className="text-xs text-neutral-500">
+                  </span>
+                  <span className="block text-xs text-muted-foreground">
                     {p.guestQuota === null
                       ? "Tamu tanpa batas"
                       : `s/d ${p.guestQuota} tamu`}
-                  </p>
-                  <ul className="mt-2 space-y-0.5 text-xs text-neutral-600">
+                  </span>
+                  <ul className="mt-3 space-y-1 text-xs text-muted-foreground">
                     {Object.entries(p.features)
                       .filter(([, on]) => on)
                       .map(([k]) => (
-                        <li key={k}>✓ {FEATURE_LABEL[k] ?? k}</li>
+                        <li key={k} className="flex items-start gap-1.5">
+                          <Check
+                            className="mt-0.5 size-3 shrink-0 text-primary"
+                            aria-hidden
+                          />
+                          {FEATURE_LABEL[k] ?? k}
+                        </li>
                       ))}
                   </ul>
                 </button>
@@ -219,23 +250,33 @@ export function PublishPanel({
             })}
           </div>
 
-          <button
-            onClick={() => pay(isPaid ? "extend" : "publish")}
-            disabled={pending}
-            className="rounded-lg bg-neutral-900 px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
-          >
-            {pending
-              ? "Menyiapkan pembayaran..."
-              : isPaid
-                ? "Perpanjang & Bayar"
-                : "Bayar & Terbitkan"}
-          </button>
-          <p className="text-xs text-neutral-400">
-            Pembayaran diproses oleh Xendit (QRIS, virtual account, e-wallet).
-          </p>
-      </div>
+          {error && (
+            <Alert variant="destructive">
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
-    </section>
+          <div className="flex flex-wrap items-center gap-3">
+            <Button
+              onClick={() => pay(isPaid ? "extend" : "publish")}
+              disabled={pending}
+              size="lg"
+            >
+              {pending && (
+                <Loader2 data-icon="inline-start" className="animate-spin" />
+              )}
+              {pending
+                ? "Menyiapkan pembayaran..."
+                : isPaid
+                  ? "Perpanjang & Bayar"
+                  : "Bayar & Terbitkan"}
+            </Button>
+            <p className="text-xs text-muted-foreground">
+              Diproses Xendit — QRIS, virtual account, e-wallet.
+            </p>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 }

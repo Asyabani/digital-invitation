@@ -1,16 +1,31 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { ChevronDown, ChevronUp, Loader2, Smartphone } from "lucide-react";
+import { toast } from "sonner";
 import type {
   Content,
   Theme,
   SectionsOrder,
 } from "@/lib/validation/invitation";
+import { HEADING_FONTS, BODY_FONTS, fontStack } from "@/lib/font-stacks";
 import { InvitationView } from "@/components/invitation/InvitationView";
 import {
   updateInvitationTheme,
   updateSectionsOrder,
 } from "@/lib/actions/invitation";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 type Props = {
   invitationId: string;
@@ -71,15 +86,6 @@ const PRESETS: { name: string; palette: Theme["palette"] }[] = [
   },
 ];
 
-const HEADING_FONTS = [
-  "Playfair Display",
-  "Cormorant Garamond",
-  "Lora",
-  "Great Vibes",
-  "Inter",
-];
-const BODY_FONTS = ["Inter", "Lato", "Source Sans 3", "Nunito", "Georgia"];
-
 const SECTION_LABEL: Record<string, string> = {
   cover: "Cover",
   opening: "Pembuka / Quote",
@@ -93,7 +99,12 @@ const SECTION_LABEL: Record<string, string> = {
   closing: "Penutup",
 };
 
-const inputCls = "w-full rounded-lg border px-3 py-2 text-sm";
+const PALETTE_FIELDS = [
+  ["primary", "Warna utama"],
+  ["secondary", "Warna pendukung"],
+  ["background", "Latar"],
+  ["text", "Teks"],
+] as const;
 
 export function ThemeEditor({
   invitationId,
@@ -108,8 +119,6 @@ export function ThemeEditor({
   const [sections, setSections] = useState<SectionsOrder>(
     [...initialSections].sort((a, b) => a.order - b.order),
   );
-  const [savedAt, setSavedAt] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
   function patchPalette(patch: Partial<Theme["palette"]>) {
@@ -133,7 +142,6 @@ export function ThemeEditor({
   }
 
   function save() {
-    setError(null);
     startTransition(async () => {
       try {
         await updateInvitationTheme(invitationId, theme);
@@ -141,228 +149,256 @@ export function ThemeEditor({
           invitationId,
           sections.map((s, i) => ({ ...s, order: i })),
         );
-        setSavedAt(new Date().toLocaleTimeString("id-ID"));
+        toast.success("Tema tersimpan.");
       } catch {
-        setError("Gagal menyimpan tema. Periksa isian (URL musik harus valid).");
+        toast.error("Gagal menyimpan tema.", {
+          description: "Periksa isian — URL musik harus berupa tautan valid.",
+        });
       }
     });
   }
 
   return (
-    <div className="grid gap-6 lg:grid-cols-2">
+    <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,24rem)]">
       <div className="space-y-5">
-        <div className="flex flex-wrap items-center gap-3">
-          <button
-            onClick={save}
-            disabled={pending}
-            className="rounded-lg bg-neutral-900 px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
-          >
-            {pending ? "Menyimpan..." : "Simpan Tema"}
-          </button>
-          {savedAt && (
-            <span className="text-xs text-neutral-400">Tersimpan {savedAt}</span>
-          )}
-        </div>
-        {error && <p className="text-sm text-red-600">{error}</p>}
+        <Card>
+          <CardHeader>
+            <CardTitle>Palet warna</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-5">
+            <div className="flex flex-wrap gap-2">
+              {PRESETS.map((p) => (
+                <button
+                  key={p.name}
+                  type="button"
+                  onClick={() => patchPalette(p.palette)}
+                  className="flex items-center gap-2 rounded-lg border px-3 py-2 text-xs transition-colors hover:border-foreground/25"
+                >
+                  <span className="flex -space-x-1" aria-hidden>
+                    {[p.palette.primary, p.palette.secondary, p.palette.background].map(
+                      (c) => (
+                        <span
+                          key={c}
+                          className="size-3.5 rounded-full border border-black/10"
+                          style={{ backgroundColor: c }}
+                        />
+                      ),
+                    )}
+                  </span>
+                  {p.name}
+                </button>
+              ))}
+            </div>
 
-        <div className="space-y-4 rounded-xl border p-4">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-neutral-500">
-            Palet Warna
-          </h2>
-          <div className="flex flex-wrap gap-2">
-            {PRESETS.map((p) => (
-              <button
-                key={p.name}
-                type="button"
-                onClick={() => patchPalette(p.palette)}
-                className="flex items-center gap-2 rounded-lg border px-3 py-2 text-xs hover:border-neutral-400"
-              >
-                <span
-                  className="h-4 w-4 rounded-full border"
-                  style={{ backgroundColor: p.palette.primary }}
-                />
-                {p.name}
-              </button>
-            ))}
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            {(
-              [
-                ["primary", "Warna Utama"],
-                ["secondary", "Warna Pendukung"],
-                ["background", "Latar"],
-                ["text", "Teks"],
-              ] as const
-            ).map(([key, label]) => (
-              <label key={key} className="block space-y-1">
-                <span className="text-sm font-medium text-neutral-700">
-                  {label}
-                </span>
-                <span className="flex items-center gap-2">
-                  <input
-                    type="color"
-                    value={theme.palette[key]}
-                    onChange={(e) => patchPalette({ [key]: e.target.value })}
-                    className="h-9 w-12 rounded border"
-                    aria-label={label}
-                  />
-                  <input
-                    className={inputCls}
-                    value={theme.palette[key]}
-                    onChange={(e) => patchPalette({ [key]: e.target.value })}
-                  />
-                </span>
-              </label>
-            ))}
-          </div>
-        </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              {PALETTE_FIELDS.map(([key, label]) => (
+                <div key={key} className="space-y-1.5">
+                  <Label htmlFor={`color-${key}`}>{label}</Label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      id={`color-${key}`}
+                      type="color"
+                      value={theme.palette[key]}
+                      onChange={(e) => patchPalette({ [key]: e.target.value })}
+                      className="size-9 shrink-0 cursor-pointer rounded-md border bg-card p-0.5"
+                    />
+                    <Input
+                      aria-label={`${label} (kode hex)`}
+                      value={theme.palette[key]}
+                      onChange={(e) => patchPalette({ [key]: e.target.value })}
+                      className="font-mono"
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
 
-        <div className="space-y-4 rounded-xl border p-4">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-neutral-500">
-            Font
-          </h2>
-          <div className="grid grid-cols-2 gap-3">
-            <label className="block space-y-1">
-              <span className="text-sm font-medium text-neutral-700">Judul</span>
-              <select
-                className={inputCls}
-                value={theme.font.heading}
-                onChange={(e) =>
-                  setTheme((t) => ({
-                    ...t,
-                    font: { ...t.font, heading: e.target.value },
-                  }))
-                }
-              >
-                {[...new Set([theme.font.heading, ...HEADING_FONTS])].map((f) => (
-                  <option key={f} value={f}>
+        <Card>
+          <CardHeader>
+            <CardTitle>Font</CardTitle>
+          </CardHeader>
+          <CardContent className="grid gap-5 sm:grid-cols-2">
+            <fieldset className="space-y-2">
+              <legend className="text-sm font-medium">Judul</legend>
+              {HEADING_FONTS.map((f) => (
+                <label
+                  key={f}
+                  className={`flex cursor-pointer items-center gap-3 rounded-lg border px-3 py-2 transition-colors ${
+                    theme.font.heading === f
+                      ? "border-primary ring-1 ring-primary"
+                      : "hover:border-foreground/25"
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="heading-font"
+                    className="sr-only"
+                    checked={theme.font.heading === f}
+                    onChange={() =>
+                      setTheme((t) => ({ ...t, font: { ...t.font, heading: f } }))
+                    }
+                  />
+                  <span
+                    className="truncate text-lg"
+                    style={{ fontFamily: fontStack(f, "serif") }}
+                  >
                     {f}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className="block space-y-1">
-              <span className="text-sm font-medium text-neutral-700">Isi</span>
-              <select
-                className={inputCls}
-                value={theme.font.body}
-                onChange={(e) =>
-                  setTheme((t) => ({
-                    ...t,
-                    font: { ...t.font, body: e.target.value },
-                  }))
-                }
-              >
-                {[...new Set([theme.font.body, ...BODY_FONTS])].map((f) => (
-                  <option key={f} value={f}>
-                    {f}
-                  </option>
-                ))}
-              </select>
-            </label>
-          </div>
-        </div>
-
-        <div className="space-y-4 rounded-xl border p-4">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-neutral-500">
-            Musik Latar
-          </h2>
-          {!canUseMusic && (
-            <p className="rounded-lg bg-amber-50 p-3 text-sm text-amber-900">
-              Musik custom tersedia mulai paket Premium.
-            </p>
-          )}
-          <label className="block space-y-1">
-            <span className="text-sm font-medium text-neutral-700">
-              URL audio (mp3)
-            </span>
-            <input
-              className={inputCls}
-              disabled={!canUseMusic}
-              placeholder="https://.../lagu.mp3"
-              value={theme.music?.url ?? ""}
-              onChange={(e) =>
-                setTheme((t) => ({
-                  ...t,
-                  music: e.target.value
-                    ? { url: e.target.value, autoplay: t.music?.autoplay ?? false }
-                    : undefined,
-                }))
-              }
-            />
-          </label>
-          <label className="flex items-center gap-2 text-sm">
-            <input
-              type="checkbox"
-              disabled={!canUseMusic || !theme.music?.url}
-              checked={theme.music?.autoplay ?? false}
-              onChange={(e) =>
-                setTheme((t) =>
-                  t.music
-                    ? { ...t, music: { ...t.music, autoplay: e.target.checked } }
-                    : t,
-                )
-              }
-            />
-            Coba putar otomatis saat undangan dibuka
-          </label>
-          <p className="text-xs text-neutral-400">
-            Browser HP sering memblokir autoplay; tombol putar tetap tersedia
-            untuk tamu.
-          </p>
-        </div>
-
-        <div className="space-y-3 rounded-xl border p-4">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-neutral-500">
-            Section Undangan
-          </h2>
-          <p className="text-xs text-neutral-400">
-            Matikan section yang tidak dipakai, atau ubah urutannya.
-          </p>
-          <ul className="divide-y rounded-lg border">
-            {sections.map((s, i) => (
-              <li
-                key={s.key}
-                className="flex items-center justify-between gap-3 px-3 py-2 text-sm"
-              >
-                <label className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    checked={s.enabled}
-                    onChange={() => toggle(i)}
-                  />
-                  <span className={s.enabled ? "" : "text-neutral-400"}>
-                    {SECTION_LABEL[s.key] ?? s.key}
                   </span>
                 </label>
-                <span className="flex gap-1">
-                  <button
-                    type="button"
-                    onClick={() => move(i, -1)}
-                    disabled={i === 0}
-                    aria-label={`Naikkan ${SECTION_LABEL[s.key] ?? s.key}`}
-                    className="rounded border px-2 py-1 text-xs disabled:opacity-30"
+              ))}
+            </fieldset>
+
+            <fieldset className="space-y-2">
+              <legend className="text-sm font-medium">Isi</legend>
+              {BODY_FONTS.map((f) => (
+                <label
+                  key={f}
+                  className={`flex cursor-pointer items-center gap-3 rounded-lg border px-3 py-2 transition-colors ${
+                    theme.font.body === f
+                      ? "border-primary ring-1 ring-primary"
+                      : "hover:border-foreground/25"
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="body-font"
+                    className="sr-only"
+                    checked={theme.font.body === f}
+                    onChange={() =>
+                      setTheme((t) => ({ ...t, font: { ...t.font, body: f } }))
+                    }
+                  />
+                  <span
+                    className="truncate"
+                    style={{ fontFamily: fontStack(f, "sans") }}
                   >
-                    ↑
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => move(i, 1)}
-                    disabled={i === sections.length - 1}
-                    aria-label={`Turunkan ${SECTION_LABEL[s.key] ?? s.key}`}
-                    className="rounded border px-2 py-1 text-xs disabled:opacity-30"
-                  >
-                    ↓
-                  </button>
-                </span>
-              </li>
-            ))}
-          </ul>
-        </div>
+                    {f}
+                  </span>
+                </label>
+              ))}
+            </fieldset>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Musik latar</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {!canUseMusic && (
+              <Alert>
+                <AlertDescription>
+                  Musik custom tersedia mulai paket <strong>Premium</strong>.
+                </AlertDescription>
+              </Alert>
+            )}
+            <div className="space-y-1.5">
+              <Label htmlFor="music-url">URL audio (mp3)</Label>
+              <Input
+                id="music-url"
+                type="url"
+                disabled={!canUseMusic}
+                placeholder="https://.../lagu.mp3"
+                value={theme.music?.url ?? ""}
+                onChange={(e) =>
+                  setTheme((t) => ({
+                    ...t,
+                    music: e.target.value
+                      ? {
+                          url: e.target.value,
+                          autoplay: t.music?.autoplay ?? false,
+                        }
+                      : undefined,
+                  }))
+                }
+              />
+            </div>
+            <div className="flex items-start justify-between gap-4 rounded-lg border p-3">
+              <div className="space-y-0.5">
+                <Label htmlFor="autoplay">Coba putar otomatis</Label>
+                <p className="text-xs text-muted-foreground">
+                  Browser HP sering memblokirnya; tombol putar tetap tersedia
+                  untuk tamu.
+                </p>
+              </div>
+              <Switch
+                id="autoplay"
+                disabled={!canUseMusic || !theme.music?.url}
+                checked={theme.music?.autoplay ?? false}
+                onCheckedChange={(checked) =>
+                  setTheme((t) =>
+                    t.music ? { ...t, music: { ...t.music, autoplay: checked } } : t,
+                  )
+                }
+              />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Section undangan</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <p className="text-sm text-muted-foreground">
+              Matikan section yang tidak dipakai, atau ubah urutannya.
+            </p>
+            <ul className="divide-y rounded-xl border">
+              {sections.map((s, i) => (
+                <li
+                  key={s.key}
+                  className="flex items-center justify-between gap-3 px-3 py-2.5"
+                >
+                  <label className="flex min-w-0 cursor-pointer items-center gap-3">
+                    <Checkbox
+                      checked={s.enabled}
+                      onCheckedChange={() => toggle(i)}
+                      aria-label={`Tampilkan ${SECTION_LABEL[s.key] ?? s.key}`}
+                    />
+                    <span
+                      className={`truncate text-sm ${
+                        s.enabled ? "" : "text-muted-foreground line-through"
+                      }`}
+                    >
+                      {SECTION_LABEL[s.key] ?? s.key}
+                    </span>
+                  </label>
+                  <span className="flex shrink-0 gap-1">
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      onClick={() => move(i, -1)}
+                      disabled={i === 0}
+                      aria-label={`Naikkan ${SECTION_LABEL[s.key] ?? s.key}`}
+                    >
+                      <ChevronUp />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      onClick={() => move(i, 1)}
+                      disabled={i === sections.length - 1}
+                      aria-label={`Turunkan ${SECTION_LABEL[s.key] ?? s.key}`}
+                    >
+                      <ChevronDown />
+                    </Button>
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
       </div>
 
-      <div className="lg:sticky lg:top-6 lg:h-[calc(100vh-6rem)]">
-        <div className="h-full overflow-y-auto rounded-xl border">
+      {/* PRATINJAU */}
+      <div className="lg:sticky lg:top-20 lg:self-start">
+        <div className="mb-2 flex items-center gap-1.5 text-xs text-muted-foreground">
+          <Smartphone className="size-3.5" aria-hidden />
+          Pratinjau tampilan di HP tamu
+        </div>
+        <div className="h-[32rem] overflow-y-auto rounded-xl border bg-card shadow-sm lg:h-[calc(100vh-14rem)]">
           <InvitationView
             invitationId={invitationId}
             slug={slug}
@@ -373,6 +409,20 @@ export function ThemeEditor({
             interactive={false}
             showWatermark={showWatermark}
           />
+        </div>
+      </div>
+
+      <div className="sticky bottom-0 z-20 -mx-4 border-t border-border/70 bg-background/90 px-4 py-3 backdrop-blur sm:-mx-6 sm:px-6 lg:col-span-2">
+        <div className="flex items-center justify-between gap-3">
+          <p className="text-xs text-muted-foreground">
+            Pratinjau sudah memakai tema baru; tekan Simpan untuk menerapkannya.
+          </p>
+          <Button onClick={save} disabled={pending} size="lg">
+            {pending && (
+              <Loader2 data-icon="inline-start" className="animate-spin" />
+            )}
+            {pending ? "Menyimpan..." : "Simpan Tema"}
+          </Button>
         </div>
       </div>
     </div>

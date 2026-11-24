@@ -13,6 +13,7 @@ import { ContentEditor } from "@/components/editor/ContentEditor";
 import { PublishPanel } from "@/components/editor/PublishPanel";
 import { InvitationNav } from "@/components/dashboard/InvitationNav";
 import { SummaryCards } from "@/components/dashboard/SummaryCards";
+import { invitationFontVars } from "@/lib/fonts-invitation";
 
 export const instant = false;
 
@@ -50,12 +51,17 @@ export default async function EditInvitationPage({
   const showWatermark = !canUse(inv.package, "removeWatermark");
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6">
-      <div>
-        <Link href="/dashboard" className="text-sm text-neutral-500 hover:underline">
+    <div className={`${invitationFontVars} space-y-6`}>
+      <div className="space-y-1">
+        <Link
+          href="/dashboard"
+          className="text-sm text-muted-foreground hover:underline"
+        >
           ← Undangan Saya
         </Link>
-        <h1 className="text-xl font-semibold">{inv.title}</h1>
+        <h1 className="font-display text-2xl font-semibold tracking-tight">
+          {inv.title}
+        </h1>
       </div>
       <InvitationNav invitationId={id} active="edit" />
 

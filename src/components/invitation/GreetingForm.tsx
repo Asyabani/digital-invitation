@@ -52,43 +52,59 @@ export function GreetingForm({
   }
 
   return (
-    <div className="mx-auto max-w-md space-y-5">
-      <form onSubmit={onSubmit} className="space-y-3">
-        <input
-          name="name"
-          required
-          defaultValue={defaultName}
-          placeholder="Nama Anda"
-          className="w-full rounded-lg border px-3 py-2 text-sm"
-        />
-        <textarea
-          name="message"
-          required
-          rows={3}
-          placeholder="Tulis ucapan & doa..."
-          className="w-full rounded-lg border px-3 py-2 text-sm"
-        />
+    <div className="w-full max-w-sm space-y-6">
+      <form onSubmit={onSubmit} className="space-y-3 text-left">
+        <label className="block space-y-1.5">
+          <span className="inv-note text-xs">Nama Anda</span>
+          <input
+            name="name"
+            required
+            defaultValue={defaultName}
+            placeholder="Nama lengkap"
+            className="inv-field"
+          />
+        </label>
+        <label className="block space-y-1.5">
+          <span className="inv-note text-xs">Ucapan & doa</span>
+          <textarea
+            name="message"
+            required
+            rows={3}
+            placeholder="Tulis ucapan untuk mempelai..."
+            className="inv-field"
+          />
+        </label>
+
         {sent && (
-          <p className="text-sm text-green-700">
+          <p className="inv-card p-3 text-sm" role="status">
             Ucapanmu terkirim dan akan tampil setelah ditinjau.
           </p>
         )}
-        {error && <p className="text-sm text-red-600">{error}</p>}
+        {error && (
+          <p className="text-sm" role="alert" style={{ color: "#b91c1c" }}>
+            {error}
+          </p>
+        )}
+
         <button
           type="submit"
           disabled={submitting || !interactive}
-          className="w-full rounded-lg bg-black px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
+          className="inv-button w-full"
         >
-          {interactive ? (submitting ? "Mengirim..." : "Kirim Ucapan") : "Pratinjau"}
+          {interactive
+            ? submitting
+              ? "Mengirim..."
+              : "Kirim Ucapan"
+            : "Pratinjau"}
         </button>
       </form>
 
       {initialGreetings.length > 0 && (
-        <ul className="space-y-3">
+        <ul className="space-y-2.5 text-left">
           {initialGreetings.map((g) => (
-            <li key={g.id} className="rounded-lg bg-black/5 p-3 text-sm">
-              <p className="font-medium">{g.name}</p>
-              <p className="opacity-80">{g.message}</p>
+            <li key={g.id} className="inv-card p-4 text-sm">
+              <p className="inv-heading font-medium">{g.name}</p>
+              <p className="inv-note mt-1 leading-relaxed">{g.message}</p>
             </li>
           ))}
         </ul>
