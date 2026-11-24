@@ -20,6 +20,8 @@ export type InvitationViewProps = {
   greetings?: Greeting[];
   interactive?: boolean;
   showWatermark?: boolean;
+  /** Teks watermark; default = pesan pratinjau untuk undangan yang belum terbit. */
+  watermarkLabel?: string;
 };
 
 function subjectTitle(c: Content): string {
@@ -54,6 +56,7 @@ export function InvitationView(props: InvitationViewProps) {
     greetings = [],
     interactive = true,
     showWatermark = false,
+    watermarkLabel = "Mode pratinjau — terbitkan untuk membagikan ke tamu.",
   } = props;
 
   const ordered = [...sections]
@@ -235,7 +238,7 @@ export function InvitationView(props: InvitationViewProps) {
     <div style={rootStyle} className="relative min-h-full">
       {showWatermark && (
         <div className="sticky top-0 z-10 bg-amber-100 px-4 py-2 text-center text-xs text-amber-900">
-          Mode pratinjau — terbitkan untuk membagikan ke tamu.
+          {watermarkLabel}
         </div>
       )}
       {ordered.map((s) => render(s.key))}

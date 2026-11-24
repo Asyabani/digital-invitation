@@ -5,19 +5,9 @@ import { prisma } from "@/lib/db";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { uniqueSlug } from "@/lib/slug";
+import { ownInvitation } from "@/lib/owner";
 import { contentSchema } from "@/lib/validation/invitation";
 import type { Prisma } from "@prisma/client";
-
-/** Pastikan undangan milik user yang login; kembalikan undangan atau lempar. */
-async function ownInvitation(id: string) {
-  const session = await auth();
-  if (!session?.user) redirect("/masuk");
-  const inv = await prisma.invitation.findUnique({ where: { id } });
-  if (!inv || inv.userId !== session.user.id) {
-    throw new Error("Undangan tidak ditemukan atau bukan milik Anda.");
-  }
-  return inv;
-}
 
 /** F2 — buat undangan baru dari template. Dipakai sebagai form action. */
 export async function createInvitation(formData: FormData) {
@@ -65,32 +55,35 @@ export async function updateInvitationContent(id: string, rawContent: unknown) {
 }
 
 /**
- * Fase 1 (SEMENTARA) — terbitkan undangan tanpa pembayaran untuk uji coba.
- * Di Fase 2 ini DIGANTI oleh alur pembayaran Xendit (lihat docs/05).
+ * Kembalikan undangan ke DRAFT (menonaktifkan tautan publik).
+ * Masa aktif & paket TIDAK dihapus: pemilik yang sudah membayar bisa
+ * mengaktifkan lagi lewat `republishInvitation` tanpa membayar ulang.
  */
-export async function publishForTesting(id: string) {
+export async function unpublishInvitation(id: string) {
   const inv = await ownInvitation(id);
-  const oneYear = new Date();
-  oneYear.setFullYear(oneYear.getFullYear() + 1);
   await prisma.invitation.update({
     where: { id },
-    data: {
-      status: "PUBLISHED",
-      publishedAt: new Date(),
-      activeUntil: oneYear,
-    },
+    data: { status: "DRAFT" },
   });
   revalidatePath(`/u/${inv.slug}`);
   revalidatePath(`/dashboard/${id}/edit`);
   return { ok: true as const };
 }
 
-/** Kembalikan undangan ke DRAFT (menonaktifkan tautan publik). */
-export async function unpublishInvitation(id: string) {
+/**
+ * Aktifkan kembali undangan yang sudah dibayar dan masa aktifnya belum habis.
+ * Tidak pernah bisa dipakai untuk menerbitkan undangan yang belum dibayar —
+ * publish pertama hanya lewat webhook pembayaran (docs/05 §7).
+ */
+export async function republishInvitation(id: string) {
   const inv = await ownInvitation(id);
+  if (!inv.package) throw new Error("Undangan belum dibayar.");
+  if (!inv.activeUntil || inv.activeUntil.getTime() < Date.now()) {
+    throw new Error("Masa aktif undangan sudah berakhir. Silakan perpanjang.");
+  }
   await prisma.invitation.update({
     where: { id },
-    data: { status: "DRAFT", publishedAt: null, activeUntil: null },
+    data: { status: "PUBLISHED" },
   });
   revalidatePath(`/u/${inv.slug}`);
   revalidatePath(`/dashboard/${id}/edit`);

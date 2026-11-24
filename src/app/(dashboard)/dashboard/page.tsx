@@ -1,5 +1,6 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { PACKAGES } from "@/lib/packages";
 import Link from "next/link";
 
 // Halaman dinamis per-user (sesi + query DB). Lihat Next 16 Cache Components.
@@ -24,6 +25,12 @@ export default async function DashboardPage() {
       slug: true,
       status: true,
       activeUntil: true,
+      package: true,
+      payments: {
+        where: { status: "PENDING" },
+        select: { id: true },
+        take: 1,
+      },
     },
   });
 
@@ -59,9 +66,23 @@ export default async function DashboardPage() {
             >
               <div>
                 <p className="font-medium">{inv.title}</p>
-                <p className="text-sm text-neutral-500">/u/{inv.slug}</p>
+                <p className="text-sm text-neutral-500">
+                  /u/{inv.slug}
+                  {inv.package && ` · ${PACKAGES[inv.package].name}`}
+                  {inv.activeUntil &&
+                    ` · aktif s/d ${inv.activeUntil.toLocaleDateString("id-ID", {
+                      day: "numeric",
+                      month: "short",
+                      year: "numeric",
+                    })}`}
+                </p>
               </div>
               <div className="flex items-center gap-4 text-sm">
+                {inv.payments.length > 0 && (
+                  <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs text-amber-900">
+                    Menunggu pembayaran
+                  </span>
+                )}
                 <span className="rounded-full border px-2 py-0.5 text-xs">
                   {STATUS_LABEL[inv.status] ?? inv.status}
                 </span>

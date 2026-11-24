@@ -36,8 +36,8 @@ gratis untuk uji).
 - [x] RSVP (F7): Route Handler + form + rekap dashboard.
 - [x] Buku tamu (F8): kirim ucapan `PENDING` + moderasi + tampil `APPROVED`.
 - [x] Rate limit + filter kata pada endpoint publik.
-- [x] (Sementara) `publishForTesting` — terbit tanpa bayar untuk uji; diganti
-      alur Xendit di Fase 2.
+- [x] ~~(Sementara) `publishForTesting`~~ — sudah dihapus, digantikan alur
+      pembayaran Xendit di Fase 2.
 
 **DoD:** ✅ alur buat → isi → preview → (tamu) RSVP & ucapan → moderasi → tampil,
 terverifikasi end-to-end di lokal (halaman publik, API RSVP/ucapan, moderasi).
@@ -49,15 +49,21 @@ menunggu kredensial OAuth.
 **Tujuan:** trial → bayar → publish berfungsi dengan Xendit; watermark & masa
 aktif aktif.
 
-- [ ] `src/lib/packages.ts` (paket, harga, fitur, kuota).
-- [ ] `createPayment` + Xendit invoice (`docs/05`).
-- [ ] Webhook `/api/webhooks/xendit` (verifikasi token, idempoten, publish).
-- [ ] Watermark di preview saat belum `PAID`; slug publik gated saat `DRAFT`.
-- [ ] `activeUntil` + cron `expire-invitations`.
-- [ ] UI publish (pilih paket, status "menunggu konfirmasi").
+- [x] `src/lib/packages.ts` (paket, harga, fitur, kuota) + halaman `/harga`.
+- [x] `createPayment` / `extendInvitation` + Xendit invoice (`docs/05`).
+- [x] Webhook `/api/webhooks/xendit` (verifikasi token, idempoten, publish).
+- [x] Watermark mengikuti feature flag paket; slug publik gated saat `DRAFT`.
+- [x] `activeUntil` + cron `expire-invitations` (+ `vercel.ts`).
+- [x] UI publish (`PublishPanel`: pilih paket, "menunggu konfirmasi", perpanjang).
 
-**DoD:** bayar test Xendit → webhook → undangan `PUBLISHED`, watermark hilang,
-slug aktif, masa aktif terisi.
+**DoD:** ✅ webhook → undangan `PUBLISHED`, paket & `activeUntil` terisi,
+watermark sesuai paket, slug aktif — diverifikasi end-to-end di lokal dengan
+invoice simulasi (token callback dev): token salah `401`, body invalid `400`,
+webhook ganda tidak dobel menambah masa aktif, `EXPIRED`/`FAILED` tidak
+mem-publish, perpanjangan menghitung ulang dari `max(now, activeUntil)`, cron
+menolak tanpa `CRON_SECRET`. Uji dengan **invoice test Xendit sungguhan**
+menunggu kredensial (`XENDIT_SECRET_KEY`), begitu pula alur ber-login
+(`PublishPanel` → `createPayment`) yang menunggu kredensial OAuth.
 
 ## Fase 3 — Fitur Lanjutan
 

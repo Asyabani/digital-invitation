@@ -2,7 +2,7 @@
 
 Platform web untuk membuat **undangan digital yang dapat dikustomisasi** (nikah, aqiqah, ulang tahun, acara korporat), menyasar pasar Indonesia. Model bisnis **B2C one-time per event**: user membuat & mengedit gratis (mode trial berwatermark), lalu membayar sekali untuk mem-*publish* dan membuka fitur premium.
 
-**Status saat ini: Fase 1 (MVP inti) SELESAI.** Fase 0 (fondasi) + Fase 1 beres: buat undangan dari template, editor konten + preview live, halaman publik `/u/[slug]`, RSVP, buku tamu + moderasi, semua `typecheck`/`lint`/`build` hijau dan alur publik terverifikasi end-to-end. Publish saat ini pakai `publishForTesting` (tanpa bayar) — akan diganti alur Xendit di Fase 2. Sebelum menulis kode, baca dokumen desain di `docs/`. Fase berikutnya: Fase 2 (monetisasi) — lihat `docs/09-roadmap.md`.
+**Status saat ini: Fase 2 (monetisasi) SELESAI.** Fase 0 (fondasi) + Fase 1 (MVP inti) + Fase 2 beres: buat undangan dari template, editor konten + preview live, halaman publik `/u/[slug]`, RSVP, buku tamu + moderasi, lalu alur **trial → bayar → publish** via Xendit (invoice, webhook idempoten, paket & masa aktif 6 bulan, watermark per paket, cron kedaluwarsa). `publishForTesting` sudah dihapus. Semua `typecheck`/`lint`/`build` hijau; alur publik & webhook terverifikasi end-to-end di lokal. Sebelum menulis kode, baca dokumen desain di `docs/`. Fase berikutnya: Fase 3 (fitur lanjutan — tema, tamu & link personal, amplop digital, dashboard rekap) — lihat `docs/09-roadmap.md`.
 
 Setup lokal:
 
@@ -47,6 +47,9 @@ Yang **wajib** untuk menjalankan editor hanya `DATABASE_URL` (Postgres). Kunci X
 - **Jangan pakai `dotenv -e` di script** — `dotenv@18` menimpa bin `dotenv-cli`. `prisma.config.ts` & `prisma/seed.ts` memuat `.env.local` sendiri lewat `import "dotenv"`.
 - **Next 16 Cache Components aktif** (`cacheComponents: true` di `next.config.ts`). Halaman yang membaca sesi/DB per-request harus `export const instant = false` (atau bungkus Suspense / `"use cache"`), kalau tidak build gagal saat prerender. Halaman publik `/u/[slug]` nanti pakai ISR/`use cache` (docs/02 ADR-007).
 - **Node 22** di mesin ini (docs menyebut 24 LTS; 22 aman untuk dev).
+- **Soft 404 di `/u/[slug]`** — karena PPR mengirim shell lebih dulu, `notFound()` menghasilkan **status 200 dengan body halaman 404**. Bukan kebocoran (draft & slug tak dikenal identik), tapi jangan uji dengan `curl -w "%{http_code}"` lalu menyimpulkan undangan draft bocor. Lihat catatan di `docs/04` §5.
+- **`pnpm dev` bisa gagal `Too many open files`** di mesin ini (`fs.inotify.max_user_instances` = 128 dipakai dev server project lain). Tutup dev server lain, atau uji lewat `pnpm build && PORT=xxxx pnpm start`.
+- **Status bayar hanya dari webhook.** Jangan pernah menetapkan `PAID`/`PUBLISHED` dari redirect `?pay=success` — itu cuma pesan UI.
 
 ## Konvensi
 

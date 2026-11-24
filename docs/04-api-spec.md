@@ -33,6 +33,11 @@ Setiap action memverifikasi `session.user.id === invitation.userId`.
 - `updateGiftConfig(input: { id: string, giftConfig: GiftConfigSchema })`
 - `updateSlug(input: { id: string, slug: string })` → hanya jika paket mengizinkan;
   cek keunikan.
+- `unpublishInvitation(id)` → set `DRAFT` (tautan publik mati). Paket &
+  `activeUntil` dipertahankan.
+- `republishInvitation(id)` → aktifkan lagi undangan yang **sudah dibayar** dan
+  masa aktifnya belum habis. Tidak pernah bisa menerbitkan undangan yang belum
+  dibayar (publish pertama hanya lewat webhook).
 - `deleteInvitation(input: { id: string })`
 
 ### Tamu
@@ -103,6 +108,14 @@ Body:
 - Selalu balas `200` cepat setelah verifikasi (idempoten: cek `externalId` &
   status agar webhook ganda tidak dobel-proses).
 
+### `GET /api/cron/expire-invitations`
+- Dipanggil **Vercel Cron** harian (lihat `vercel.ts` & `docs/08` §3).
+- Autentikasi: header `Authorization: Bearer $CRON_SECRET`. Tidak cocok → `401`.
+  Di Production, `CRON_SECRET` yang kosong → `500` (endpoint menolak jalan).
+- Menandai `Invitation` `PUBLISHED` yang `activeUntil < now` sebagai `EXPIRED`
+  dan me-revalidate halaman publiknya.
+- Return `{ ok: true, data: { expired: number } }`.
+
 Detail lengkap alur pembayaran ada di `docs/05-pembayaran-xendit.md`.
 
 ---
@@ -111,8 +124,8 @@ Detail lengkap alur pembayaran ada di `docs/05-pembayaran-xendit.md`.
 
 | Route | Render | Akses |
 |-------|--------|-------|
-| `/` | Static/ISR | Publik (marketing) |
-| `/harga` | Static | Publik |
+| `/` | Static | Publik (marketing) |
+| `/harga` | Static | Publik (daftar paket dari `src/lib/packages.ts`) |
 | `/template` | ISR | Publik (galeri template) |
 | `/dashboard` | RSC | Login |
 | `/dashboard/[id]/edit` | RSC + Server Actions | Login (pemilik) |
@@ -129,3 +142,9 @@ Detail lengkap alur pembayaran ada di `docs/05-pembayaran-xendit.md`.
   HTTP sesuai (`400` validasi, `401` auth/webhook, `403` bukan pemilik, `404`
   tidak ada/draft, `429` rate limit).
 - Jangan bocorkan apakah undangan ada saat `DRAFT` ke publik → perlakukan `404`.
+  > **Catatan implementasi (Next 16 Cache Components):** `/u/[slug]` memakai
+  > Partial Prerendering, sehingga shell terkirim lebih dulu dan `notFound()`
+  > menghasilkan **status 200 dengan body halaman 404** (soft 404). Tidak ada
+  > kebocoran data: undangan draft dan slug yang tidak ada menghasilkan respons
+  > identik. Status 404 sebenarnya akan dikaji ulang saat `/u/[slug]` pindah ke
+  > `"use cache"`/ISR (docs/02 ADR-007).

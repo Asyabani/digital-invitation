@@ -19,6 +19,7 @@ Tiga environment: **Development** (lokal), **Preview** (tiap PR/branch),
 | `CLOUDINARY_*` | test cloud | test | production |
 | `XENDIT_SECRET_KEY` | **test key** | **test key** | **production key** |
 | `XENDIT_CALLBACK_TOKEN` | test token | test token | production token |
+| `CRON_SECRET` | opsional (dev) | set | **wajib** |
 | `NEXT_PUBLIC_APP_URL` | localhost:3000 | URL preview | domain produksi |
 
 Atur via `vercel env` atau dashboard. **Jangan** pakai Xendit production key di
@@ -33,6 +34,8 @@ Preview.
 
 ## 3. Konfigurasi Project (`vercel.ts`)
 
+Sudah ada di root repo (`vercel.ts`, paket `@vercel/config`):
+
 ```ts
 import { type VercelConfig } from '@vercel/config/v1';
 
@@ -45,6 +48,10 @@ export const config: VercelConfig = {
   ],
 };
 ```
+
+Vercel Cron memanggil endpoint dengan header
+`Authorization: Bearer $CRON_SECRET`; tanpa `CRON_SECRET` di Production
+endpoint menolak jalan (`500`) agar tidak terbuka untuk publik.
 
 > Route transkripsi tidak ada di proyek ini; namun jika ada operasi panjang
 > (mis. pemrosesan gambar besar), gunakan durasi default Functions (300s) atau

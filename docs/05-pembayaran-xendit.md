@@ -12,7 +12,10 @@ Mendeskripsikan alur **trial → bayar → publish** dan masa aktif. Model
 - Undangan `DRAFT` = mode **trial**: bisa diedit & dipreview, berwatermark, slug
   publik belum aktif.
 - **Publish** butuh satu pembayaran sukses. Setelah `PAID`, undangan
-  `PUBLISHED`, watermark hilang, slug aktif, `activeUntil = now + 6 bulan`.
+  `PUBLISHED`, slug aktif, `activeUntil = now + 6 bulan`.
+- **Watermark** mengikuti feature flag `removeWatermark` pada paket (§2), bukan
+  sekadar status bayar: `BASIC` tetap menampilkan watermark branding kecil,
+  `PREMIUM`/`EXCLUSIVE` bersih. Satu sumber kebenaran: `src/lib/packages.ts`.
 - **Perpanjangan** = pembayaran baru yang menambah masa aktif.
 - Satu-satunya sumber kebenaran status bayar adalah **webhook Xendit**, bukan
   redirect browser.
@@ -61,9 +64,14 @@ Pemilik (DRAFT) ──"Publish / pilih paket"──▶ createPayment (Server Act
   - `external_id`: id internal `Payment` (atau gabungan `invoiceId`), untuk
     rekonsiliasi.
   - `amount`, `payer_email` (email pemilik), `description` (nama undangan + paket).
-  - `success_redirect_url`: `/dashboard/[id]?pay=success`
-  - `failure_redirect_url`: `/dashboard/[id]?pay=failed`
+  - `success_redirect_url`: `/dashboard/[id]/edit?pay=success`
+  - `failure_redirect_url`: `/dashboard/[id]/edit?pay=failed`
 - Simpan `externalId` = `invoice.id`, `invoiceUrl` = `invoice.invoice_url`.
+- `Payment.id` dibuat lebih dulu di aplikasi dan dikirim sebagai `external_id`
+  Xendit, sehingga rekonsiliasi berjalan dua arah
+  (`external_id` ↔ `Payment.id`, `invoice.id` ↔ `Payment.externalId`).
+- Bila sudah ada `Payment` `PENDING` untuk undangan & paket yang sama, pemilik
+  diarahkan ke `invoiceUrl` lama — tidak membuat tagihan ganda.
 
 > Redirect `success` **tidak** mem-publish undangan. Ia hanya memberi tahu user;
 > publish terjadi lewat webhook. UI dashboard menampilkan "menunggu konfirmasi
@@ -75,6 +83,11 @@ Wajib:
 1. **Verifikasi** `x-callback-token` == `XENDIT_CALLBACK_TOKEN`. Gagal → `401`.
 2. **Idempoten:** cari `Payment` by `externalId`; jika sudah `PAID`, abaikan
    (balas `200`) agar webhook ganda tidak dobel menambah masa aktif.
+   Perpindahan `PENDING → PAID` dilakukan dengan **klaim atomik**
+   (`updateMany` ber-kondisi `status != PAID`); hanya pemanggil yang berhasil
+   mengklaim yang boleh melanjutkan mem-publish undangan.
+   `externalId` tak dikenal → balas `200` dan abaikan (hindari retry tanpa akhir
+   untuk invoice milik environment lain).
 3. Petakan status Xendit → `PaymentStatus`:
    - `PAID` / `SETTLED` → `PAID`
    - `EXPIRED` → `EXPIRED`
@@ -89,9 +102,12 @@ Wajib:
 - `activeUntil` diset saat `PAID`. Default `+6 bulan` (konstanta `ACTIVE_MONTHS`).
 - **Perpanjangan:** `extendInvitation` membuat `Payment` baru. Saat `PAID`,
   `activeUntil` dihitung dari `max(now, activeUntil) + 6 bulan` agar tidak hangus.
-- **Expiry:** cron harian (Vercel Cron) menandai undangan lewat `activeUntil`
-  sebagai `EXPIRED`; halaman publik menampilkan status kedaluwarsa (bukan 404
-  mendadak) dan menawarkan perpanjangan ke pemilik.
+- **Expiry:** cron harian (Vercel Cron, `GET /api/cron/expire-invitations`)
+  menandai undangan lewat `activeUntil` sebagai `EXPIRED`; halaman publik
+  menampilkan status kedaluwarsa (bukan 404 mendadak) dan menawarkan
+  perpanjangan ke pemilik. Halaman publik **tidak menunggu cron**: undangan yang
+  `activeUntil`-nya sudah lewat langsung diperlakukan kedaluwarsa, cron hanya
+  merapikan status di DB.
 
 ## 7. Keamanan & Audit
 
@@ -107,6 +123,7 @@ Wajib:
 ```
 XENDIT_SECRET_KEY=        # API key (server only)
 XENDIT_CALLBACK_TOKEN=    # verifikasi header webhook
+CRON_SECRET=              # Bearer token untuk /api/cron/expire-invitations
 ```
 
 Gunakan **test mode** Xendit saat pengembangan; ganti ke production key hanya di

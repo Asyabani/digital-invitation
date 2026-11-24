@@ -7,20 +7,16 @@ import type {
   SectionsOrder,
 } from "@/lib/validation/invitation";
 import { InvitationView } from "@/components/invitation/InvitationView";
-import {
-  updateInvitationContent,
-  publishForTesting,
-  unpublishInvitation,
-} from "@/lib/actions/invitation";
+import { updateInvitationContent } from "@/lib/actions/invitation";
 
 type Props = {
   invitationId: string;
   slug: string;
-  status: "DRAFT" | "PUBLISHED" | "EXPIRED";
   initialContent: Content;
   theme: Theme;
   sections: SectionsOrder;
-  appUrl: string;
+  /** Pratinjau memakai watermark sesuai paket yang dibeli (docs/05 §2). */
+  showWatermark: boolean;
 };
 
 function Field({
@@ -43,14 +39,12 @@ const inputCls = "w-full rounded-lg border px-3 py-2 text-sm";
 export function ContentEditor({
   invitationId,
   slug,
-  status,
   initialContent,
   theme,
   sections,
-  appUrl,
+  showWatermark,
 }: Props) {
   const [content, setContent] = useState<Content>(initialContent);
-  const [currentStatus, setCurrentStatus] = useState(status);
   const [savedAt, setSavedAt] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
@@ -74,25 +68,6 @@ export function ContentEditor({
     });
   }
 
-  function togglePublish() {
-    setError(null);
-    startTransition(async () => {
-      try {
-        if (currentStatus === "PUBLISHED") {
-          await unpublishInvitation(invitationId);
-          setCurrentStatus("DRAFT");
-        } else {
-          await publishForTesting(invitationId);
-          setCurrentStatus("PUBLISHED");
-        }
-      } catch {
-        setError("Gagal mengubah status terbit.");
-      }
-    });
-  }
-
-  const publicUrl = `${appUrl}/u/${slug}`;
-
   return (
     <div className="grid gap-6 lg:grid-cols-2">
       {/* FORM */}
@@ -105,26 +80,10 @@ export function ContentEditor({
           >
             {pending ? "Menyimpan..." : "Simpan"}
           </button>
-          <button
-            onClick={togglePublish}
-            disabled={pending}
-            className="rounded-lg border px-4 py-2 text-sm font-medium disabled:opacity-50"
-          >
-            {currentStatus === "PUBLISHED" ? "Jadikan Draft" : "Terbitkan (uji)"}
-          </button>
           {savedAt && (
             <span className="text-xs text-neutral-400">Tersimpan {savedAt}</span>
           )}
         </div>
-
-        {currentStatus === "PUBLISHED" && (
-          <div className="rounded-lg border bg-green-50 p-3 text-sm">
-            <p className="font-medium text-green-800">Undangan aktif</p>
-            <a href={publicUrl} target="_blank" rel="noopener noreferrer" className="break-all text-green-700 underline">
-              {publicUrl}
-            </a>
-          </div>
-        )}
 
         {error && <p className="text-sm text-red-600">{error}</p>}
 
@@ -263,7 +222,7 @@ export function ContentEditor({
             sections={sections}
             guestName="Nama Tamu"
             interactive={false}
-            showWatermark
+            showWatermark={showWatermark}
           />
         </div>
       </div>

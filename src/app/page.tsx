@@ -27,9 +27,15 @@ export default function Home() {
         >
           Lihat Template
         </Link>
+        <Link
+          href="/harga"
+          className="rounded-lg border px-5 py-3 text-sm font-medium hover:bg-neutral-50"
+        >
+          Harga
+        </Link>
       </div>
       <p className="text-sm text-neutral-400">
-        Status proyek: Fase 0 (fondasi) — lihat <code>docs/09-roadmap.md</code>.
+        Bayar sekali per acara, tanpa langganan bulanan.
       </p>
     </main>
   );

@@ -60,14 +60,22 @@ Semua dokumen perancangan ada di `docs/`:
 
 ## Status
 
-Tahap **perancangan** — dokumen desain sudah ada, kode aplikasi belum di-scaffold. Lihat `docs/09-roadmap.md` untuk urutan pengerjaan.
+**Fase 0–2 selesai:** fondasi, MVP inti (template → editor → halaman publik →
+RSVP → buku tamu + moderasi), dan monetisasi (paket, invoice Xendit, webhook,
+masa aktif 6 bulan, watermark per paket, cron kedaluwarsa).
+Berikutnya **Fase 3** — tema, kelola tamu + link personal, amplop digital,
+dashboard rekap. Lihat `docs/09-roadmap.md`.
 
-## Menjalankan (rencana, setelah scaffold)
+## Menjalankan
 
 ```bash
 pnpm install
 cp .env.example .env.local   # isi DATABASE_URL minimal
 pnpm db:up                    # Postgres via Docker (dev lokal)
 pnpm db:migrate               # prisma migrate
+pnpm db:seed                  # template contoh
 pnpm dev
 ```
+
+Kunci Xendit/Cloudinary/OAuth baru diperlukan untuk pembayaran, upload galeri,
+dan login. Tanpa itu, editor & pratinjau tetap jalan dalam mode trial.
