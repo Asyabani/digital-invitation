@@ -40,9 +40,9 @@ export default async function TemaPage({
           href="/dashboard"
           className="text-sm text-muted-foreground hover:underline"
         >
-          ← Undangan Saya
+          ← Undangan saya
         </Link>
-        <h1 className="font-display text-2xl font-semibold tracking-tight">
+        <h1 className="font-display text-3xl font-semibold tracking-tight">
           {inv.title}
         </h1>
       </div>

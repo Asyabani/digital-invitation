@@ -18,12 +18,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Helai, HelaiKepala, HelaiIsi } from "@/components/dashboard/Helai";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -116,20 +111,18 @@ export function GuestManager({
           { label: "Sudah dikirim", value: terkirim },
           { label: "Belum dikirim", value: guests.length - terkirim },
         ].map((s) => (
-          <Card key={s.label}>
-            <CardContent className="p-4">
+          <Helai key={s.label}>
+            <HelaiIsi className="p-4">
               <p className="tabular text-2xl font-semibold">{s.value}</p>
               <p className="text-xs text-muted-foreground">{s.label}</p>
-            </CardContent>
-          </Card>
+            </HelaiIsi>
+          </Helai>
         ))}
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Tambah tamu</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
+      <Helai>
+        <HelaiKepala title="Tambah tamu" />
+        <HelaiIsi className="space-y-4">
           <form
             className="flex flex-wrap items-end gap-3"
             onSubmit={(e) => {
@@ -222,19 +215,19 @@ export function GuestManager({
               </Button>
             </div>
           )}
-        </CardContent>
-      </Card>
+        </HelaiIsi>
+      </Helai>
 
       {guests.length === 0 ? (
-        <Card className="border-dashed">
-          <CardContent className="flex flex-col items-center gap-2 py-14 text-center">
+        <Helai className="border-dashed">
+          <HelaiIsi className="flex flex-col items-center gap-2 py-14 text-center">
             <p className="font-medium">Belum ada tamu</p>
             <p className="max-w-sm text-sm text-muted-foreground">
               Tambahkan tamu agar namanya muncul otomatis di cover undangan, dan
               Anda bisa melacak siapa yang sudah dikirimi link.
             </p>
-          </CardContent>
-        </Card>
+          </HelaiIsi>
+        </Helai>
       ) : (
         <ul className="divide-y rounded-xl border bg-card">
           {guests.map((g) => (

@@ -138,6 +138,7 @@ Detail lengkap alur pembayaran ada di `docs/05-pembayaran-xendit.md`.
 | `/` | Static | Publik (marketing) |
 | `/harga` | Static | Publik (daftar paket dari `src/lib/packages.ts`) |
 | `/template` | ISR | Publik (galeri template) |
+| `/template/[slug]` | ISR | Publik — pratinjau demo template, **tanpa login** |
 | `/dashboard` | RSC | Login |
 | `/dashboard/[id]/edit` | RSC + Server Actions | Login (pemilik) |
 | `/dashboard/[id]/tema` | RSC + Server Actions | Login |

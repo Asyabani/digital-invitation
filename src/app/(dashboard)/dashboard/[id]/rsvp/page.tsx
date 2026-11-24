@@ -4,7 +4,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { InvitationNav } from "@/components/dashboard/InvitationNav";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
+import { Helai, HelaiIsi } from "@/components/dashboard/Helai";
 import {
   Table,
   TableBody,
@@ -72,9 +72,9 @@ export default async function RsvpRekapPage({
           href="/dashboard"
           className="text-sm text-muted-foreground hover:underline"
         >
-          ← Undangan Saya
+          ← Undangan saya
         </Link>
-        <h1 className="font-display text-2xl font-semibold tracking-tight">
+        <h1 className="font-display text-3xl font-semibold tracking-tight">
           {inv.title}
         </h1>
       </div>
@@ -82,25 +82,25 @@ export default async function RsvpRekapPage({
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         {summary.map((s) => (
-          <Card key={s.label}>
-            <CardContent className="p-4">
+          <Helai key={s.label}>
+            <HelaiIsi className="p-4">
               <p className="tabular text-2xl font-semibold">{s.value}</p>
               <p className="text-xs text-muted-foreground">{s.label}</p>
-            </CardContent>
-          </Card>
+            </HelaiIsi>
+          </Helai>
         ))}
       </div>
 
       {rsvps.length === 0 ? (
-        <Card className="border-dashed">
-          <CardContent className="flex flex-col items-center gap-2 py-14 text-center">
+        <Helai className="border-dashed">
+          <HelaiIsi className="flex flex-col items-center gap-2 py-14 text-center">
             <p className="font-medium">Belum ada konfirmasi</p>
             <p className="max-w-sm text-sm text-muted-foreground">
               Jawaban tamu muncul di sini begitu mereka mengisi form RSVP di
               undangan.
             </p>
-          </CardContent>
-        </Card>
+          </HelaiIsi>
+        </Helai>
       ) : (
         <div className="overflow-hidden rounded-xl border bg-card">
           <Table>

@@ -1,23 +1,23 @@
-import { Geist, Geist_Mono, Playfair_Display } from "next/font/google";
+import { Bricolage_Grotesque, Archivo } from "next/font/google";
 
-// Font antarmuka (dashboard & marketing). Font undangan dipisah ke
-// `fonts-invitation.ts` agar hanya dimuat di route yang memang memakainya.
+/*
+  Dunia "Lungsin" sengaja menolak refleks kategori ini — serif kontras tinggi
+  dan huruf skrip emas. Kehangatannya datang dari warna kain dan struktur
+  tenunan, bukan dari bentuk huruf.
 
-export const fontSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-  display: "swap",
-});
+  Font undangan (milik pemilik) dipisah ke `fonts-invitation.ts`.
+*/
 
-export const fontMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-  display: "swap",
-});
-
-/** Suara judul halaman marketing (kelas `.font-display` di globals.css). */
-export const fontDisplay = Playfair_Display({
+/** Suara judul: grotesque terkonstruksi, berirama seperti benang. */
+export const fontDisplay = Bricolage_Grotesque({
   variable: "--font-display",
+  subsets: ["latin"],
+  display: "swap",
+});
+
+/** Teks & antarmuka: grotesque pekerja, tajam di ukuran kecil. */
+export const fontSans = Archivo({
+  variable: "--font-sans-ui",
   subsets: ["latin"],
   display: "swap",
 });

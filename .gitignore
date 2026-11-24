@@ -40,3 +40,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Artefak sementara proses desain: tangkapan layar review & komp.
+# Sidecar sistem desain (.impeccable/design.json) TETAP di-commit, begitu pula
+# DESIGN.md dan PRODUCT.md di root.
+/.impeccable/review/
+/.impeccable/mocks/
+/.impeccable/questions/

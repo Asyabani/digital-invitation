@@ -35,37 +35,62 @@ export type InvitationViewProps = {
    * `brand` = baris branding halus di kaki undangan yang sudah terbit.
    */
   watermarkVariant?: "preview" | "brand";
+  /** Teks bilah pratinjau; default ditujukan untuk pemilik di editor. */
+  watermarkLabel?: string;
 };
 
+/**
+ * Satu pita pakan. Kerapatannya berganti-ganti supaya gulirannya punya irama:
+ * pita rapat diikuti pita lapang, bukan jarak seragam dari atas ke bawah.
+ * Produk menyumbang struktur ini; warnanya tetap milik pemilik.
+ */
 function Section({
   children,
-  first = false,
+  index = 0,
 }: {
   children: React.ReactNode;
-  first?: boolean;
+  index?: number;
 }) {
+  const first = index === 0;
+  const rapat = index % 2 === 0;
   return (
     <section
-      className={`px-6 text-center ${first ? "pb-16 pt-20 sm:pt-28" : "py-16"}`}
+      className={[
+        "relative px-6 text-center",
+        first ? "pb-16 pt-20 sm:pt-28" : rapat ? "py-14" : "py-20 sm:py-24",
+        first ? "" : "inv-pinggiran",
+      ].join(" ")}
+      style={
+        rapat && !first
+          ? {
+              background:
+                "color-mix(in oklab, var(--inv-text) 3.5%, transparent)",
+            }
+          : undefined
+      }
     >
-      <div className="mx-auto flex max-w-lg flex-col items-center gap-6">
+      <div className="relative z-[1] mx-auto flex max-w-lg flex-col items-center gap-6">
         {children}
       </div>
     </section>
   );
 }
 
+/** Judul pita, ditutup sepasang benang rapat seperti pinggiran kain. */
 function Heading({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex flex-col items-center gap-3">
+    <div className="flex w-full flex-col items-center gap-3">
       <h2 className="inv-heading text-2xl font-semibold sm:text-3xl">
         {children}
       </h2>
-      <span className="inv-rule" aria-hidden>
-        <svg width="7" height="7" viewBox="0 0 7 7" fill="currentColor">
-          <path d="M3.5 0 7 3.5 3.5 7 0 3.5z" />
-        </svg>
-      </span>
+      <span
+        className="block h-[3px] w-14"
+        style={{
+          background:
+            "repeating-linear-gradient(to right, var(--inv-secondary) 0 5px, transparent 5px 8px)",
+        }}
+        aria-hidden
+      />
     </div>
   );
 }
@@ -84,6 +109,7 @@ export function InvitationView(props: InvitationViewProps) {
     interactive = true,
     showWatermark = false,
     watermarkVariant = "preview",
+    watermarkLabel = "Mode pratinjau — terbitkan untuk membagikan ke tamu.",
   } = props;
 
   const ordered = [...sections]
@@ -115,11 +141,11 @@ export function InvitationView(props: InvitationViewProps) {
     address: content.event.address,
   });
 
-  function render(key: string) {
+  function render(key: string, index: number) {
     switch (key) {
       case "cover":
         return (
-          <Section key={key} first>
+          <Section key={key} index={index}>
             {guestName && (
               <p className="inv-card px-5 py-3 text-sm">
                 <span className="opacity-70">
@@ -135,18 +161,21 @@ export function InvitationView(props: InvitationViewProps) {
             <h1 className="inv-heading text-4xl font-semibold leading-tight sm:text-5xl">
               {title}
             </h1>
-            <span className="inv-rule" aria-hidden>
-              <svg width="7" height="7" viewBox="0 0 7 7" fill="currentColor">
-                <path d="M3.5 0 7 3.5 3.5 7 0 3.5z" />
-              </svg>
-            </span>
+            <span
+              className="block h-[3px] w-20"
+              style={{
+                background:
+                  "repeating-linear-gradient(to right, var(--inv-secondary) 0 5px, transparent 5px 8px)",
+              }}
+              aria-hidden
+            />
             <p className="text-base">{prettyDate}</p>
           </Section>
         );
 
       case "opening":
         return content.quote ? (
-          <Section key={key}>
+          <Section key={key} index={index}>
             <p className="inv-heading text-xl italic leading-relaxed sm:text-2xl">
               “{content.quote.text}”
             </p>
@@ -158,7 +187,7 @@ export function InvitationView(props: InvitationViewProps) {
 
       case "couple":
         return (
-          <Section key={key}>
+          <Section key={key} index={index}>
             <Heading>{title}</Heading>
             {content.story && content.story.length > 0 && (
               <div className="w-full space-y-5 text-left">
@@ -177,7 +206,7 @@ export function InvitationView(props: InvitationViewProps) {
 
       case "countdown":
         return (
-          <Section key={key}>
+          <Section key={key} index={index}>
             <Heading>Menuju Hari Bahagia</Heading>
             <Countdown target={eventDateTime} />
           </Section>
@@ -185,21 +214,34 @@ export function InvitationView(props: InvitationViewProps) {
 
       case "gallery":
         return content.gallery.length > 0 ? (
-          <Section key={key}>
+          <Section key={key} index={index}>
             <Heading>Galeri</Heading>
+            {/*
+              Tiap sel bergaris tenun. Kalau fotonya belum ada atau gagal
+              dimuat, yang tampak adalah kain yang belum ditenun — bukan kotak
+              abu-abu yang terbaca rusak.
+            */}
             <div className="grid w-full grid-cols-2 gap-2.5 sm:grid-cols-3">
               {content.gallery.map((url, i) => (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
+                <span
                   key={i}
-                  src={url}
-                  alt={`Foto ${i + 1} dari ${title}`}
-                  loading="lazy"
-                  decoding="async"
-                  width={400}
-                  height={400}
-                  className="aspect-square w-full rounded-xl bg-black/5 object-cover"
-                />
+                  className="inv-card block aspect-square w-full overflow-hidden rounded-sm"
+                  style={{
+                    backgroundImage:
+                      "repeating-linear-gradient(45deg, color-mix(in oklab, var(--inv-text) 7%, transparent) 0 1px, transparent 1px 7px)",
+                  }}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={url}
+                    alt={`Foto ${i + 1} dari ${title}`}
+                    loading="lazy"
+                    decoding="async"
+                    width={400}
+                    height={400}
+                    className="h-full w-full object-cover"
+                  />
+                </span>
               ))}
             </div>
           </Section>
@@ -207,7 +249,7 @@ export function InvitationView(props: InvitationViewProps) {
 
       case "location":
         return (
-          <Section key={key}>
+          <Section key={key} index={index}>
             <Heading>Lokasi Acara</Heading>
             <div className="inv-card w-full space-y-1 p-5">
               <p className="inv-heading text-lg font-medium">
@@ -245,7 +287,7 @@ export function InvitationView(props: InvitationViewProps) {
 
       case "rsvp":
         return (
-          <Section key={key}>
+          <Section key={key} index={index}>
             <Heading>Konfirmasi Kehadiran</Heading>
             <p className="inv-note">
               Mohon konfirmasi kehadiran Anda agar kami dapat menyiapkan tempat
@@ -262,7 +304,7 @@ export function InvitationView(props: InvitationViewProps) {
 
       case "greetings":
         return (
-          <Section key={key}>
+          <Section key={key} index={index}>
             <Heading>Ucapan & Doa</Heading>
             <GreetingForm
               invitationId={invitationId}
@@ -278,7 +320,7 @@ export function InvitationView(props: InvitationViewProps) {
         // Hanya dirender bila pemilik sudah mengisi rekening/QRIS dan paketnya
         // memuat fitur amplop digital (ditentukan pemanggil lewat `giftConfig`).
         return giftConfig ? (
-          <Section key={key}>
+          <Section key={key} index={index}>
             <Heading>Amplop Digital</Heading>
             <GiftForm
               invitationId={invitationId}
@@ -292,7 +334,7 @@ export function InvitationView(props: InvitationViewProps) {
 
       case "closing":
         return (
-          <Section key={key}>
+          <Section key={key} index={index}>
             <p className="inv-note leading-relaxed">
               Merupakan suatu kehormatan dan kebahagiaan bagi kami apabila
               Bapak/Ibu/Saudara/i berkenan hadir.
@@ -321,7 +363,9 @@ export function InvitationView(props: InvitationViewProps) {
   }
 
   return (
-    <div style={rootStyle} className="relative min-h-full">
+    // `inv-lungsin` memasang benang tegak dalam warna teks pemilik —
+    // struktur dari produk, warna dari pemilik.
+    <div style={rootStyle} className="inv-lungsin relative min-h-full">
       {showWatermark && watermarkVariant === "preview" && (
         <div
           className="sticky top-0 z-10 px-4 py-2 text-center text-xs"
@@ -330,11 +374,11 @@ export function InvitationView(props: InvitationViewProps) {
             color: "var(--inv-primary)",
           }}
         >
-          Mode pratinjau — terbitkan untuk membagikan ke tamu.
+          {watermarkLabel}
         </div>
       )}
 
-      {ordered.map((s) => render(s.key))}
+      {ordered.map((s, i) => render(s.key, i))}
 
       {showWatermark && watermarkVariant === "brand" && (
         <p

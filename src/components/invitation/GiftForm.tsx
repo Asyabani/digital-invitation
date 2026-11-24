@@ -120,7 +120,7 @@ export function GiftForm({
             decoding="async"
             width={224}
             height={224}
-            className="mx-auto w-56 rounded-xl bg-white p-2"
+            className="mx-auto w-56 rounded-sm bg-white p-2"
           />
         </div>
       )}

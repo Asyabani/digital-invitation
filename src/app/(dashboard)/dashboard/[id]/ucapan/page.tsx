@@ -8,7 +8,7 @@ import { containsProfanity } from "@/lib/moderation";
 import { InvitationNav } from "@/components/dashboard/InvitationNav";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Helai, HelaiIsi } from "@/components/dashboard/Helai";
 
 export const instant = false;
 
@@ -49,9 +49,9 @@ export default async function UcapanModerasiPage({
           href="/dashboard"
           className="text-sm text-muted-foreground hover:underline"
         >
-          ← Undangan Saya
+          ← Undangan saya
         </Link>
-        <h1 className="font-display text-2xl font-semibold tracking-tight">
+        <h1 className="font-display text-3xl font-semibold tracking-tight">
           {inv.title}
         </h1>
       </div>
@@ -72,17 +72,17 @@ export default async function UcapanModerasiPage({
         </p>
 
         {pending.length === 0 ? (
-          <Card className="border-dashed">
-            <CardContent className="py-10 text-center text-muted-foreground">
+          <Helai className="border-dashed">
+            <HelaiIsi className="py-10 text-center text-muted-foreground">
               Tidak ada ucapan yang menunggu.
-            </CardContent>
-          </Card>
+            </HelaiIsi>
+          </Helai>
         ) : (
           <ul className="space-y-3">
             {pending.map((g) => (
               <li key={g.id}>
-                <Card>
-                  <CardContent className="space-y-3 p-4">
+                <Helai>
+                  <HelaiIsi className="space-y-3 p-4">
                     <div className="flex flex-wrap items-center gap-2">
                       <p className="font-medium">{g.name}</p>
                       <span className="text-xs text-muted-foreground">
@@ -118,8 +118,8 @@ export default async function UcapanModerasiPage({
                         </Button>
                       </form>
                     </div>
-                  </CardContent>
-                </Card>
+                  </HelaiIsi>
+                </Helai>
               </li>
             ))}
           </ul>
@@ -137,23 +137,23 @@ export default async function UcapanModerasiPage({
         </div>
 
         {approved.length === 0 ? (
-          <Card className="border-dashed">
-            <CardContent className="py-10 text-center text-muted-foreground">
+          <Helai className="border-dashed">
+            <HelaiIsi className="py-10 text-center text-muted-foreground">
               Belum ada ucapan yang disetujui.
-            </CardContent>
-          </Card>
+            </HelaiIsi>
+          </Helai>
         ) : (
           <ul className="grid gap-3 sm:grid-cols-2">
             {approved.map((g) => (
               <li key={g.id}>
-                <Card className="h-full bg-muted/40">
-                  <CardContent className="p-4">
+                <Helai className="h-full bg-muted/40">
+                  <HelaiIsi className="p-4">
                     <p className="font-medium">{g.name}</p>
                     <p className="mt-1 leading-relaxed text-muted-foreground">
                       {g.message}
                     </p>
-                  </CardContent>
-                </Card>
+                  </HelaiIsi>
+                </Helai>
               </li>
             ))}
           </ul>

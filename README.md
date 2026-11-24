@@ -1,10 +1,12 @@
-# Undangan Digital
+# Lungsin
 
-Platform web untuk membuat **undangan digital yang dapat dikustomisasi** — pilih template, isi acara, atur tema, bagikan link, dan kelola RSVP tamu. Dirancang untuk pasar Indonesia (nikah, aqiqah, ulang tahun, acara korporat).
+Platform web untuk merangkai **undangan digital yang dapat dikustomisasi** — pilih template, isi acara, atur tema, bagikan link, dan kelola RSVP tamu. Dirancang untuk pasar Indonesia (nikah, aqiqah, ulang tahun, acara korporat).
+
+> **Lungsin** adalah benang tegak yang sudah terpasang di alat tenun sebelum menenun dimulai — ia menentukan lebar, kekuatan, dan bentuk kain. Produk memasang lungsinnya (struktur undangan); pemilik acara menenun pakannya (isi dan warna). Nama ini menggantikan penamaan sementara "Undangan Digital".
 
 ## Deskripsi
 
-Membuat undangan cetak itu mahal, lambat, dan sulit diubah. Undangan Digital menggantinya dengan satu halaman web cantik yang bisa dibagikan lewat WhatsApp, lengkap dengan RSVP, buku tamu, galeri, lokasi, countdown, dan amplop digital.
+Membuat undangan cetak itu mahal, lambat, dan sulit diubah. Lungsin menggantinya dengan satu halaman web yang bisa dibagikan lewat WhatsApp, lengkap dengan RSVP, buku tamu, galeri, lokasi, countdown, dan amplop digital.
 
 Model bisnisnya **B2C one-time per event**:
 

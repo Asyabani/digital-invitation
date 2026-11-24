@@ -1,0 +1,129 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-24T00:00:00Z",
+  "title": "Design System: Lungsin",
+  "extensions": {
+    "colorMeta": {
+      "nila": { "role": "primary", "displayName": "Nila (Indigo Dalam)", "canonical": "#13233f", "tonalRamp": ["#060b16", "#0a1426", "#0f1c33", "#13233f", "#1b2d4d", "#22365a", "#3a4f74", "#6b7c9f"] },
+      "nila-pekat": { "role": "primary", "displayName": "Nila Pekat", "canonical": "#0a1426", "tonalRamp": ["#04080f", "#070e1c", "#0a1426", "#0d1a32", "#122240", "#1a2f54", "#2a4470", "#50688f"] },
+      "mengkudu": { "role": "secondary", "displayName": "Mengkudu (Merah Akar)", "canonical": "#9e2b1e", "tonalRamp": ["#2e0c08", "#4a140d", "#661c13", "#822318", "#9e2b1e", "#c0432f", "#d2503f", "#e38a7d"] },
+      "benang": { "role": "tertiary", "displayName": "Benang (Emas Garis)", "canonical": "#c08a2e", "tonalRamp": ["#3a2a0e", "#574014", "#74551b", "#916a22", "#c08a2e", "#d2a44b", "#e0bd7f", "#efdcb4"] },
+      "kapas": { "role": "neutral", "displayName": "Kapas", "canonical": "#e6e2d8", "tonalRamp": ["#4a4740", "#6b675c", "#8c887b", "#aea99a", "#cfc9ba", "#e6e2d8", "#efece4", "#f7f5f0"] },
+      "day-bg": { "role": "neutral", "displayName": "Latar Kain Siang", "canonical": "#efece4", "tonalRamp": ["#4a4740", "#6b675c", "#8c887b", "#aea99a", "#cfc9ba", "#e4e0d5", "#efece4", "#f7f5f0"] },
+      "day-ink": { "role": "neutral", "displayName": "Tinta Siang", "canonical": "#16213a", "tonalRamp": ["#090d17", "#0f172a", "#16213a", "#1f2d4d", "#2c3d63", "#5d6476", "#9aa0ad", "#cfd2d9"] },
+      "night-surface": { "role": "neutral", "displayName": "Permukaan Kain Malam", "canonical": "#13233f", "tonalRamp": ["#060b16", "#0a1426", "#0f1c33", "#13233f", "#1b2d4d", "#22365a", "#253a5e", "#3a4f74"] },
+      "success": { "role": "neutral", "displayName": "Hijau Terbit", "canonical": "#2f6b4f", "tonalRamp": ["#0e2219", "#163424", "#1e4630", "#27583f", "#2f6b4f", "#468a69", "#6fae8c", "#a8d2bb"] },
+      "warning": { "role": "neutral", "displayName": "Kuning Masa Aktif", "canonical": "#9a6a16", "tonalRamp": ["#2e1f06", "#45300b", "#5d4210", "#745315", "#9a6a16", "#c08a2e", "#d6a44b", "#e8c585"] }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display — Bricolage Grotesque", "purpose": "Judul hero dan kepala pita; selalu tracking -0.03em dan text-wrap: balance. Grotesque konstruksi, bukan serif." },
+      "body": { "displayName": "Body/UI — Archivo", "purpose": "Teks paragraf, label, dan seluruh antarmuka; tajam di ukuran kecil." },
+      "label": { "displayName": "Label", "purpose": "Eyebrow UPPERCASE tracking-widest untuk kategori fitur dan kolom footer." }
+    },
+    "shadows": [
+      { "name": "pinggiran", "value": "0 3px 0 -2px color-mix(in oklab, #c08a2e 45%, transparent)", "purpose": "Benang emas kedua di tepi pita/helai; hairline, bukan drop-shadow. Spread negatif menjaganya tetap garis." }
+    ],
+    "motion": [
+      { "name": "tenun", "value": "clip-path inset(0 100% 0 0) -> inset(0) 900ms cubic-bezier(0.16, 1, 0.3, 1)", "purpose": "Kain tertenun kiri-ke-kanan saat halaman dibuka; dipakai ulang sebagai penanda status terbit. prefers-reduced-motion: dimatikan." },
+      { "name": "menenun-stagger", "value": "animation-delay 110ms / 220ms / 330ms", "purpose": "Jeda berundak untuk helai berikutnya." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Aksi utama satu per pita; nila di kain siang, kapas terang di kain malam.",
+      "html": "<button class=\"ds-btn-primary\">Rangkai undangan</button>",
+      "css": ".ds-btn-primary { display:inline-flex; align-items:center; justify-content:center; background:#13233f; color:#efece4; height:2.75rem; padding:0 1.5rem; font-size:1rem; font-weight:500; border:1px solid transparent; border-radius:3px; transition:all .15s ease; } .ds-btn-primary:hover { background:color-mix(in oklab,#13233f 80%, transparent); } .ds-btn-primary:focus-visible { outline:none; box-shadow:0 0 0 3px color-mix(in oklab,#9e2b1e 50%, transparent); } .ds-btn-primary:active { transform:translateY(1px); }"
+    },
+    {
+      "name": "Outline Button",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "Aksi sekunder; garis tepi di atas latar kain.",
+      "html": "<button class=\"ds-btn-outline\">Lihat contoh dulu</button>",
+      "css": ".ds-btn-outline { display:inline-flex; align-items:center; justify-content:center; background:#efece4; color:#16213a; height:2.75rem; padding:0 1.5rem; font-size:1rem; font-weight:500; border:1px solid #cfc9ba; border-radius:3px; transition:all .15s ease; } .ds-btn-outline:hover { background:#e4e0d5; } .ds-btn-outline:focus-visible { outline:none; box-shadow:0 0 0 3px color-mix(in oklab,#9e2b1e 45%, transparent); }"
+    },
+    {
+      "name": "Helai (Cloth Panel)",
+      "kind": "card",
+      "refersTo": "helai",
+      "description": "Wadah baku dashboard; menggantikan Card. Tepi potong 2px, sisi kiri-kanan benang emas, atas ditutup pinggiran.",
+      "html": "<section class=\"ds-helai\"><div class=\"ds-helai-head\"><h2>Status undangan</h2></div><div class=\"ds-helai-body\">Isi helai duduk di atas kapas.</div></section>",
+      "css": ".ds-helai { background:#f3f1ea; color:#16213a; border-left:1px solid color-mix(in oklab,#c08a2e 40%, transparent); border-right:1px solid color-mix(in oklab,#c08a2e 40%, transparent); border-top:1px solid color-mix(in oklab,#c08a2e 70%, transparent); box-shadow:0 3px 0 -2px color-mix(in oklab,#c08a2e 45%, transparent); border-radius:2px; } .ds-helai-head { display:flex; align-items:flex-start; justify-content:space-between; gap:1rem; padding:1rem 1.5rem; border-bottom:1px solid color-mix(in oklab,#cfc9ba 70%, transparent); } .ds-helai-head h2 { font-family:'Bricolage Grotesque',sans-serif; font-size:1.125rem; font-weight:500; letter-spacing:-0.03em; } .ds-helai-body { padding:1.25rem 1.5rem; }"
+    },
+    {
+      "name": "Ikat Tab (selected nav)",
+      "kind": "nav",
+      "refersTo": "chip",
+      "description": "Tab terpilih ditandai celup rintang (ikat) putus-putus mengkudu di bawahnya, bukan kotak berbingkai.",
+      "html": "<nav class=\"ds-nav\"><a class=\"ds-tab ds-tab--active\" aria-current=\"page\">Isi</a><a class=\"ds-tab\">Tema</a><a class=\"ds-tab\">Tamu</a></nav>",
+      "css": ".ds-nav { display:flex; gap:.25rem; border-bottom:1px solid color-mix(in oklab,#cfc9ba 70%, transparent); } .ds-tab { position:relative; padding:.75rem 1rem; font-size:.875rem; color:#5d6476; text-decoration:none; transition:color .15s ease; } .ds-tab:hover { color:#16213a; } .ds-tab--active { color:#16213a; } .ds-tab--active::after { content:''; position:absolute; left:0; right:0; bottom:-1px; height:3px; background:repeating-linear-gradient(to right,#9e2b1e 0 6px, transparent 6px 9px); }"
+    },
+    {
+      "name": "Benang Meter (proportional stat)",
+      "kind": "custom",
+      "refersTo": "helai",
+      "description": "Angka rekap sebagai benang yang panjangnya sebanding dengan nilainya, bukan kotak angka besar seragam.",
+      "html": "<div class=\"ds-benang\"><div class=\"ds-benang-row\"><span>Hadir</span><span class=\"ds-benang-val\">3</span></div><span class=\"ds-benang-track\"><span class=\"ds-benang-fill\" style=\"width:60%\"></span></span></div>",
+      "css": ".ds-benang { display:flex; flex-direction:column; gap:.25rem; } .ds-benang-row { display:flex; align-items:baseline; justify-content:space-between; gap:.75rem; font-size:.875rem; } .ds-benang-val { font-weight:600; font-variant-numeric:tabular-nums; } .ds-benang-track { display:block; height:3px; width:100%; background:color-mix(in oklab,#cfc9ba 60%, transparent); } .ds-benang-fill { display:block; height:100%; background:repeating-linear-gradient(to right,#9e2b1e 0 5px, transparent 5px 7px); }"
+    },
+    {
+      "name": "Invitation Button (owner-themed)",
+      "kind": "button",
+      "refersTo": "inv-button",
+      "description": "Tombol di permukaan undangan; warnanya milik pemilik lewat --inv-*, bukan token dashboard. Target sentuh 2.75rem.",
+      "html": "<button class=\"ds-inv-button\">Kirim Konfirmasi</button>",
+      "css": ".ds-inv-button { --inv-primary:#8b5e3c; --inv-bg:#faf6f0; display:inline-flex; align-items:center; justify-content:center; gap:.4rem; min-height:2.75rem; border:1px solid transparent; border-radius:2px; background:var(--inv-primary); color:var(--inv-bg); padding:.625rem 1.25rem; font-size:.875rem; font-weight:500; letter-spacing:.01em; transition:opacity .15s ease, transform .15s ease; } .ds-inv-button:hover { opacity:.88; } .ds-inv-button:active { transform:translateY(1px); }"
+    },
+    {
+      "name": "Invitation Field (owner-themed)",
+      "kind": "input",
+      "refersTo": "inv-field",
+      "description": "Field di undangan; fokus memberi glow dalam warna pemilik, bukan warna sistem.",
+      "html": "<input class=\"ds-inv-field\" placeholder=\"Nama Anda\" />",
+      "css": ".ds-inv-field { --inv-primary:#8b5e3c; --inv-bg:#faf6f0; --inv-text:#3a2e26; width:100%; border:1px solid color-mix(in oklab,var(--inv-text) 20%, transparent); border-radius:2px; background:color-mix(in oklab,var(--inv-bg) 70%, white); color:var(--inv-text); padding:.625rem .875rem; font-size:.875rem; transition:border-color .15s ease, box-shadow .15s ease; } .ds-inv-field::placeholder { color:color-mix(in oklab,var(--inv-text) 55%, transparent); } .ds-inv-field:focus-visible { outline:none; border-color:var(--inv-primary); box-shadow:0 0 0 3px color-mix(in oklab,var(--inv-primary) 18%, transparent); }"
+    }
+  ],
+  "narrative": {
+    "northStar": "Kain Tenun",
+    "overview": "Lungsin mengambil kosakata tenun tradisional Indonesia dan memakainya sebagai struktur, bukan motif tempel. Produk memasang lungsin (benang tegak, kerangka kolom konstan) dan pinggiran (tepi kain berbenang emas); pengguna menenun pakan (pita isi melintang). Halaman disusun dari pita penuh lebar yang berganti kerapatan, dibatasi garis benang emas 1px — menolak kisi kartu identik SaaS dan krem+serif+foil emas industri undangan. Nadanya tenang dan matang untuk momen sekali seumur hidup; kehangatan datang dari warna kain dan struktur tenunan, bukan ornamen. Sistem hidup di tiga lingkungan satu kain: kain malam (marketing), kain siang (dashboard), dan permukaan undangan yang warna serta fontnya milik tiap pemilik lewat themeConfig dan token --inv-*.",
+    "keyCharacteristics": [
+      "Pita penuh lebar (pakan) dengan kerapatan berganti, bukan kisi kartu.",
+      "Benang emas #C08A2E hanya sebagai garis 1px — tidak pernah jadi fill.",
+      "Sudut 2px di mana-mana: kain punya tepi potong.",
+      "Dua palet token (siang/malam) + satu keluarga --inv-* yang netral terhadap tema pemilik.",
+      "Satu momen bergerak: kain ditenun kiri-ke-kanan saat halaman dibuka."
+    ],
+    "rules": [
+      { "name": "The Benang Rule", "body": "Emas #C08A2E hanya hadir sebagai garis 1px (pinggiran, sisi helai, hairline). Emas yang menjadi bidang isi terbaca sebagai foil — refleks industri undangan yang ditolak. Audit: tidak boleh ada background/fill emas.", "section": "colors" },
+      { "name": "The One Thread Rule", "body": "Mengkudu adalah satu-satunya warna merah, dan ia aksen garis, bukan permukaan. Muncul di bawah 10% luas layar; kelangkaannya yang membuatnya terbaca sebagai penanda.", "section": "colors" },
+      { "name": "The Two Cloths Rule", "body": "Warna tidak di-hardcode per komponen; ia datang dari token yang di-remap per lingkungan (:root siang, .dark malam). Komponen menulis bg-card/text-foreground, bukan hex.", "section": "colors" },
+      { "name": "The Woven Voice Rule", "body": "Judul memakai .font-display (Bricolage, tracking -0.03em, text-wrap: balance); tidak pernah serif atau skrip. Rasa undangan datang dari warna dan struktur, bukan bentuk huruf.", "section": "typography" },
+      { "name": "The Owner's Letters Rule", "body": "Font display hanya untuk kerangka produk. Permukaan undangan memakai enam famili milik pemilik lewat --inv-heading/--inv-body; jangan terapkan .font-display pada konten undangan.", "section": "typography" },
+      { "name": "The Flat Cloth Rule", "body": "Permukaan tidak diangkat dengan bayangan. Kedalaman = tona + garis + benang. Satu-satunya box-shadow yang sah adalah hairline emas pinggiran.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do susun halaman sebagai pita penuh lebar (.pakan) dengan kerapatan berganti (rapat ⇄ lapang); pisahkan kolom dengan garis (gap-px bg-border/70), bukan jarak antar kartu.",
+      "Do pakai Helai sebagai wadah dashboard, bukan Card; biarkan .kain me-reset ke palet siang dan komponen anak mengikut.",
+      "Do tulis warna lewat token (bg-card, text-foreground, var(--mengkudu)), supaya komponen ikut kain siang/malam tempatnya duduk.",
+      "Do jaga sudut 2px (helai/field/chip/undangan) dan 3px (tombol); gunakan .font-display + tracking -0.03em untuk judul.",
+      "Do biarkan permukaan undangan mengambil warna & font dari --inv-*/themeConfig; uji kontras pada palet pemilik, bukan hanya palet contoh.",
+      "Do hormati prefers-reduced-motion: sajikan kain yang sudah jadi."
+    ],
+    "donts": [
+      "Don't jadikan emas #C08A2E sebagai bidang/fill — emas hanya garis 1px. Fill emas terbaca sebagai foil.",
+      "Don't pakai mengkudu sebagai permukaan atau tombol utama; ia aksen garis yang langka (< 10% layar).",
+      "Don't bangun kisi kartu identik bersudut membulat dengan bayangan lembut (bawaan SaaS); dan jangan pakai krem + serif kontras-tinggi + skrip emas (bawaan industri undangan).",
+      "Don't biarkan permukaan undangan /u/[slug] menyentuh token dashboard; gunakan hanya kelas .inv-*.",
+      "Don't bocorkan daftar tamu lengkap atau nominal amplop ke tampilan publik; keduanya hanya di dashboard pemilik.",
+      "Don't tambah font undangan di editor tanpa mendeklarasikannya di fonts-invitation.ts, atau pilihan pemilik diam-diam jatuh ke font bawaan browser."
+    ]
+  }
+}

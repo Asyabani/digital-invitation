@@ -9,13 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Helai, HelaiKepala, HelaiIsi } from "@/components/dashboard/Helai";
 
 type Bank = { bankName: string; accountNumber: string; accountName: string };
 
@@ -65,26 +59,30 @@ export function GiftSettings({ invitationId, initialConfig, canUseGift }: Props)
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Rekening & QRIS</CardTitle>
-        <CardDescription>
-          Data ini yang dilihat tamu di section amplop digital.
-        </CardDescription>
-        <div data-slot="card-action" className="flex gap-2">
-          <Button onClick={() => save(false)} disabled={pending}>
-            {pending && (
-              <Loader2 data-icon="inline-start" className="animate-spin" />
-            )}
-            Simpan
-          </Button>
-          <Button onClick={() => save(true)} disabled={pending} variant="outline">
-            Kosongkan
-          </Button>
-        </div>
-      </CardHeader>
+    <Helai>
+      <HelaiKepala
+        title="Rekening & QRIS"
+        description="Data ini yang dilihat tamu di bagian amplop digital."
+        action={
+          <>
+            <Button onClick={() => save(false)} disabled={pending}>
+              {pending && (
+                <Loader2 data-icon="inline-start" className="animate-spin" />
+              )}
+              Simpan
+            </Button>
+            <Button
+              onClick={() => save(true)}
+              disabled={pending}
+              variant="outline"
+            >
+              Kosongkan
+            </Button>
+          </>
+        }
+      />
 
-      <CardContent className="space-y-5">
+      <HelaiIsi className="space-y-5">
         {!canUseGift && (
           <Alert>
             <AlertDescription>
@@ -178,7 +176,7 @@ export function GiftSettings({ invitationId, initialConfig, canUseGift }: Props)
             <p className="text-xs text-muted-foreground">Opsional.</p>
           </div>
         </div>
-      </CardContent>
-    </Card>
+      </HelaiIsi>
+    </Helai>
   );
 }

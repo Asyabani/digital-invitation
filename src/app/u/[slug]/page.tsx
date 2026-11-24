@@ -68,7 +68,7 @@ export default async function PublicInvitationPage({
   if (state === "expired") {
     return (
       <main className="mx-auto flex w-full max-w-md flex-1 flex-col items-center justify-center gap-3 px-6 py-24 text-center">
-        <h1 className="font-display text-2xl font-semibold tracking-tight">
+        <h1 className="font-display text-3xl font-semibold tracking-tight">
           Undangan sudah tidak aktif
         </h1>
         <p className="text-muted-foreground">

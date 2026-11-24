@@ -8,7 +8,7 @@ import { GiftSettings } from "@/components/dashboard/GiftSettings";
 import { InvitationNav } from "@/components/dashboard/InvitationNav";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
+import { Helai, HelaiIsi } from "@/components/dashboard/Helai";
 import {
   Table,
   TableBody,
@@ -67,9 +67,9 @@ export default async function AmplopPage({
           href="/dashboard"
           className="text-sm text-muted-foreground hover:underline"
         >
-          ← Undangan Saya
+          ← Undangan saya
         </Link>
-        <h1 className="font-display text-2xl font-semibold tracking-tight">
+        <h1 className="font-display text-3xl font-semibold tracking-tight">
           {inv.title}
         </h1>
       </div>
@@ -104,11 +104,11 @@ export default async function AmplopPage({
         </Alert>
 
         {gifts.length === 0 ? (
-          <Card className="border-dashed">
-            <CardContent className="py-14 text-center text-muted-foreground">
+          <Helai className="border-dashed">
+            <HelaiIsi className="py-14 text-center text-muted-foreground">
               Belum ada konfirmasi kado.
-            </CardContent>
-          </Card>
+            </HelaiIsi>
+          </Helai>
         ) : (
           <div className="overflow-hidden rounded-xl border bg-card">
             <Table>

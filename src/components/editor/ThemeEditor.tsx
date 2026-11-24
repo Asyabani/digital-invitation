@@ -20,12 +20,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Helai, HelaiKepala, HelaiIsi } from "@/components/dashboard/Helai";
 
 type Props = {
   invitationId: string;
@@ -161,11 +156,9 @@ export function ThemeEditor({
   return (
     <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,24rem)]">
       <div className="space-y-5">
-        <Card>
-          <CardHeader>
-            <CardTitle>Palet warna</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-5">
+        <Helai>
+          <HelaiKepala title="Palet warna" />
+          <HelaiIsi className="space-y-5">
             <div className="flex flex-wrap gap-2">
               {PRESETS.map((p) => (
                 <button
@@ -212,14 +205,12 @@ export function ThemeEditor({
                 </div>
               ))}
             </div>
-          </CardContent>
-        </Card>
+          </HelaiIsi>
+        </Helai>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Font</CardTitle>
-          </CardHeader>
-          <CardContent className="grid gap-5 sm:grid-cols-2">
+        <Helai>
+          <HelaiKepala title="Font" />
+          <HelaiIsi className="grid gap-5 sm:grid-cols-2">
             <fieldset className="space-y-2">
               <legend className="text-sm font-medium">Judul</legend>
               {HEADING_FONTS.map((f) => (
@@ -279,14 +270,12 @@ export function ThemeEditor({
                 </label>
               ))}
             </fieldset>
-          </CardContent>
-        </Card>
+          </HelaiIsi>
+        </Helai>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Musik latar</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
+        <Helai>
+          <HelaiKepala title="Musik latar" />
+          <HelaiIsi className="space-y-4">
             {!canUseMusic && (
               <Alert>
                 <AlertDescription>
@@ -334,14 +323,12 @@ export function ThemeEditor({
                 }
               />
             </div>
-          </CardContent>
-        </Card>
+          </HelaiIsi>
+        </Helai>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Section undangan</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
+        <Helai>
+          <HelaiKepala title="Section undangan" />
+          <HelaiIsi className="space-y-3">
             <p className="text-sm text-muted-foreground">
               Matikan section yang tidak dipakai, atau ubah urutannya.
             </p>
@@ -388,8 +375,8 @@ export function ThemeEditor({
                 </li>
               ))}
             </ul>
-          </CardContent>
-        </Card>
+          </HelaiIsi>
+        </Helai>
       </div>
 
       {/* PRATINJAU */}

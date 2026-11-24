@@ -6,29 +6,59 @@
 
 ---
 
-## 0. Sistem Desain (implementasi)
+## 0. Dunia Visual — "Lungsin"
 
-**Dua dunia visual yang sengaja dipisah:**
+> Dunia visual final ada di **`DESIGN.md`** (ditulis dari hasil build, bukan
+> dari rencana). Bagian ini merangkum apa yang mengikat pekerjaan UI.
+> Kontrak arahnya ikut terkirim sebagai komentar HTML di markup produksi —
+> lihat `DIRECTION_CONTRACT` di `src/app/layout.tsx`.
 
-| | Dashboard & marketing | Halaman undangan `/u/[slug]` |
-|---|---|---|
-| Warna | Token shadcn di `globals.css` — netral hangat + aksen rosewood, plus token status `success`/`warning` | `themeConfig.palette` milik tiap undangan |
-| Font | Geist (antarmuka) + Playfair Display (`.font-display`, judul) | `themeConfig.font`, dimuat via `src/lib/fonts-invitation.ts` |
-| Komponen | shadcn/ui (`src/components/ui`, style `base-nova`, primitif Base UI, ikon Lucide) | kelas `.inv-*` di `globals.css` yang menurunkan variabel `--inv-*` |
+**Gagasan pokok:** undangan dirangkai seperti kain tenun. Produk memasang
+**lungsin** (benang tegak = struktur tetap); pemilik menenun **pakan**-nya (isi
+dan warna). Nama produknya pun diambil dari situ.
+
+Ini sekaligus menolak dua bawaan: kisi kartu identik khas SaaS, dan krem +
+serif kontras tinggi + foil emas + huruf skrip khas industri undangan.
+
+**Tiga lingkungan, satu kain:**
+
+| | Marketing | Dashboard | Undangan `/u/[slug]` |
+|---|---|---|---|
+| Dasar | Kain malam — nila pekat `#0A1426` (dibungkus kelas `dark`) | Kain siang — kapas `#EFECE4` | `themeConfig.palette` milik pemilik |
+| Font | Bricolage Grotesque (judul) + Archivo (teks) | sama | `themeConfig.font` |
+| Wadah | pita `.pakan` penuh lebar | helai `.kain` lewat `<Helai>` | pita `Section` berkerapatan ganti |
+
+**Kosakata tenun** (didefinisikan di `globals.css`):
+
+- `.lungsin` — benang tegak; garis kolom tipis di latar bagian halaman.
+  **Ini pengganti kisi kartu**, bukan tambahan di atasnya.
+- `.pakan` — pita penuh lebar; satu bagian halaman = satu pita.
+- `.pinggiran-atas` / `.pinggiran-bawah` — tepi kain yang dimatikan: dua benang
+  emas rapat.
+- `.kain` — sehelai kapas; **selalu kain siang**, termasuk di atas dasar nila.
+  Token di-reset di dalamnya supaya komponen anaknya ikut otomatis.
+- `.ikat` — penanda yang sedang terpilih (celup rintang), bukan kotak berbingkai.
+- `.menenun` — satu momen terorkestrasi: kain ditenun kiri→kanan saat halaman
+  dibuka; dipakai ulang sebagai penanda status terbit.
 
 Aturan yang mengikat:
 
-- **Jangan pakai kelas warna Tailwind mentah** (`text-neutral-500`, `bg-green-50`) di
-  dashboard/marketing. Pakai token: `text-muted-foreground`, `bg-success-surface`, dst.
-  Satu arti warna di seluruh aplikasi.
-- **Form tamu di halaman undangan tidak boleh memakai token dashboard** — warnanya
-  harus ikut tema undangan lewat kelas `.inv-field`, `.inv-button`, `.inv-chip`,
+- **Emas (`--benang`, `#C08A2E`) hanya sebagai garis 1px.** Tidak pernah jadi
+  bidang isi — itu foil, dan foil adalah kliseis yang ditolak dunia ini.
+- **Sudut 2px.** Kain punya tepi potong, bukan sudut membulat.
+- **Jangan pakai `Card` shadcn di dashboard** — pakai `<Helai>`
+  (`src/components/dashboard/Helai.tsx`). `Card` masih ada karena dipakai
+  komponen shadcn lain, tapi bukan wadah baku kita.
+- **Jangan pakai kelas warna Tailwind mentah** (`text-neutral-500`,
+  `bg-green-50`). Pakai token: `text-muted-foreground`, `bg-success-surface`,
+  `text-mengkudu`, dst. Satu arti warna di seluruh aplikasi.
+- **Form tamu di halaman undangan tidak boleh memakai token dashboard** —
+  warnanya ikut tema pemilik lewat `.inv-field`, `.inv-button`, `.inv-chip`,
   `.inv-card`. Jangan meneruskan warna sebagai prop ke tiap komponen.
 - **Editor tema hanya boleh menawarkan font yang benar-benar dimuat.** Sumbernya
   `HEADING_FONTS`/`BODY_FONTS` di `src/lib/font-stacks.ts`; menambah pilihan di
   sana wajib disertai deklarasi `next/font` di `fonts-invitation.ts`, kalau tidak
   pilihan pemilik diam-diam jatuh ke font bawaan browser.
-- **Ikon dari Lucide**, bukan emoji atau glyph Unicode.
 - Angka pada tabel & rekap memakai kelas `.tabular` agar kolomnya sejajar.
 
 ## 1. Prinsip Desain
@@ -49,7 +79,18 @@ Aturan yang mengikat:
 
 ### `/template` Galeri Template
 - Grid preview per kategori (Pernikahan, Aqiqah, Ulang Tahun, Korporat).
-- Klik → preview demo + tombol "Pakai Template Ini" (arahkan login bila belum).
+  Sampul kartu memakai palet bawaan template agar karakternya terbaca.
+- Tiap kartu punya dua aksi: **Lihat Contoh** → `/template/[slug]`, dan
+  **Pakai** → `createInvitation` (mengarahkan ke login bila belum masuk).
+
+### `/template/[slug]` Pratinjau Template
+- **Publik, tanpa login** — calon pemilik harus bisa menilai template sebelum
+  diminta mendaftar.
+- Dirender dari `defaultContent`/`defaultTheme`/`defaultSections` milik
+  template, bukan dari `Invitation` mana pun.
+- Selalu `interactive={false}`: form RSVP/ucapan/amplop di dalamnya tidak
+  mengirim apa pun. Bilah pratinjau menjelaskan bahwa isinya bisa diganti.
+- CTA "Pakai Template Ini" → login bila belum masuk.
 
 ### `/harga` Harga
 - Tabel 3 paket (Basic/Premium/Exclusive) dengan perbandingan fitur.

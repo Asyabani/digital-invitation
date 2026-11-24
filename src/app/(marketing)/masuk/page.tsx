@@ -1,16 +1,8 @@
-import Link from "next/link";
 import { signIn, auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 
 // Halaman dinamis (membaca sesi per-request). Lihat Next 16 Cache Components.
 export const instant = false;
@@ -20,41 +12,28 @@ export default async function MasukPage() {
   if (session?.user) redirect("/dashboard");
 
   return (
-    <main className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center gap-6 px-4 py-16 sm:px-6">
-      <Link
-        href="/"
-        className="font-display text-center text-lg font-semibold tracking-tight"
-      >
-        Undangan Digital
-      </Link>
+    <section className="pakan lungsin flex flex-1 items-center py-16 sm:py-24">
+      <div className="mx-auto w-full max-w-md px-5 sm:px-8">
+        <div className="kain pinggiran-atas pinggiran-bawah p-8 sm:p-10">
+          <h1 className="font-display text-3xl font-semibold">Masuk</h1>
+          <p className="mt-2 leading-relaxed text-muted-foreground">
+            Hanya pemilik acara yang perlu akun. Tamu Anda tidak akan pernah
+            diminta mendaftar.
+          </p>
 
-      <Card>
-        <CardHeader className="text-center">
-          <CardTitle className="font-display text-2xl">Masuk</CardTitle>
-          <CardDescription>
-            Masuk untuk membuat dan mengelola undangan Anda. Tamu tidak perlu
-            akun.
-          </CardDescription>
-        </CardHeader>
-
-        <CardContent className="space-y-5">
           <form
+            className="mt-8"
             action={async () => {
               "use server";
               await signIn("google", { redirectTo: "/dashboard" });
             }}
           >
-            <Button
-              type="submit"
-              variant="outline"
-              size="lg"
-              className="w-full"
-            >
-              Masuk dengan Google
+            <Button type="submit" variant="outline" size="lg" className="w-full">
+              Lanjutkan dengan Google
             </Button>
           </form>
 
-          <div className="flex items-center gap-3 text-xs text-muted-foreground">
+          <div className="my-7 flex items-center gap-4 text-xs uppercase tracking-widest text-muted-foreground">
             <span className="h-px flex-1 bg-border" />
             atau
             <span className="h-px flex-1 bg-border" />
@@ -66,7 +45,7 @@ export default async function MasukPage() {
               const email = String(formData.get("email") ?? "");
               await signIn("resend", { email, redirectTo: "/dashboard" });
             }}
-            className="space-y-3"
+            className="space-y-4"
           >
             <div className="space-y-1.5">
               <Label htmlFor="email">Email</Label>
@@ -82,12 +61,12 @@ export default async function MasukPage() {
             <Button type="submit" size="lg" className="w-full">
               Kirim tautan masuk
             </Button>
-            <p className="text-center text-xs text-muted-foreground">
-              Kami kirimkan tautan sekali pakai ke email Anda.
+            <p className="text-sm text-muted-foreground">
+              Kami kirimkan satu tautan sekali pakai ke email itu.
             </p>
           </form>
-        </CardContent>
-      </Card>
-    </main>
+        </div>
+      </div>
+    </section>
   );
 }

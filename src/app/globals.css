@@ -5,11 +5,26 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
-  Dua dunia visual (lihat docs/06):
-  - Dashboard & marketing  -> token di bawah ini: netral hangat + aksen rosewood.
-  - Halaman undangan /u/[slug] -> warna & font datang dari `themeConfig` tiap
-    undangan, jadi sengaja TIDAK memakai token ini.
+  DUNIA: LUNGSIN — kain tenun.
+
+  Kisi halaman adalah tenunan, bukan tumpukan kartu.
+  - lungsin  : benang tegak yang sudah terpasang di alat sebelum menenun.
+               Di sini: garis kolom tipis yang konstan di seluruh produk.
+  - pakan    : benang melintang. Di sini: pita penuh lebar; tiap bagian
+               halaman adalah satu pita dengan kerapatan berbeda.
+  - pinggiran: tepi kain yang sudah dimatikan. Di sini: tepi ganda benang
+               emas yang menandai awal dan akhir sehelai kain.
+  - ikat     : celup rintang. Di sini: tanda untuk yang sedang terpilih.
+
+  Dua lingkungan, satu kain:
+  - Marketing  -> kain malam: dasar nila pekat (dibungkus kelas `dark`).
+  - Dashboard  -> kain siang: bidang kapas terang untuk kerja berjam-jam.
+  - /u/[slug]  -> warna & font milik pemilik (`themeConfig`); produk hanya
+                  menyumbang struktur tenunnya lewat token `--inv-*`.
+
+  Emas HANYA sebagai benang — garis 1px. Tidak pernah jadi bidang isi.
 */
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -43,6 +58,13 @@
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
 
+  /* Benang — dipakai langsung oleh kelas tenun. */
+  --color-nila: var(--nila);
+  --color-nila-pekat: var(--nila-pekat);
+  --color-kapas: var(--kapas);
+  --color-mengkudu: var(--mengkudu);
+  --color-benang: var(--benang);
+
   /* Status — satu arti warna di seluruh aplikasi. */
   --color-success: var(--success);
   --color-success-foreground: var(--success-foreground);
@@ -51,100 +73,113 @@
   --color-warning-foreground: var(--warning-foreground);
   --color-warning-surface: var(--warning-surface);
 
-  --radius-sm: calc(var(--radius) * 0.6);
-  --radius-md: calc(var(--radius) * 0.8);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
-  --radius-2xl: calc(var(--radius) * 1.8);
-  --radius-3xl: calc(var(--radius) * 2.2);
-  --radius-4xl: calc(var(--radius) * 2.6);
+  /* Kain tidak punya sudut membulat; ia punya tepi potong. */
+  --radius-sm: 2px;
+  --radius-md: 2px;
+  --radius-lg: 3px;
+  --radius-xl: 3px;
+  --radius-2xl: 4px;
+  --radius-3xl: 4px;
+  --radius-4xl: 4px;
 }
 
 :root {
-  --background: oklch(0.993 0.004 85);
-  --foreground: oklch(0.235 0.014 55);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.235 0.014 55);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.235 0.014 55);
-  --primary: oklch(0.455 0.088 25);
-  --primary-foreground: oklch(0.985 0.006 80);
-  --secondary: oklch(0.962 0.009 70);
-  --secondary-foreground: oklch(0.3 0.025 40);
-  --muted: oklch(0.962 0.009 70);
-  --muted-foreground: oklch(0.515 0.016 55);
-  --accent: oklch(0.952 0.018 50);
-  --accent-foreground: oklch(0.34 0.055 30);
-  --destructive: oklch(0.545 0.198 27);
-  --border: oklch(0.912 0.009 70);
-  --input: oklch(0.896 0.011 70);
-  --ring: oklch(0.455 0.088 25);
+  /* Benang pokok — nilai mentah, sama di kain siang maupun malam. */
+  --nila: #13233f;
+  --nila-pekat: #0a1426;
+  --kapas: #e6e2d8;
+  --mengkudu: #9e2b1e;
+  --benang: #c08a2e;
 
-  --success: oklch(0.49 0.095 155);
-  --success-foreground: oklch(0.33 0.07 155);
-  --success-surface: oklch(0.958 0.028 155);
-  --warning: oklch(0.6 0.115 70);
-  --warning-foreground: oklch(0.4 0.085 60);
-  --warning-surface: oklch(0.965 0.035 80);
+  /* Jarak kolom lungsin. */
+  --lungsin-jarak: 2.5rem;
 
-  --chart-1: oklch(0.455 0.088 25);
-  --chart-2: oklch(0.6 0.115 70);
-  --chart-3: oklch(0.49 0.095 155);
-  --chart-4: oklch(0.515 0.016 55);
-  --chart-5: oklch(0.73 0.05 40);
-  --radius: 0.75rem;
+  /* --- Kain siang: dashboard --- */
+  --background: #efece4;
+  --foreground: #16213a;
+  --card: #f7f5f0;
+  --card-foreground: #16213a;
+  --popover: #f7f5f0;
+  --popover-foreground: #16213a;
+  --primary: #13233f;
+  --primary-foreground: #f2efe7;
+  --secondary: #e2ded2;
+  --secondary-foreground: #16213a;
+  --muted: #e4e0d5;
+  --muted-foreground: #5d6476;
+  --accent: #ddd8ca;
+  --accent-foreground: #13233f;
+  --destructive: #9e2b1e;
+  --border: #cfc9ba;
+  --input: #c4bdac;
+  --ring: #9e2b1e;
 
-  --sidebar: oklch(0.978 0.006 80);
-  --sidebar-foreground: oklch(0.235 0.014 55);
-  --sidebar-primary: oklch(0.455 0.088 25);
-  --sidebar-primary-foreground: oklch(0.985 0.006 80);
-  --sidebar-accent: oklch(0.952 0.018 50);
-  --sidebar-accent-foreground: oklch(0.34 0.055 30);
-  --sidebar-border: oklch(0.912 0.009 70);
-  --sidebar-ring: oklch(0.455 0.088 25);
+  --success: #2f6b4f;
+  --success-foreground: #22503a;
+  --success-surface: #dde5dc;
+  --warning: #9a6a16;
+  --warning-foreground: #6f4c0f;
+  --warning-surface: #eee3cd;
+
+  --chart-1: #13233f;
+  --chart-2: #9e2b1e;
+  --chart-3: #2f6b4f;
+  --chart-4: #c08a2e;
+  --chart-5: #5d6476;
+  --radius: 2px;
+
+  --sidebar: #e8e4da;
+  --sidebar-foreground: #16213a;
+  --sidebar-primary: #13233f;
+  --sidebar-primary-foreground: #f2efe7;
+  --sidebar-accent: #ddd8ca;
+  --sidebar-accent-foreground: #13233f;
+  --sidebar-border: #cfc9ba;
+  --sidebar-ring: #9e2b1e;
 }
 
+/* --- Kain malam: marketing --- */
 .dark {
-  --background: oklch(0.18 0.012 50);
-  --foreground: oklch(0.955 0.008 80);
-  --card: oklch(0.228 0.014 50);
-  --card-foreground: oklch(0.955 0.008 80);
-  --popover: oklch(0.228 0.014 50);
-  --popover-foreground: oklch(0.955 0.008 80);
-  --primary: oklch(0.74 0.09 30);
-  --primary-foreground: oklch(0.2 0.03 30);
-  --secondary: oklch(0.285 0.016 50);
-  --secondary-foreground: oklch(0.955 0.008 80);
-  --muted: oklch(0.285 0.016 50);
-  --muted-foreground: oklch(0.715 0.016 60);
-  --accent: oklch(0.315 0.03 40);
-  --accent-foreground: oklch(0.945 0.015 60);
-  --destructive: oklch(0.68 0.17 25);
-  --border: oklch(1 0 0 / 12%);
-  --input: oklch(1 0 0 / 16%);
-  --ring: oklch(0.74 0.09 30);
+  --background: #0a1426;
+  --foreground: #e6e2d8;
+  --card: #13233f;
+  --card-foreground: #e6e2d8;
+  --popover: #13233f;
+  --popover-foreground: #e6e2d8;
+  --primary: #e6e2d8;
+  --primary-foreground: #0a1426;
+  --secondary: #1b2d4d;
+  --secondary-foreground: #e6e2d8;
+  --muted: #1b2d4d;
+  --muted-foreground: #9aa4b8;
+  --accent: #22365a;
+  --accent-foreground: #efece4;
+  --destructive: #d2503f;
+  --border: #253a5e;
+  --input: #2d436a;
+  --ring: #c0432f;
 
-  --success: oklch(0.72 0.12 155);
-  --success-foreground: oklch(0.86 0.09 155);
-  --success-surface: oklch(0.3 0.05 155);
-  --warning: oklch(0.78 0.12 75);
-  --warning-foreground: oklch(0.89 0.08 80);
-  --warning-surface: oklch(0.32 0.05 70);
+  --success: #6fae8c;
+  --success-foreground: #a8d2bb;
+  --success-surface: #15392b;
+  --warning: #d6a44b;
+  --warning-foreground: #e8c585;
+  --warning-surface: #3b2d13;
 
-  --chart-1: oklch(0.74 0.09 30);
-  --chart-2: oklch(0.78 0.12 75);
-  --chart-3: oklch(0.72 0.12 155);
-  --chart-4: oklch(0.715 0.016 60);
-  --chart-5: oklch(0.55 0.05 40);
+  --chart-1: #e6e2d8;
+  --chart-2: #c0432f;
+  --chart-3: #6fae8c;
+  --chart-4: #c08a2e;
+  --chart-5: #9aa4b8;
 
-  --sidebar: oklch(0.228 0.014 50);
-  --sidebar-foreground: oklch(0.955 0.008 80);
-  --sidebar-primary: oklch(0.74 0.09 30);
-  --sidebar-primary-foreground: oklch(0.2 0.03 30);
-  --sidebar-accent: oklch(0.315 0.03 40);
-  --sidebar-accent-foreground: oklch(0.945 0.015 60);
-  --sidebar-border: oklch(1 0 0 / 12%);
-  --sidebar-ring: oklch(0.74 0.09 30);
+  --sidebar: #0f1c33;
+  --sidebar-foreground: #e6e2d8;
+  --sidebar-primary: #e6e2d8;
+  --sidebar-primary-foreground: #0a1426;
+  --sidebar-accent: #22365a;
+  --sidebar-accent-foreground: #efece4;
+  --sidebar-border: #253a5e;
+  --sidebar-ring: #c0432f;
 }
 
 @layer base {
@@ -153,35 +188,27 @@
   }
 
   /*
-    Font dipasang lewat variabel runtime dari next/font (lihat src/lib/fonts.ts).
-    Sengaja tidak lewat `@theme inline`, yang menyelesaikan nilai saat parse dan
-    tidak bisa membaca variabel runtime.
+    Font dipasang lewat variabel runtime dari next/font (src/lib/fonts.ts).
+    Bukan lewat `@theme inline`, yang menyelesaikan nilai saat parse dan tidak
+    bisa membaca variabel runtime.
   */
   html {
-    font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+    font-family: var(--font-sans-ui), ui-sans-serif, system-ui, sans-serif;
   }
 
   body {
     @apply bg-background text-foreground;
   }
 
-  code,
-  kbd,
-  samp,
-  pre,
-  .font-mono {
-    font-family: var(--font-geist-mono), ui-monospace, SFMono-Regular, monospace;
-  }
-
-  /* Judul bersuara serif — dipakai halaman marketing. */
   .font-display {
-    font-family: var(--font-display), ui-serif, Georgia, serif;
-    letter-spacing: -0.015em;
+    font-family: var(--font-display), var(--font-sans-ui), sans-serif;
+    letter-spacing: -0.03em;
+    text-wrap: balance;
   }
 
-  /* Permukaan yang tidak kita gambar sendiri tetap ikut desain. */
+  /* Permukaan yang tidak kita gambar sendiri tetap ikut kain. */
   ::selection {
-    background-color: oklch(0.455 0.088 25 / 0.16);
+    background-color: color-mix(in oklab, var(--mengkudu) 30%, transparent);
   }
 
   :focus-visible {
@@ -193,7 +220,6 @@
     text-underline-offset: 0.2em;
   }
 
-  /* Angka pada tabel & rekap sejajar kolomnya. */
   .tabular {
     font-variant-numeric: tabular-nums;
   }
@@ -209,47 +235,174 @@
   }
 }
 
-/*
-  Permukaan undangan publik.
-
-  Warna & font berasal dari `themeConfig` tiap undangan, bukan token dashboard.
-  `InvitationView` memasang --inv-* pada elemen akar; semua kelas di bawah ini
-  menurunkannya, sehingga form tamu ikut bertema tanpa perlu meneruskan warna
-  sebagai prop ke setiap komponen.
-*/
 @layer components {
+  /* ---------- Tenun: struktur halaman ---------- */
+
+  /**
+   * Lungsin — benang tegak yang sudah terpasang sebelum menenun dimulai.
+   * Dipasang pada bagian halaman, bukan pada kartu; ini pengganti kisi kartu.
+   */
+  .lungsin {
+    position: relative;
+    isolation: isolate;
+  }
+  .lungsin::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background-image: repeating-linear-gradient(
+      to right,
+      currentColor 0 1px,
+      transparent 1px var(--lungsin-jarak)
+    );
+    opacity: 0.07;
+  }
+
+  /** Pakan — pita penuh lebar. Tiap bagian halaman adalah satu pita. */
+  .pakan {
+    position: relative;
+    width: 100%;
+  }
+
+  /** Pinggiran — tepi kain yang sudah dimatikan: dua benang emas rapat. */
+  .pinggiran-atas {
+    border-top: 1px solid color-mix(in oklab, var(--benang) 70%, transparent);
+    box-shadow: 0 3px 0 -2px color-mix(in oklab, var(--benang) 45%, transparent);
+  }
+  .pinggiran-bawah {
+    border-bottom: 1px solid color-mix(in oklab, var(--benang) 70%, transparent);
+    box-shadow: 0 -3px 0 -2px color-mix(in oklab, var(--benang) 45%, transparent);
+  }
+
+  /**
+   * Sehelai kain — bidang kapas tempat teks dibaca.
+   *
+   * Selalu kain siang, termasuk di atas dasar nila: helai yang ditenun memang
+   * terang. Token di-reset di sini supaya komponen di dalamnya (tombol, input,
+   * lencana) ikut kain siang tanpa perlu tahu sedang berada di lingkungan mana.
+   */
+  .kain {
+    --background: #efece4;
+    --foreground: #16213a;
+    --card: #f7f5f0;
+    --card-foreground: #16213a;
+    --popover: #f7f5f0;
+    --popover-foreground: #16213a;
+    --primary: #13233f;
+    --primary-foreground: #f2efe7;
+    --secondary: #e2ded2;
+    --secondary-foreground: #16213a;
+    --muted: #e4e0d5;
+    --muted-foreground: #5d6476;
+    --accent: #ddd8ca;
+    --accent-foreground: #13233f;
+    --destructive: #9e2b1e;
+    --border: #cfc9ba;
+    --input: #c4bdac;
+    --ring: #9e2b1e;
+
+    background: #f3f1ea;
+    color: var(--foreground);
+    border-left: 1px solid color-mix(in oklab, var(--benang) 40%, transparent);
+    border-right: 1px solid color-mix(in oklab, var(--benang) 40%, transparent);
+  }
+
+  /** Ikat — tanda untuk yang sedang terpilih; celup rintang, bukan kotak. */
+  .ikat {
+    position: relative;
+  }
+  .ikat::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -1px;
+    height: 3px;
+    background: repeating-linear-gradient(
+      to right,
+      var(--mengkudu) 0 6px,
+      transparent 6px 9px
+    );
+  }
+
+  /**
+   * Satu momen yang diorkestrasi: kain ditenun baris demi baris saat halaman
+   * dibuka. Dipakai sekali di hero, lalu dipakai ulang sebagai penanda status
+   * terbit di dashboard. `prefers-reduced-motion` menerima kain yang sudah jadi.
+   */
+  @keyframes tenun {
+    from {
+      clip-path: inset(0 100% 0 0);
+    }
+    to {
+      clip-path: inset(0 0 0 0);
+    }
+  }
+  .menenun {
+    animation: tenun 900ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+  .menenun-2 {
+    animation-delay: 110ms;
+  }
+  .menenun-3 {
+    animation-delay: 220ms;
+  }
+  .menenun-4 {
+    animation-delay: 330ms;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .menenun {
+      animation: none;
+    }
+  }
+
+  /* ---------- Permukaan undangan publik ---------- */
+  /*
+    Warna & font berasal dari `themeConfig` tiap undangan, bukan token di atas.
+    `InvitationView` memasang --inv-* pada elemen akar; kelas di bawah ini
+    menurunkannya, sehingga form tamu ikut bertema tanpa meneruskan warna
+    sebagai prop ke setiap komponen. Struktur tenunnya tetap milik produk.
+  */
   .inv-heading {
     font-family: var(--inv-heading);
     color: var(--inv-primary);
     text-wrap: balance;
+    /* Undangan juga dirender di kolom pratinjau yang sempit. */
+    overflow-wrap: anywhere;
   }
 
-  .inv-rule {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.6rem;
-    color: var(--inv-secondary);
+  /** Pinggiran versi undangan: benang memakai warna pendukung pemilik. */
+  .inv-pinggiran {
+    border-top: 1px solid color-mix(in oklab, var(--inv-secondary) 80%, transparent);
+    box-shadow: 0 3px 0 -2px color-mix(in oklab, var(--inv-secondary) 50%, transparent);
   }
-  .inv-rule::before,
-  .inv-rule::after {
+
+  .inv-lungsin::before {
     content: "";
-    height: 1px;
-    width: 2.75rem;
-    background: currentColor;
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background-image: repeating-linear-gradient(
+      to right,
+      var(--inv-text) 0 1px,
+      transparent 1px var(--lungsin-jarak)
+    );
+    opacity: 0.05;
   }
 
   .inv-card {
-    border-radius: 0.875rem;
     background: color-mix(in oklab, var(--inv-text) 5%, transparent);
-    border: 1px solid color-mix(in oklab, var(--inv-text) 8%, transparent);
+    border: 1px solid color-mix(in oklab, var(--inv-text) 9%, transparent);
   }
 
   .inv-field {
     width: 100%;
-    border-radius: 0.625rem;
-    border: 1px solid color-mix(in oklab, var(--inv-text) 18%, transparent);
-    background: color-mix(in oklab, var(--inv-bg) 72%, white);
+    border: 1px solid color-mix(in oklab, var(--inv-text) 20%, transparent);
+    border-radius: 2px;
+    background: color-mix(in oklab, var(--inv-bg) 70%, white);
     color: var(--inv-text);
     padding: 0.625rem 0.875rem;
     font-size: 0.875rem;
@@ -270,13 +423,14 @@
     justify-content: center;
     gap: 0.4rem;
     min-height: 2.75rem;
-    border-radius: 0.625rem;
     border: 1px solid transparent;
+    border-radius: 2px;
     background: var(--inv-primary);
     color: var(--inv-bg);
     padding: 0.625rem 1.25rem;
     font-size: 0.875rem;
     font-weight: 500;
+    letter-spacing: 0.01em;
     transition: opacity 0.15s ease, transform 0.15s ease;
   }
   .inv-button:hover:not(:disabled) {
@@ -302,11 +456,11 @@
   .inv-chip {
     flex: 1 1 0;
     min-height: 2.75rem;
-    border-radius: 0.625rem;
-    border: 1px solid color-mix(in oklab, var(--inv-text) 18%, transparent);
+    border: 1px solid color-mix(in oklab, var(--inv-text) 20%, transparent);
+    border-radius: 2px;
     background: transparent;
     color: var(--inv-text);
-    padding: 0.5rem 0.5rem;
+    padding: 0.5rem;
     font-size: 0.8125rem;
     transition: all 0.15s ease;
   }

@@ -1,6 +1,8 @@
-# Undangan Digital
+# Lungsin (undangan digital)
 
-Platform web untuk membuat **undangan digital yang dapat dikustomisasi** (nikah, aqiqah, ulang tahun, acara korporat), menyasar pasar Indonesia. Model bisnis **B2C one-time per event**: user membuat & mengedit gratis (mode trial berwatermark), lalu membayar sekali untuk mem-*publish* dan membuka fitur premium.
+**Nama produk: Lungsin.** "Undangan Digital" adalah penamaan sementara yang sudah ditinggalkan; jangan dipakai lagi di UI atau copywriting. Lungsin = benang tegak di alat tenun — produk memasang strukturnya, pemilik menenun isinya.
+
+Platform web untuk merangkai **undangan digital yang dapat dikustomisasi** (nikah, aqiqah, ulang tahun, acara korporat), menyasar pasar Indonesia. Model bisnis **B2C one-time per event**: user membuat & mengedit gratis (mode trial berwatermark), lalu membayar sekali untuk mem-*publish* dan membuka fitur premium.
 
 **Status saat ini: Fase 3 (fitur lanjutan) SELESAI.** Fase 0–3 beres: fondasi, MVP inti (template → editor → `/u/[slug]` → RSVP → buku tamu + moderasi), monetisasi (**trial → bayar → publish** via Xendit: invoice, webhook idempoten, paket, masa aktif 6 bulan, watermark per paket, cron kedaluwarsa), dan fitur Should (editor tema + toggle/urutan section, kelola tamu + link personal + share WhatsApp + import massal, amplop digital, dashboard rekap, add-to-calendar, musik latar). Semua `typecheck`/`lint`/`build` hijau; jalur publik, webhook, dan privasi data terverifikasi end-to-end di lokal. Sebelum menulis kode, baca dokumen desain di `docs/`. Fase berikutnya: Fase 4 (pasca-MVP — section builder drag-drop, custom domain, analytics) — lihat `docs/09-roadmap.md`.
 

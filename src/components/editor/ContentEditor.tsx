@@ -14,12 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Helai, HelaiKepala, HelaiIsi } from "@/components/dashboard/Helai";
 
 type Props = {
   invitationId: string;
@@ -85,11 +80,9 @@ export function ContentEditor({
   return (
     <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,24rem)]">
       <div className="space-y-5">
-        <Card>
-          <CardHeader>
-            <CardTitle>Mempelai / Subjek</CardTitle>
-          </CardHeader>
-          <CardContent className="grid gap-4 sm:grid-cols-2">
+        <Helai>
+          <HelaiKepala title="Mempelai / Subjek" />
+          <HelaiIsi className="grid gap-4 sm:grid-cols-2">
             <Field label="Nama pria" htmlFor="groomName">
               <Input
                 id="groomName"
@@ -104,14 +97,12 @@ export function ContentEditor({
                 onChange={(e) => patchSubject({ brideName: e.target.value })}
               />
             </Field>
-          </CardContent>
-        </Card>
+          </HelaiIsi>
+        </Helai>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Acara</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
+        <Helai>
+          <HelaiKepala title="Acara" />
+          <HelaiIsi className="space-y-4">
             <div className="grid gap-4 sm:grid-cols-2">
               <Field label="Tanggal" htmlFor="date">
                 <Input
@@ -164,14 +155,12 @@ export function ContentEditor({
                 }
               />
             </Field>
-          </CardContent>
-        </Card>
+          </HelaiIsi>
+        </Helai>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Galeri</CardTitle>
-          </CardHeader>
-          <CardContent>
+        <Helai>
+          <HelaiKepala title="Galeri" />
+          <HelaiIsi>
             <Field
               label="URL gambar"
               htmlFor="gallery"
@@ -193,14 +182,12 @@ export function ContentEditor({
                 }
               />
             </Field>
-          </CardContent>
-        </Card>
+          </HelaiIsi>
+        </Helai>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Kutipan pembuka</CardTitle>
-          </CardHeader>
-          <CardContent>
+        <Helai>
+          <HelaiKepala title="Kutipan pembuka" />
+          <HelaiIsi>
             <Field label="Teks" htmlFor="quote" hint="Opsional.">
               <Textarea
                 id="quote"
@@ -216,8 +203,8 @@ export function ContentEditor({
                 }
               />
             </Field>
-          </CardContent>
-        </Card>
+          </HelaiIsi>
+        </Helai>
       </div>
 
       {/* PRATINJAU */}

@@ -1,23 +1,19 @@
 import Link from "next/link";
-import {
-  FileText,
-  Palette,
-  Users,
-  CalendarCheck,
-  MessageSquare,
-  Gift,
-} from "lucide-react";
 
 const TABS = [
-  { href: "edit", label: "Konten", Icon: FileText },
-  { href: "tema", label: "Tema", Icon: Palette },
-  { href: "tamu", label: "Tamu", Icon: Users },
-  { href: "rsvp", label: "RSVP", Icon: CalendarCheck },
-  { href: "ucapan", label: "Ucapan", Icon: MessageSquare },
-  { href: "amplop", label: "Amplop", Icon: Gift },
+  { href: "edit", label: "Isi" },
+  { href: "tema", label: "Tema" },
+  { href: "tamu", label: "Tamu" },
+  { href: "rsvp", label: "RSVP" },
+  { href: "ucapan", label: "Ucapan" },
+  { href: "amplop", label: "Amplop" },
 ] as const;
 
-/** Navigasi antar halaman pengelolaan satu undangan (docs/06 §3). */
+/**
+ * Navigasi antar bagian satu undangan (docs/06 §3).
+ * Satu pita benang; yang sedang dibuka ditandai ikat — celup rintang di
+ * bawahnya, bukan kotak berbingkai.
+ */
 export function InvitationNav({
   invitationId,
   active,
@@ -28,22 +24,19 @@ export function InvitationNav({
   return (
     <nav
       aria-label="Bagian undangan"
-      className="-mx-1 flex gap-1 overflow-x-auto rounded-xl bg-muted/70 p-1"
+      className="flex gap-1 overflow-x-auto border-b border-border/70 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
     >
-      {TABS.map(({ href, label, Icon }) => {
+      {TABS.map(({ href, label }) => {
         const isActive = href === active;
         return (
           <Link
             key={href}
             href={`/dashboard/${invitationId}/${href}`}
             aria-current={isActive ? "page" : undefined}
-            className={`flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm transition-colors ${
-              isActive
-                ? "bg-card font-medium text-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
+            className={`${
+              isActive ? "ikat text-foreground" : "text-muted-foreground"
+            } relative shrink-0 px-4 py-3 text-sm transition-colors hover:text-foreground`}
           >
-            <Icon className="size-4" aria-hidden />
             {label}
           </Link>
         );
