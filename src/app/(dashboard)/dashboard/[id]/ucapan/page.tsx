@@ -4,6 +4,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { moderateGreeting } from "@/lib/actions/greeting";
 import { containsProfanity } from "@/lib/moderation";
+import { InvitationNav } from "@/components/dashboard/InvitationNav";
 
 export const instant = false;
 
@@ -39,6 +40,7 @@ export default async function UcapanModerasiPage({
         </Link>
         <h1 className="text-xl font-semibold">Moderasi Ucapan</h1>
       </div>
+      <InvitationNav invitationId={id} active="ucapan" />
 
       <section className="space-y-3">
         <h2 className="text-sm font-semibold uppercase tracking-wide text-neutral-500">

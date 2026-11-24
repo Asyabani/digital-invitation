@@ -2,10 +2,14 @@ import type {
   Content,
   Theme,
   SectionsOrder,
+  GiftConfig,
 } from "@/lib/validation/invitation";
+import { googleCalendarUrl, whatsappShareUrl } from "@/lib/calendar";
 import { Countdown } from "./Countdown";
 import { RsvpForm } from "./RsvpForm";
 import { GreetingForm } from "./GreetingForm";
+import { GiftForm } from "./GiftForm";
+import { MusicPlayer } from "./MusicPlayer";
 
 type Greeting = { id: string; name: string; message: string };
 
@@ -18,6 +22,10 @@ export type InvitationViewProps = {
   guestName?: string;
   personalSlug?: string;
   greetings?: Greeting[];
+  /** Konfigurasi amplop digital; `null` = section amplop tidak dirender. */
+  giftConfig?: GiftConfig | null;
+  /** URL publik undangan, untuk tombol bagikan WhatsApp. */
+  publicUrl?: string;
   interactive?: boolean;
   showWatermark?: boolean;
   /** Teks watermark; default = pesan pratinjau untuk undangan yang belum terbit. */
@@ -54,6 +62,8 @@ export function InvitationView(props: InvitationViewProps) {
     guestName,
     personalSlug,
     greetings = [],
+    giftConfig = null,
+    publicUrl,
     interactive = true,
     showWatermark = false,
     watermarkLabel = "Mode pratinjau — terbitkan untuk membagikan ke tamu.",
@@ -86,6 +96,15 @@ export function InvitationView(props: InvitationViewProps) {
     fontFamily: theme.font.heading,
     color: theme.palette.primary,
   };
+
+  const calendarUrl = googleCalendarUrl({
+    title,
+    date: content.event.date,
+    time: content.event.time,
+    timezone: content.event.timezone,
+    venueName: content.event.venueName,
+    address: content.event.address,
+  });
 
   function render(key: string) {
     switch (key) {
@@ -174,17 +193,30 @@ export function InvitationView(props: InvitationViewProps) {
             <p className="text-sm opacity-80">
               {prettyDate} · {content.event.time} {content.event.timezone}
             </p>
-            {content.event.maps?.url && (
-              <a
-                href={content.event.maps.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-block rounded-lg border px-4 py-2 text-sm"
-                style={{ borderColor: theme.palette.primary }}
-              >
-                Buka Google Maps
-              </a>
-            )}
+            <div className="flex flex-wrap justify-center gap-2">
+              {content.event.maps?.url && (
+                <a
+                  href={content.event.maps.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-block rounded-lg border px-4 py-2 text-sm"
+                  style={{ borderColor: theme.palette.primary }}
+                >
+                  Buka Google Maps
+                </a>
+              )}
+              {calendarUrl && (
+                <a
+                  href={calendarUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-block rounded-lg border px-4 py-2 text-sm"
+                  style={{ borderColor: theme.palette.primary }}
+                >
+                  Tambah ke Kalender
+                </a>
+              )}
+            </div>
           </Section>
         );
       case "rsvp":
@@ -216,6 +248,24 @@ export function InvitationView(props: InvitationViewProps) {
             />
           </Section>
         );
+      case "gift":
+        // Hanya dirender bila pemilik sudah mengisi rekening/QRIS dan paketnya
+        // memuat fitur amplop digital (ditentukan pemanggil lewat `giftConfig`).
+        return giftConfig ? (
+          <Section key={key}>
+            <h2 className="text-xl font-semibold" style={headingStyle}>
+              Amplop Digital
+            </h2>
+            <GiftForm
+              invitationId={invitationId}
+              personalSlug={personalSlug}
+              defaultName={guestName}
+              giftConfig={giftConfig}
+              interactive={interactive}
+              accentColor={theme.palette.primary}
+            />
+          </Section>
+        ) : null;
       case "closing":
         return (
           <Section key={key}>
@@ -226,9 +276,22 @@ export function InvitationView(props: InvitationViewProps) {
             <h2 className="text-2xl font-semibold" style={headingStyle}>
               Terima Kasih
             </h2>
+            {publicUrl && (
+              <a
+                href={whatsappShareUrl(
+                  `Undangan ${title} — ${prettyDate}`,
+                  publicUrl,
+                )}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-block rounded-lg border px-4 py-2 text-sm"
+                style={{ borderColor: theme.palette.primary }}
+              >
+                Bagikan lewat WhatsApp
+              </a>
+            )}
           </Section>
         );
-      // "gift" dirender di Fase 3 (amplop digital).
       default:
         return null;
     }
@@ -242,6 +305,13 @@ export function InvitationView(props: InvitationViewProps) {
         </div>
       )}
       {ordered.map((s) => render(s.key))}
+      {theme.music?.url && (
+        <MusicPlayer
+          url={theme.music.url}
+          autoplay={interactive && theme.music.autoplay}
+          accentColor={theme.palette.primary}
+        />
+      )}
     </div>
   );
 }

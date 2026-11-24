@@ -60,11 +60,13 @@ Semua dokumen perancangan ada di `docs/`:
 
 ## Status
 
-**Fase 0–2 selesai:** fondasi, MVP inti (template → editor → halaman publik →
-RSVP → buku tamu + moderasi), dan monetisasi (paket, invoice Xendit, webhook,
-masa aktif 6 bulan, watermark per paket, cron kedaluwarsa).
-Berikutnya **Fase 3** — tema, kelola tamu + link personal, amplop digital,
-dashboard rekap. Lihat `docs/09-roadmap.md`.
+**Fase 0–3 selesai:** fondasi, MVP inti (template → editor → halaman publik →
+RSVP → buku tamu + moderasi), monetisasi (paket, invoice Xendit, webhook, masa
+aktif 6 bulan, watermark per paket, cron kedaluwarsa), dan fitur lanjutan
+(editor tema + urutan section, kelola tamu & link personal, amplop digital,
+dashboard rekap, add-to-calendar, musik latar).
+Berikutnya **Fase 4** — section builder drag-drop, custom domain, analytics.
+Lihat `docs/09-roadmap.md`.
 
 ## Menjalankan
 

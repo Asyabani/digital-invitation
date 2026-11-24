@@ -18,8 +18,9 @@ export function slugify(input: string): string {
 export async function uniqueSlug(
   base: string,
   exists: (slug: string) => Promise<boolean>,
+  fallback = "undangan",
 ): Promise<string> {
-  const root = slugify(base) || "undangan";
+  const root = slugify(base) || fallback;
   if (!(await exists(root))) return root;
   for (let i = 2; i < 1000; i++) {
     const candidate = `${root}-${i}`;

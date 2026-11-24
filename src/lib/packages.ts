@@ -68,3 +68,21 @@ export const PACKAGES: Record<Package, PackageInfo> = {
 export function getPackage(pkg: Package): PackageInfo {
   return PACKAGES[pkg];
 }
+
+export type FeatureKey = keyof PackageInfo["features"];
+
+/**
+ * Apakah sebuah undangan boleh memakai fitur tertentu?
+ *
+ * `pkg === null` = undangan masih trial (belum dibayar). Saat trial semua fitur
+ * editor boleh **dicoba** agar pemilik tahu apa yang dibeli — satu-satunya
+ * pengecualian adalah `removeWatermark`, yang hanya berlaku setelah membeli
+ * paket yang memuatnya. Lihat docs/05 §2.
+ */
+export function canUse(pkg: Package | null, key: FeatureKey): boolean {
+  if (key === "removeWatermark") {
+    return pkg !== null && PACKAGES[pkg].features.removeWatermark;
+  }
+  if (pkg === null) return true;
+  return PACKAGES[pkg].features[key];
+}

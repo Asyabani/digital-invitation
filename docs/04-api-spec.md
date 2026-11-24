@@ -47,12 +47,21 @@ Setiap action memverifikasi `session.user.id === invitation.userId`.
   → batch; skip/append suffix untuk slug bentrok.
 - `updateGuest(input: { id, name?, category? })`
 - `deleteGuest(input: { id })`
-- `markGuestSent(input: { id })` → set `sentAt = now()`.
+- `markGuestSent(input: { id })` → **toggle** `sentAt` (isi `now()` bila kosong,
+  kosongkan bila sudah terisi) sehingga pemilik bisa membatalkan salah tandai.
+
+> Semua aksi tamu menolak undangan yang paketnya tidak memuat `personalLinks`
+> (Basic). Saat masih trial (`package = null`) fitur ini boleh dicoba — lihat
+> `canUse()` di `src/lib/packages.ts`.
 
 ### Moderasi & rekap
 - `moderateGreeting(input: { id, status: "APPROVED" | "REJECTED" })`
   → ubah status; revalidate halaman publik.
-- `getDashboardSummary(invitationId)` → ringkasan RSVP/ucapan/amplop (read).
+- `getDashboardSummary(invitationId)` → ringkasan RSVP/ucapan/amplop.
+  **Bukan** Server Action: diimplementasikan sebagai fungsi baca sisi server di
+  `src/lib/summary.ts` dan dipanggil langsung dari RSC, agar tidak menambah
+  endpoint yang bisa dipanggil dari luar. Pemanggil wajib sudah memverifikasi
+  kepemilikan undangan.
 
 ### Pembayaran (detail di docs/05)
 - `createPayment(input: { invitationId, package: Package })`
@@ -94,6 +103,8 @@ Body:
 ```
 - Simpan `GiftConfirmation`. `amount` **tidak** pernah dikembalikan ke publik.
 - Return `{ ok: true }` (tanpa echo nominal).
+- `404` bila paket undangan tidak memuat `giftEnvelope` (Basic) — sama seperti
+  undangan yang tidak tersedia, agar tidak membocorkan konfigurasi paket.
 
 ### `GET /api/invitations/[id]/greetings` (publik, read)
 - Hanya `Greeting` `status = APPROVED`, paginated. Untuk menampilkan ucapan di

@@ -2,6 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { InvitationNav } from "@/components/dashboard/InvitationNav";
 
 export const instant = false;
 
@@ -49,6 +50,7 @@ export default async function RsvpRekapPage({
         </Link>
         <h1 className="text-xl font-semibold">Rekap RSVP</h1>
       </div>
+      <InvitationNav invitationId={id} active="rsvp" />
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         {summary.map((s) => (

@@ -2,7 +2,8 @@ import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { getPackage } from "@/lib/packages";
+import { canUse } from "@/lib/packages";
+import { getDashboardSummary } from "@/lib/summary";
 import {
   contentSchema,
   themeSchema,
@@ -10,6 +11,8 @@ import {
 } from "@/lib/validation/invitation";
 import { ContentEditor } from "@/components/editor/ContentEditor";
 import { PublishPanel } from "@/components/editor/PublishPanel";
+import { InvitationNav } from "@/components/dashboard/InvitationNav";
+import { SummaryCards } from "@/components/dashboard/SummaryCards";
 
 export const instant = false;
 
@@ -40,29 +43,23 @@ export default async function EditInvitationPage({
     select: { invoiceUrl: true, package: true },
   });
 
+  const summary = await getDashboardSummary(inv.id);
+
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "";
-  const info = inv.package ? getPackage(inv.package) : null;
   // Watermark hilang hanya untuk paket yang memang membelinya (docs/05 §2).
-  const showWatermark = !info?.features.removeWatermark;
+  const showWatermark = !canUse(inv.package, "removeWatermark");
 
   return (
     <div className="mx-auto max-w-6xl space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <Link href="/dashboard" className="text-sm text-neutral-500 hover:underline">
-            ← Undangan Saya
-          </Link>
-          <h1 className="text-xl font-semibold">{inv.title}</h1>
-        </div>
-        <nav className="flex gap-4 text-sm">
-          <Link href={`/dashboard/${id}/rsvp`} className="hover:underline">
-            RSVP
-          </Link>
-          <Link href={`/dashboard/${id}/ucapan`} className="hover:underline">
-            Ucapan
-          </Link>
-        </nav>
+      <div>
+        <Link href="/dashboard" className="text-sm text-neutral-500 hover:underline">
+          ← Undangan Saya
+        </Link>
+        <h1 className="text-xl font-semibold">{inv.title}</h1>
       </div>
+      <InvitationNav invitationId={id} active="edit" />
+
+      <SummaryCards invitationId={inv.id} summary={summary} />
 
       <PublishPanel
         invitationId={inv.id}

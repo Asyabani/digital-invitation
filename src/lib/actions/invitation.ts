@@ -6,8 +6,13 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { uniqueSlug } from "@/lib/slug";
 import { ownInvitation } from "@/lib/owner";
-import { contentSchema } from "@/lib/validation/invitation";
-import type { Prisma } from "@prisma/client";
+import {
+  contentSchema,
+  themeSchema,
+  sectionsOrderSchema,
+  giftConfigSchema,
+} from "@/lib/validation/invitation";
+import { Prisma } from "@prisma/client";
 
 /** F2 — buat undangan baru dari template. Dipakai sebagai form action. */
 export async function createInvitation(formData: FormData) {
@@ -50,6 +55,54 @@ export async function updateInvitationContent(id: string, rawContent: unknown) {
     data: { content: content as Prisma.InputJsonValue },
   });
   revalidatePath(`/dashboard/${id}/edit`);
+  revalidatePath(`/u/${inv.slug}`);
+  return { ok: true as const };
+}
+
+/** F4 — simpan tema (palet, font, musik). */
+export async function updateInvitationTheme(id: string, rawTheme: unknown) {
+  const inv = await ownInvitation(id);
+  const themeConfig = themeSchema.parse(rawTheme);
+  await prisma.invitation.update({
+    where: { id },
+    data: { themeConfig: themeConfig as Prisma.InputJsonValue },
+  });
+  revalidatePath(`/dashboard/${id}/tema`);
+  revalidatePath(`/dashboard/${id}/edit`);
+  revalidatePath(`/u/${inv.slug}`);
+  return { ok: true as const };
+}
+
+/** F4 — simpan toggle & urutan section. */
+export async function updateSectionsOrder(id: string, rawSections: unknown) {
+  const inv = await ownInvitation(id);
+  const sectionsOrder = sectionsOrderSchema.parse(rawSections);
+  await prisma.invitation.update({
+    where: { id },
+    data: { sectionsOrder: sectionsOrder as Prisma.InputJsonValue },
+  });
+  revalidatePath(`/dashboard/${id}/tema`);
+  revalidatePath(`/dashboard/${id}/edit`);
+  revalidatePath(`/u/${inv.slug}`);
+  return { ok: true as const };
+}
+
+/**
+ * F9 — simpan konfigurasi amplop digital (rekening/QRIS).
+ * `null` menghapus konfigurasi. Data ini ditampilkan ke tamu, tetapi daftar
+ * konfirmasi & nominalnya tetap privat (docs/01 F9).
+ */
+export async function updateGiftConfig(id: string, rawGiftConfig: unknown) {
+  const inv = await ownInvitation(id);
+  const giftConfig =
+    rawGiftConfig === null ? null : giftConfigSchema.parse(rawGiftConfig);
+  await prisma.invitation.update({
+    where: { id },
+    data: {
+      giftConfig: (giftConfig as Prisma.InputJsonValue) ?? Prisma.DbNull,
+    },
+  });
+  revalidatePath(`/dashboard/${id}/amplop`);
   revalidatePath(`/u/${inv.slug}`);
   return { ok: true as const };
 }

@@ -69,15 +69,23 @@ menunggu kredensial (`XENDIT_SECRET_KEY`), begitu pula alur ber-login
 
 **Tujuan:** melengkapi fitur "Should" — tema, link personal, amplop, dashboard rekap.
 
-- [ ] Editor tema (F4): palet, font, musik, toggle & urutan section.
-- [ ] Kelola tamu + link personal (F5): `personalSlug`, `?to=`, share WhatsApp,
-      import massal.
-- [ ] Amplop digital (F9): `giftConfig` + form konfirmasi kado (privat).
-- [ ] Dashboard rekap (F11): ringkasan RSVP/ucapan/amplop.
-- [ ] Add-to-calendar + musik custom.
+- [x] Editor tema (F4): palet (preset + custom), font, musik, toggle & urutan
+      section (tombol naik/turun; drag-drop menyusul di Fase 4).
+- [x] Kelola tamu + link personal (F5): `personalSlug`, `?to=`, share WhatsApp,
+      import massal (tempel daftar, `Nama, Kategori` per baris).
+- [x] Amplop digital (F9): `giftConfig` + form konfirmasi kado (privat).
+- [x] Dashboard rekap (F11): ringkasan RSVP/ucapan/amplop per undangan.
+- [x] Add-to-calendar (Google Calendar) + musik custom (pemutar mengambang,
+      tanpa autoplay memaksa).
 
-**DoD:** semua fitur Should berjalan; data privat (tamu/nominal) tidak bocor ke
-publik (diverifikasi).
+**DoD:** ✅ fitur Should berjalan dan privasi diverifikasi end-to-end di lokal:
+amplop hanya tampil bila `giftConfig` terisi **dan** paket memuat
+`giftEnvelope` (Basic → section hilang + endpoint `404`), nominal kado tidak
+pernah muncul di HTML publik, link personal `?to=` memunculkan nama tamu dan
+menautkan konfirmasi ke `Guest`, toggle & urutan section tercermin di halaman
+publik, serta helper (slug tamu bentrok, parser impor, URL kalender per zona
+waktu) lulus uji. Bagian ber-login (simpan tema, CRUD tamu, simpan rekening)
+lolos `typecheck`/`lint`/`build`; uji klik penuh menunggu kredensial OAuth.
 
 ## Fase 4 — Pasca-MVP (Future)
 

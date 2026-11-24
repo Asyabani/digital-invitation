@@ -17,3 +17,17 @@ export async function ownInvitation(id: string) {
   }
   return inv;
 }
+
+/** Pastikan tamu milik undangan user yang login. Kembalikan tamu + undangannya. */
+export async function ownGuest(guestId: string) {
+  const session = await auth();
+  if (!session?.user) redirect("/masuk");
+  const guest = await prisma.guest.findUnique({
+    where: { id: guestId },
+    include: { invitation: { select: { id: true, slug: true, userId: true } } },
+  });
+  if (!guest || guest.invitation.userId !== session.user.id) {
+    throw new Error("Tamu tidak ditemukan atau bukan milik Anda.");
+  }
+  return guest;
+}

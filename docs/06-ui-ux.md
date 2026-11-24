@@ -46,7 +46,9 @@
 
 ### `/dashboard/[id]/tema` Editor Tema
 - Pilih palet warna (preset + custom), font (heading/body), musik latar.
-- Daftar section dengan toggle on/off + drag untuk urutkan (`sectionsOrder`).
+- Daftar section dengan toggle on/off + urutkan (`sectionsOrder`).
+  **Implementasi MVP:** tombol naik/turun (aksesibel via keyboard); drag-drop
+  menyusul bersama section builder di Fase 4.
 
 ### `/dashboard/[id]/tamu` Kelola Tamu
 - Tabel tamu: nama, kategori, link personal, status terkirim.
@@ -90,8 +92,11 @@ Elemen global:
 - **Musik latar**: tombol play/pause mengambang; tidak autoplay memaksa (hormati
   kebijakan browser), mulai saat "Buka Undangan" ditekan.
 - **Tombol share WhatsApp**.
-- **Watermark** tampil bila undangan belum `PAID` (mode preview).
-- Jika `EXPIRED`: tampilkan pesan sopan "Undangan telah berakhir".
+- **Watermark** tampil selama paket belum memuat `removeWatermark` (trial dan
+  paket Basic). Lihat `docs/05` §2.
+- Jika `EXPIRED`: tampilkan pesan sopan "Undangan sudah tidak aktif".
+- **Amplop digital** hanya dirender bila pemilik mengisi `giftConfig` **dan**
+  paketnya memuat `giftEnvelope`.
 
 ## 5. Copywriting (contoh, Bahasa Indonesia)
 

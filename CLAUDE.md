@@ -2,7 +2,7 @@
 
 Platform web untuk membuat **undangan digital yang dapat dikustomisasi** (nikah, aqiqah, ulang tahun, acara korporat), menyasar pasar Indonesia. Model bisnis **B2C one-time per event**: user membuat & mengedit gratis (mode trial berwatermark), lalu membayar sekali untuk mem-*publish* dan membuka fitur premium.
 
-**Status saat ini: Fase 2 (monetisasi) SELESAI.** Fase 0 (fondasi) + Fase 1 (MVP inti) + Fase 2 beres: buat undangan dari template, editor konten + preview live, halaman publik `/u/[slug]`, RSVP, buku tamu + moderasi, lalu alur **trial → bayar → publish** via Xendit (invoice, webhook idempoten, paket & masa aktif 6 bulan, watermark per paket, cron kedaluwarsa). `publishForTesting` sudah dihapus. Semua `typecheck`/`lint`/`build` hijau; alur publik & webhook terverifikasi end-to-end di lokal. Sebelum menulis kode, baca dokumen desain di `docs/`. Fase berikutnya: Fase 3 (fitur lanjutan — tema, tamu & link personal, amplop digital, dashboard rekap) — lihat `docs/09-roadmap.md`.
+**Status saat ini: Fase 3 (fitur lanjutan) SELESAI.** Fase 0–3 beres: fondasi, MVP inti (template → editor → `/u/[slug]` → RSVP → buku tamu + moderasi), monetisasi (**trial → bayar → publish** via Xendit: invoice, webhook idempoten, paket, masa aktif 6 bulan, watermark per paket, cron kedaluwarsa), dan fitur Should (editor tema + toggle/urutan section, kelola tamu + link personal + share WhatsApp + import massal, amplop digital, dashboard rekap, add-to-calendar, musik latar). Semua `typecheck`/`lint`/`build` hijau; jalur publik, webhook, dan privasi data terverifikasi end-to-end di lokal. Sebelum menulis kode, baca dokumen desain di `docs/`. Fase berikutnya: Fase 4 (pasca-MVP — section builder drag-drop, custom domain, analytics) — lihat `docs/09-roadmap.md`.
 
 Setup lokal:
 
@@ -50,6 +50,8 @@ Yang **wajib** untuk menjalankan editor hanya `DATABASE_URL` (Postgres). Kunci X
 - **Soft 404 di `/u/[slug]`** — karena PPR mengirim shell lebih dulu, `notFound()` menghasilkan **status 200 dengan body halaman 404**. Bukan kebocoran (draft & slug tak dikenal identik), tapi jangan uji dengan `curl -w "%{http_code}"` lalu menyimpulkan undangan draft bocor. Lihat catatan di `docs/04` §5.
 - **`pnpm dev` bisa gagal `Too many open files`** di mesin ini (`fs.inotify.max_user_instances` = 128 dipakai dev server project lain). Tutup dev server lain, atau uji lewat `pnpm build && PORT=xxxx pnpm start`.
 - **Status bayar hanya dari webhook.** Jangan pernah menetapkan `PAID`/`PUBLISHED` dari redirect `?pay=success` — itu cuma pesan UI.
+- **Gating fitur paket lewat `canUse()`** di `src/lib/packages.ts`, bukan `if (package === ...)` yang tersebar. Saat trial (`package = null`) semua fitur boleh dicoba KECUALI `removeWatermark`.
+- **Helper owner ada di `src/lib/owner.ts`** (`ownInvitation`, `ownGuest`) — sengaja di luar file `"use server"`, karena setiap export di file `"use server"` menjadi endpoint yang bisa dipanggil dari browser.
 
 ## Konvensi
 

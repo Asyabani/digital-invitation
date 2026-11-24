@@ -1,11 +1,12 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { getInvitationForPublic, findGuest } from "@/lib/public";
-import { getPackage } from "@/lib/packages";
+import { canUse } from "@/lib/packages";
 import {
   contentSchema,
   themeSchema,
   sectionsOrderSchema,
+  giftConfigSchema,
 } from "@/lib/validation/invitation";
 import { InvitationView } from "@/components/invitation/InvitationView";
 
@@ -53,8 +54,14 @@ export default async function PublicInvitationPage({
     select: { id: true, name: true, message: true },
   });
 
-  // Watermark branding hanya hilang pada paket yang memuat fitur itu.
-  const info = inv.package ? getPackage(inv.package) : null;
+  // Amplop digital hanya tampil bila pemilik mengisinya DAN paketnya memuat
+  // fitur tersebut. `giftConfig` berisi rekening/QRIS (boleh dilihat tamu);
+  // daftar konfirmasi & nominalnya tetap privat untuk pemilik (docs/01 F9).
+  const gift = canUse(inv.package, "giftEnvelope")
+    ? giftConfigSchema.safeParse(inv.giftConfig)
+    : null;
+
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "";
 
   return (
     <InvitationView
@@ -66,8 +73,10 @@ export default async function PublicInvitationPage({
       guestName={guest?.name ?? (to ? decodeURIComponent(to) : undefined)}
       personalSlug={to}
       greetings={greetings}
+      giftConfig={gift?.success ? gift.data : null}
+      publicUrl={appUrl ? `${appUrl}/u/${inv.slug}` : undefined}
       interactive
-      showWatermark={!info?.features.removeWatermark}
+      showWatermark={!canUse(inv.package, "removeWatermark")}
       watermarkLabel="Dibuat dengan Undangan Digital"
     />
   );
