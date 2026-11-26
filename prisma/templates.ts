@@ -1,0 +1,727 @@
+/*
+  Katalog template bawaan — 10 per kategori.
+
+  Template hanya titik awal: pemilik bisa mengubah warna, font, urutan bagian,
+  dan setiap kata setelahnya. Yang membedakan satu template dari yang lain di
+  sini adalah PALET + PASANGAN FONT + SET BAGIAN yang masuk akal untuk
+  kategorinya. Sebelumnya ketiga template contoh berbagi tema yang persis sama,
+  jadi namanya saja yang berbeda.
+
+  Font yang boleh dipakai di sini terbatas pada HEADING_FONTS/BODY_FONTS di
+  `src/lib/font-stacks.ts`. Nama di luar daftar itu tidak dideklarasikan di
+  `fonts-invitation.ts` dan akan diam-diam jatuh ke font bawaan browser.
+  `assertFontsDeclared()` di bawah menjaga itu saat seed dijalankan.
+*/
+
+export type CategoryKey =
+  | "PERNIKAHAN"
+  | "AQIQAH"
+  | "ULANG_TAHUN"
+  | "KORPORAT";
+
+type Palette = {
+  primary: string;
+  secondary: string;
+  background: string;
+  text: string;
+};
+
+export type TemplateSeed = {
+  name: string;
+  slug: string;
+  category: CategoryKey;
+  palette: Palette;
+  font: { heading: string; body: string };
+};
+
+// Harus sama persis dengan src/lib/font-stacks.ts.
+const HEADING_FONTS = [
+  "Playfair Display",
+  "Cormorant Garamond",
+  "Great Vibes",
+  "Marcellus",
+  "Italiana",
+  "Fraunces",
+  "Josefin Sans",
+  "Inter",
+];
+const BODY_FONTS = ["Inter", "Lato", "Nunito", "Plus Jakarta Sans", "Karla"];
+
+// ─── Bagian per kategori ─────────────────────────────────────────────────
+
+const ALL_SECTIONS = [
+  "cover",
+  "opening",
+  "couple",
+  "countdown",
+  "gallery",
+  "location",
+  "rsvp",
+  "greetings",
+  "gift",
+  "closing",
+] as const;
+
+/**
+ * Bagian yang dimatikan secara bawaan per kategori. Yang dimatikan tetap ada
+ * di `sectionsOrder` dengan `enabled: false`, jadi pemilik tinggal
+ * menyalakannya di editor tema — bukan hilang.
+ */
+const DISABLED: Record<CategoryKey, readonly string[]> = {
+  // Bagian "couple" memang untuk dua mempelai.
+  PERNIKAHAN: [],
+  AQIQAH: ["couple"],
+  ULANG_TAHUN: ["couple", "gift"],
+  // Acara korporat tidak meminta amplop, dan tidak punya mempelai.
+  KORPORAT: ["couple", "gift"],
+};
+
+function sectionsFor(category: CategoryKey) {
+  const off = new Set(DISABLED[category]);
+  return ALL_SECTIONS.map((key, order) => ({
+    key,
+    enabled: !off.has(key),
+    order,
+  }));
+}
+
+// ─── Isi bawaan per kategori ─────────────────────────────────────────────
+
+/**
+ * Tanggal contoh: enam bulan dari saat seed dijalankan, dibulatkan ke tanggal
+ * 1. Sengaja dihitung, bukan konstanta — tanggal keras akan jadi tanggal masa
+ * lalu beberapa bulan setelah ditulis, dan setiap undangan baru akan lahir
+ * dengan hitung mundur yang sudah lewat.
+ */
+function contohTanggal(): string {
+  const d = new Date();
+  d.setUTCMonth(d.getUTCMonth() + 6, 1);
+  return d.toISOString().slice(0, 10);
+}
+
+function contentFor(category: CategoryKey) {
+  const date = contohTanggal();
+  const base = { gallery: [] as string[] };
+
+  switch (category) {
+    case "PERNIKAHAN":
+      return {
+        ...base,
+        subject: { groomName: "Mempelai Pria", brideName: "Mempelai Wanita" },
+        event: {
+          date,
+          time: "10:00",
+          timezone: "WIB",
+          venueName: "Gedung Serbaguna",
+          address: "Jl. Contoh No. 1, Kota",
+        },
+        quote: {
+          text: "Dan di antara tanda-tanda kekuasaan-Nya ialah Dia menciptakan pasangan-pasangan untukmu dari jenismu sendiri, supaya kamu cenderung dan merasa tenteram kepadanya.",
+          source: "QS. Ar-Rum 21",
+        },
+        story: [
+          {
+            title: "Awal bertemu",
+            body: "Ceritakan di sini bagaimana kalian pertama kali bertemu.",
+          },
+          {
+            title: "Melamar",
+            body: "Ceritakan momen lamaran dan restu dari kedua keluarga.",
+          },
+        ],
+      };
+
+    case "AQIQAH":
+      return {
+        ...base,
+        subject: { childName: "Nama Ananda" },
+        event: {
+          date,
+          time: "09:00",
+          timezone: "WIB",
+          venueName: "Kediaman Keluarga",
+          address: "Jl. Contoh No. 1, Kota",
+        },
+        quote: {
+          text: "Setiap anak tergadai dengan aqiqahnya, disembelihkan untuknya pada hari ketujuh, dicukur rambutnya, dan diberi nama.",
+          source: "HR. Abu Dawud",
+        },
+      };
+
+    case "ULANG_TAHUN":
+      return {
+        ...base,
+        subject: { childName: "Nama yang Berulang Tahun" },
+        event: {
+          date,
+          time: "16:00",
+          timezone: "WIB",
+          venueName: "Tempat Acara",
+          address: "Jl. Contoh No. 1, Kota",
+        },
+      };
+
+    case "KORPORAT":
+      return {
+        ...base,
+        subject: { title: "Nama Acara" },
+        event: {
+          date,
+          time: "13:00",
+          timezone: "WIB",
+          venueName: "Ballroom",
+          address: "Jl. Contoh No. 1, Kota",
+        },
+        protocol:
+          "Mohon hadir 15 menit sebelum acara dimulai. Pakaian: formal.",
+      };
+  }
+}
+
+// ─── Katalog ─────────────────────────────────────────────────────────────
+
+const PERNIKAHAN: TemplateSeed[] = [
+  {
+    name: "Klasik Elegan",
+    slug: "klasik-elegan",
+    category: "PERNIKAHAN",
+    palette: {
+      primary: "#6B4A2F",
+      secondary: "#C3A06B",
+      background: "#FAF6F0",
+      text: "#3A2E26",
+    },
+    font: { heading: "Playfair Display", body: "Lato" },
+  },
+  {
+    name: "Floral Lembut",
+    slug: "floral-lembut",
+    category: "PERNIKAHAN",
+    palette: {
+      primary: "#9C5B63",
+      secondary: "#E2B4B8",
+      background: "#FDF6F4",
+      text: "#4A2F33",
+    },
+    font: { heading: "Cormorant Garamond", body: "Nunito" },
+  },
+  {
+    name: "Sage Tenang",
+    slug: "sage-tenang",
+    category: "PERNIKAHAN",
+    palette: {
+      primary: "#4F6B52",
+      secondary: "#A8C0A0",
+      background: "#F3F6F1",
+      text: "#2D3A2E",
+    },
+    font: { heading: "Marcellus", body: "Karla" },
+  },
+  {
+    name: "Navy Emas",
+    slug: "navy-emas",
+    category: "PERNIKAHAN",
+    palette: {
+      primary: "#1C2C4C",
+      secondary: "#C9A227",
+      background: "#F6F4EE",
+      text: "#23283A",
+    },
+    font: { heading: "Playfair Display", body: "Inter" },
+  },
+  {
+    name: "Terakota Jawa",
+    slug: "terakota-jawa",
+    category: "PERNIKAHAN",
+    palette: {
+      primary: "#9C4A2F",
+      secondary: "#D9A273",
+      background: "#FBF3EA",
+      text: "#402A20",
+    },
+    font: { heading: "Fraunces", body: "Lato" },
+  },
+  {
+    name: "Mutiara Senja",
+    slug: "mutiara-senja",
+    category: "PERNIKAHAN",
+    palette: {
+      primary: "#6B4C6A",
+      secondary: "#C2A3BE",
+      background: "#F8F4F7",
+      text: "#352734",
+    },
+    font: { heading: "Cormorant Garamond", body: "Plus Jakarta Sans" },
+  },
+  {
+    name: "Hitam Putih",
+    slug: "hitam-putih",
+    category: "PERNIKAHAN",
+    palette: {
+      primary: "#1A1A1A",
+      secondary: "#8A8A8A",
+      background: "#FFFFFF",
+      text: "#1A1A1A",
+    },
+    font: { heading: "Italiana", body: "Inter" },
+  },
+  {
+    name: "Biru Laut",
+    slug: "biru-laut",
+    category: "PERNIKAHAN",
+    palette: {
+      primary: "#1F5366",
+      secondary: "#86B6C4",
+      background: "#F2F8F9",
+      text: "#1C3139",
+    },
+    font: { heading: "Marcellus", body: "Karla" },
+  },
+  {
+    name: "Emas Tulis",
+    slug: "emas-tulis",
+    category: "PERNIKAHAN",
+    palette: {
+      primary: "#A3812E",
+      secondary: "#DCC48A",
+      background: "#FCF8EF",
+      text: "#3B3220",
+    },
+    font: { heading: "Great Vibes", body: "Lato" },
+  },
+  {
+    name: "Rustic Kayu",
+    slug: "rustic-kayu",
+    category: "PERNIKAHAN",
+    palette: {
+      primary: "#6E5B3E",
+      secondary: "#B09B6E",
+      background: "#F5F0E6",
+      text: "#332B1E",
+    },
+    font: { heading: "Fraunces", body: "Nunito" },
+  },
+];
+
+const AQIQAH: TemplateSeed[] = [
+  {
+    name: "Ceria Aqiqah",
+    slug: "ceria-aqiqah",
+    category: "AQIQAH",
+    palette: {
+      primary: "#B88A2B",
+      secondary: "#F0D98C",
+      background: "#FFFBEF",
+      text: "#4A3A1A",
+    },
+    font: { heading: "Josefin Sans", body: "Nunito" },
+  },
+  {
+    name: "Biru Langit",
+    slug: "biru-langit",
+    category: "AQIQAH",
+    palette: {
+      primary: "#3A6EA5",
+      secondary: "#A9CCE8",
+      background: "#F3F8FD",
+      text: "#22384F",
+    },
+    font: { heading: "Josefin Sans", body: "Nunito" },
+  },
+  {
+    name: "Merah Muda Lembut",
+    slug: "merah-muda-lembut",
+    category: "AQIQAH",
+    palette: {
+      primary: "#C4688A",
+      secondary: "#F2BCD0",
+      background: "#FFF5F8",
+      text: "#4C2735",
+    },
+    font: { heading: "Josefin Sans", body: "Karla" },
+  },
+  {
+    name: "Hijau Mint",
+    slug: "hijau-mint",
+    category: "AQIQAH",
+    palette: {
+      primary: "#3E8572",
+      secondary: "#A5D8C6",
+      background: "#F2FAF7",
+      text: "#1F3D35",
+    },
+    font: { heading: "Josefin Sans", body: "Plus Jakarta Sans" },
+  },
+  {
+    name: "Kuning Hangat",
+    slug: "kuning-hangat",
+    category: "AQIQAH",
+    palette: {
+      primary: "#C07A1E",
+      secondary: "#F2C97E",
+      background: "#FFF8EC",
+      text: "#4A331A",
+    },
+    font: { heading: "Marcellus", body: "Nunito" },
+  },
+  {
+    name: "Awan Putih",
+    slug: "awan-putih",
+    category: "AQIQAH",
+    palette: {
+      primary: "#5B6670",
+      secondary: "#C3CBD2",
+      background: "#F8FAFB",
+      text: "#2C343A",
+    },
+    font: { heading: "Josefin Sans", body: "Inter" },
+  },
+  {
+    name: "Ungu Lavender",
+    slug: "ungu-lavender",
+    category: "AQIQAH",
+    palette: {
+      primary: "#6E5A9E",
+      secondary: "#C3B5E3",
+      background: "#F7F5FD",
+      text: "#332A4D",
+    },
+    font: { heading: "Josefin Sans", body: "Karla" },
+  },
+  {
+    name: "Jingga Ceria",
+    slug: "jingga-ceria",
+    category: "AQIQAH",
+    palette: {
+      primary: "#C85A2B",
+      secondary: "#F3B085",
+      background: "#FFF6F0",
+      text: "#4A2718",
+    },
+    font: { heading: "Fraunces", body: "Nunito" },
+  },
+  {
+    name: "Peach Hangat",
+    slug: "peach-hangat",
+    category: "AQIQAH",
+    palette: {
+      primary: "#C9755B",
+      secondary: "#F2C2AC",
+      background: "#FFF7F3",
+      text: "#46291F",
+    },
+    font: { heading: "Marcellus", body: "Plus Jakarta Sans" },
+  },
+  {
+    name: "Hijau Zaitun",
+    slug: "hijau-zaitun",
+    category: "AQIQAH",
+    palette: {
+      primary: "#5F7138",
+      secondary: "#B6C68D",
+      background: "#F7F9EF",
+      text: "#2F3A1B",
+    },
+    font: { heading: "Josefin Sans", body: "Lato" },
+  },
+];
+
+const ULANG_TAHUN: TemplateSeed[] = [
+  {
+    name: "Pesta Warna",
+    slug: "pesta-warna",
+    category: "ULANG_TAHUN",
+    palette: {
+      primary: "#C32E6B",
+      secondary: "#F5C23E",
+      background: "#FFF9F2",
+      text: "#2B2230",
+    },
+    font: { heading: "Josefin Sans", body: "Nunito" },
+  },
+  {
+    name: "Balon Biru",
+    slug: "balon-biru",
+    category: "ULANG_TAHUN",
+    palette: {
+      primary: "#2563A8",
+      secondary: "#7FC2E8",
+      background: "#F2F8FD",
+      text: "#1C3349",
+    },
+    font: { heading: "Josefin Sans", body: "Nunito" },
+  },
+  {
+    name: "Satu Tahun",
+    slug: "satu-tahun",
+    category: "ULANG_TAHUN",
+    palette: {
+      primary: "#C9707F",
+      secondary: "#F3C6CB",
+      background: "#FFF6F6",
+      text: "#452A2E",
+    },
+    font: { heading: "Josefin Sans", body: "Karla" },
+  },
+  {
+    name: "Neon Malam",
+    slug: "neon-malam",
+    category: "ULANG_TAHUN",
+    palette: {
+      primary: "#F06A9B",
+      secondary: "#46E0C0",
+      background: "#14121C",
+      text: "#F2EEF7",
+    },
+    font: { heading: "Josefin Sans", body: "Plus Jakarta Sans" },
+  },
+  {
+    name: "Emas Dewasa",
+    slug: "emas-dewasa",
+    category: "ULANG_TAHUN",
+    palette: {
+      primary: "#9C7B2E",
+      secondary: "#D8BE7E",
+      background: "#FBF7EE",
+      text: "#3A3120",
+    },
+    font: { heading: "Playfair Display", body: "Inter" },
+  },
+  {
+    name: "Tropis Segar",
+    slug: "tropis-segar",
+    category: "ULANG_TAHUN",
+    palette: {
+      primary: "#13795F",
+      secondary: "#F2B33D",
+      background: "#F3FAF7",
+      text: "#16352C",
+    },
+    font: { heading: "Fraunces", body: "Nunito" },
+  },
+  {
+    name: "Permen Kapas",
+    slug: "permen-kapas",
+    category: "ULANG_TAHUN",
+    palette: {
+      primary: "#9A4FBD",
+      secondary: "#F6B8E0",
+      background: "#FDF6FC",
+      text: "#3D2448",
+    },
+    font: { heading: "Josefin Sans", body: "Nunito" },
+  },
+  {
+    name: "Kopi Senja",
+    slug: "kopi-senja",
+    category: "ULANG_TAHUN",
+    palette: {
+      primary: "#6B4430",
+      secondary: "#BE9272",
+      background: "#F7F1EA",
+      text: "#332118",
+    },
+    font: { heading: "Fraunces", body: "Karla" },
+  },
+  {
+    name: "Hitam Emas",
+    slug: "hitam-emas",
+    category: "ULANG_TAHUN",
+    palette: {
+      primary: "#D4AF37",
+      secondary: "#8A7230",
+      background: "#121212",
+      text: "#EFE9DA",
+    },
+    font: { heading: "Italiana", body: "Inter" },
+  },
+  {
+    name: "Kebun Pagi",
+    slug: "kebun-pagi",
+    category: "ULANG_TAHUN",
+    palette: {
+      primary: "#4C7A3A",
+      secondary: "#AFCC8E",
+      background: "#F5F9F0",
+      text: "#26371C",
+    },
+    font: { heading: "Marcellus", body: "Lato" },
+  },
+];
+
+const KORPORAT: TemplateSeed[] = [
+  {
+    name: "Biru Korporat",
+    slug: "biru-korporat",
+    category: "KORPORAT",
+    palette: {
+      primary: "#10457E",
+      secondary: "#6E9BC9",
+      background: "#F5F8FC",
+      text: "#16263A",
+    },
+    font: { heading: "Inter", body: "Inter" },
+  },
+  {
+    name: "Abu Profesional",
+    slug: "abu-profesional",
+    category: "KORPORAT",
+    palette: {
+      primary: "#2F3A44",
+      secondary: "#8A97A3",
+      background: "#F6F8F9",
+      text: "#1E272E",
+    },
+    font: { heading: "Inter", body: "Plus Jakarta Sans" },
+  },
+  {
+    name: "Hijau Berkelanjutan",
+    slug: "hijau-berkelanjutan",
+    category: "KORPORAT",
+    palette: {
+      primary: "#1D6B4F",
+      secondary: "#7FB89E",
+      background: "#F3F9F6",
+      text: "#14352A",
+    },
+    font: { heading: "Inter", body: "Karla" },
+  },
+  {
+    name: "Merah Peluncuran",
+    slug: "merah-peluncuran",
+    category: "KORPORAT",
+    palette: {
+      primary: "#A62828",
+      secondary: "#E08A8A",
+      background: "#FCF5F4",
+      text: "#35191A",
+    },
+    font: { heading: "Josefin Sans", body: "Inter" },
+  },
+  {
+    name: "Malam Gala",
+    slug: "malam-gala",
+    category: "KORPORAT",
+    palette: {
+      primary: "#C9A227",
+      secondary: "#6E6038",
+      background: "#10141C",
+      text: "#E9E4D6",
+    },
+    font: { heading: "Italiana", body: "Plus Jakarta Sans" },
+  },
+  {
+    name: "Teknologi Terang",
+    slug: "teknologi-terang",
+    category: "KORPORAT",
+    palette: {
+      primary: "#2B4ACB",
+      secondary: "#8FA3F2",
+      background: "#F5F6FD",
+      text: "#1A2140",
+    },
+    font: { heading: "Josefin Sans", body: "Plus Jakarta Sans" },
+  },
+  {
+    name: "Ungu Inovasi",
+    slug: "ungu-inovasi",
+    category: "KORPORAT",
+    palette: {
+      primary: "#5B3FA8",
+      secondary: "#A892DD",
+      background: "#F7F5FC",
+      text: "#291E47",
+    },
+    font: { heading: "Inter", body: "Karla" },
+  },
+  {
+    name: "Jingga Energi",
+    slug: "jingga-energi",
+    category: "KORPORAT",
+    palette: {
+      primary: "#B35512",
+      secondary: "#EFA468",
+      background: "#FEF7F0",
+      text: "#3F2411",
+    },
+    font: { heading: "Inter", body: "Lato" },
+  },
+  {
+    name: "Teal Seminar",
+    slug: "teal-seminar",
+    category: "KORPORAT",
+    palette: {
+      primary: "#10646E",
+      secondary: "#7BB4BC",
+      background: "#F2F9FA",
+      text: "#0F2E33",
+    },
+    font: { heading: "Inter", body: "Plus Jakarta Sans" },
+  },
+  {
+    name: "Monokrom Tegas",
+    slug: "monokrom-tegas",
+    category: "KORPORAT",
+    palette: {
+      primary: "#111111",
+      secondary: "#777777",
+      background: "#FAFAFA",
+      text: "#111111",
+    },
+    font: { heading: "Italiana", body: "Inter" },
+  },
+];
+
+export const TEMPLATE_CATALOG: TemplateSeed[] = [
+  ...PERNIKAHAN,
+  ...AQIQAH,
+  ...ULANG_TAHUN,
+  ...KORPORAT,
+];
+
+/** Baris Prisma lengkap untuk satu entri katalog. */
+export function toTemplateRow(t: TemplateSeed) {
+  return {
+    name: t.name,
+    slug: t.slug,
+    category: t.category,
+    // Gambar pratinjau belum ada; galeri menenun paletnya sendiri jadi swatch.
+    // Path ini mengikuti konvensi docs/03 untuk saat gambar aslinya menyusul.
+    previewImage: `/templates/${t.slug}.jpg`,
+    defaultContent: contentFor(t.category),
+    defaultTheme: { palette: t.palette, font: t.font },
+    defaultSections: sectionsFor(t.category),
+  };
+}
+
+/**
+ * Jaga-jaga saat seed: slug ganda dan font yang tidak dideklarasikan adalah
+ * dua kesalahan yang tidak menimbulkan error, hanya hasil yang salah diam-diam
+ * — slug ganda membuat upsert saling menimpa, font asing jatuh ke font bawaan
+ * browser.
+ */
+export function assertCatalogSehat(): void {
+  const masalah: string[] = [];
+
+  const terlihat = new Set<string>();
+  for (const t of TEMPLATE_CATALOG) {
+    if (terlihat.has(t.slug)) masalah.push(`slug ganda: ${t.slug}`);
+    terlihat.add(t.slug);
+    if (!HEADING_FONTS.includes(t.font.heading))
+      masalah.push(`${t.slug}: font judul "${t.font.heading}" tidak terdaftar`);
+    if (!BODY_FONTS.includes(t.font.body))
+      masalah.push(`${t.slug}: font isi "${t.font.body}" tidak terdaftar`);
+  }
+
+  const perKategori = new Map<CategoryKey, number>();
+  for (const t of TEMPLATE_CATALOG) {
+    perKategori.set(t.category, (perKategori.get(t.category) ?? 0) + 1);
+  }
+  for (const [k, n] of perKategori) {
+    if (n < 10) masalah.push(`kategori ${k} hanya punya ${n} template`);
+  }
+
+  if (masalah.length > 0) {
+    throw new Error(`Katalog template bermasalah:\n- ${masalah.join("\n- ")}`);
+  }
+}

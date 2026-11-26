@@ -82,6 +82,15 @@ Aturan yang mengikat:
   Sampul kartu memakai palet bawaan template agar karakternya terbaca.
 - Tiap kartu punya dua aksi: **Lihat Contoh** → `/template/[slug]`, dan
   **Pakai** → `createInvitation` (mengarahkan ke login bila belum masuk).
+- Katalog bawaan berisi **10 template per kategori** (40 total, lihat
+  `prisma/templates.ts`). Yang membedakannya adalah palet, pasangan font, dan
+  set bagian yang masuk akal untuk kategorinya — bukan nama saja.
+- Penyaring kategori berupa tautan `?kategori=<slug>`, bukan state klien,
+  supaya hasilnya bisa dibagikan dan tombol kembali bekerja. Tanpa penyaring,
+  keempat kategori tampil sebagai kelompok terpisah dengan judulnya sendiri.
+- Ini satu-satunya halaman marketing yang memuat variabel font undangan.
+  Swatch memakai font judul template yang sebenarnya; tanpa itu keempat puluh
+  template tampil dengan satu font cadangan dan separuh pembedanya hilang.
 
 ### `/template/[slug]` Pratinjau Template
 - **Publik, tanpa login** — calon pemilik harus bisa menilai template sebelum
@@ -137,6 +146,45 @@ Aturan yang mengikat:
 - Tombol "Publish" → modal pilih paket → `createPayment` → redirect Xendit.
 - Setelah kembali: banner "Menunggu konfirmasi pembayaran" sampai webhook tiba,
   lalu berubah jadi "Undangan aktif! Bagikan sekarang".
+
+## 3b. Panel Operator `/admin/*` (login, `role = ADMIN`)
+
+Kain siang yang sama dengan dashboard — ini juga permukaan kerja — ditandai
+benang mengkudu setebal 3px di tepi atas dan kata "ADMIN" di sebelah logo.
+Itu satu-satunya pemakaian mengkudu di kerangka panel; sisanya tetap tenang.
+Tautan "Admin" muncul di header dashboard hanya untuk admin.
+
+### `/admin` Ringkasan
+- Pendapatan Lungsin (total & bulan berjalan), cacah pengguna/undangan, dan
+  tagihan yang perlu diperhatikan. Tiap angka menautkan ke daftarnya.
+- Pendapatan dibaca dari `Payment.amount`, bukan dari harga paket saat ini,
+  supaya perubahan harga tidak menulis ulang riwayat.
+
+### `/admin/template` Kelola Template
+- Dikelompokkan per kategori, tiap template tampil sebagai swatch palet +
+  nama font + cacah undangan yang memakainya.
+- Template nonaktif **diredupkan, bukan disembunyikan** — admin perlu melihat
+  apa yang dimatikan dan menyalakannya lagi dari tempat yang sama.
+
+### `/admin/undangan` Metadata Undangan
+- Judul, slug, pemilik, template, status, paket, masa aktif, tanggal dibuat.
+- Pencarian `?q=` atas slug, judul, dan email pemilik — pengguna yang meminta
+  bantuan biasanya menyebut tautannya, bukan id.
+
+### `/admin/pembayaran` Pendapatan
+- Tagihan beserta `externalId`, agar bisa dicocokkan di dashboard Xendit saat
+  ada pembayaran yang tidak nyangkut.
+- **Tidak ada** tombol "tandai lunas". Status hanya berubah lewat webhook.
+
+### `/admin/pengguna` Akun & Peran
+- Email, nama, cacah undangan, tanggal daftar, dan tombol angkat/turunkan
+  admin. Baris akun sendiri tidak punya tombol sama sekali.
+
+### Batas data
+Panel ini menampilkan metadata platform dan pendapatan Lungsin. Isi undangan,
+daftar tamu, jawaban RSVP, ucapan, dan **nominal amplop** tidak pernah dibaca
+dari jalur admin — lihat docs/03 §5. Amplop digital adalah uang antara tamu
+dan pemilik acara; Lungsin tidak berkepentingan atasnya.
 
 ## 4. Halaman Undangan Publik `/u/[slug]`
 

@@ -11,6 +11,8 @@
 
 - **Server Actions** (`src/lib/actions/`) — mutasi milik pemilik, butuh sesi
   Auth.js. Dipanggil dari komponen dashboard.
+- **Server Actions admin** (`src/lib/actions/admin.ts`) — mutasi operator
+  platform, butuh sesi dengan `User.role = ADMIN`. Lihat §2b.
 - **Route Handlers** (`src/app/api/`) — endpoint tanpa sesi: aksi tamu (RSVP,
   ucapan, amplop) + webhook Xendit.
 
@@ -69,6 +71,40 @@ Setiap action memverifikasi `session.user.id === invitation.userId`.
     & `invoiceUrl`. Return `{ invoiceUrl }`.
 - `extendInvitation(input: { invitationId, package })`
   → seperti createPayment untuk perpanjangan masa aktif.
+
+---
+
+## 2b. Server Actions admin (butuh `role = ADMIN`)
+
+Setiap action memanggil `requireAdminForAction()` dari `src/lib/admin.ts`
+lebih dulu. Helper itu sengaja berada **di luar** file `"use server"`, sama
+alasannya dengan `src/lib/owner.ts`: setiap export di file `"use server"`
+menjadi endpoint yang bisa dipanggil dari browser.
+
+`src/lib/admin.ts` menyediakan tiga pintu dari satu sumber:
+
+| Fungsi | Dipakai di | Saat bukan admin |
+|---|---|---|
+| `requireAdmin()` | Halaman `/admin/*` | `notFound()` |
+| `requireAdminForAction()` | Server Action admin | `throw new Error` |
+| `isAdmin()` | Menampilkan/menyembunyikan tautan | `false` |
+
+Action **tidak** memakai `requireAdmin()`: `notFound()` melempar error
+kontrol-alur Next yang akan tertangkap `try/catch` di komponen klien dan
+berubah jadi toast kegagalan biasa, sehingga boundary 404 tidak pernah jalan.
+
+- `setTemplateActive(input: { templateId: string, isActive: boolean })`
+  → nyalakan/matikan template di galeri publik. Template nonaktif tidak bisa
+    dipakai undangan baru; undangan yang sudah memakainya tidak terpengaruh.
+- `setUserRole(input: { userId: string, role: Role })`
+  → angkat atau turunkan admin. **Menolak** bila `userId` sama dengan admin
+    yang sedang masuk, supaya admin terakhir tidak bisa mengunci dirinya
+    sendiri di luar.
+
+Tidak ada action admin yang menyentuh `Invitation`, `Guest`, `Rsvp`,
+`Greeting`, `GiftConfirmation`, atau `Payment`. Admin membaca metadata dan
+pendapatan; ia tidak mengubah acara milik orang lain. Status pembayaran tetap
+hanya berubah lewat webhook Xendit (docs/05).
 
 ---
 
@@ -147,6 +183,17 @@ Detail lengkap alur pembayaran ada di `docs/05-pembayaran-xendit.md`.
 | `/dashboard/[id]/ucapan` | RSC + Server Actions | Login |
 | `/dashboard/[id]/amplop` | RSC | Login |
 | `/u/[slug]` | SSR + ISR | Publik (gated jika DRAFT) |
+| `/admin` | RSC | `role = ADMIN` — ringkasan platform |
+| `/admin/template` | RSC + Server Actions | `role = ADMIN` — kelola template |
+| `/admin/undangan` | RSC | `role = ADMIN` — metadata undangan semua pengguna |
+| `/admin/pembayaran` | RSC | `role = ADMIN` — pendapatan & telusur webhook |
+| `/admin/pengguna` | RSC + Server Actions | `role = ADMIN` — pengguna & peran |
+
+Semua route `/admin/*` memanggil `requireAdmin()` **di halamannya sendiri**,
+bukan hanya di layout. Next merender layout dan page secara paralel, jadi
+penjaga di layout saja tidak menghentikan page mengambil data lebih dulu.
+Bukan admin → `notFound()`, bukan `redirect()`: keberadaan panel tidak perlu
+diumumkan ke pengguna biasa.
 
 ## 5. Konvensi Response & Error
 

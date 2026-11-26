@@ -2,9 +2,15 @@ import {
   Playfair_Display,
   Cormorant_Garamond,
   Great_Vibes,
+  Marcellus,
+  Italiana,
+  Fraunces,
+  Josefin_Sans,
   Inter,
   Lato,
   Nunito,
+  Plus_Jakarta_Sans,
+  Karla,
 } from "next/font/google";
 
 /*
@@ -35,6 +41,32 @@ const greatVibes = Great_Vibes({
   display: "swap",
 });
 
+const marcellus = Marcellus({
+  variable: "--font-marcellus",
+  weight: "400",
+  subsets: ["latin"],
+  display: "swap",
+});
+
+const italiana = Italiana({
+  variable: "--font-italiana",
+  weight: "400",
+  subsets: ["latin"],
+  display: "swap",
+});
+
+const fraunces = Fraunces({
+  variable: "--font-fraunces",
+  subsets: ["latin"],
+  display: "swap",
+});
+
+const josefin = Josefin_Sans({
+  variable: "--font-josefin",
+  subsets: ["latin"],
+  display: "swap",
+});
+
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
@@ -54,12 +86,30 @@ const nunito = Nunito({
   display: "swap",
 });
 
+const jakarta = Plus_Jakarta_Sans({
+  variable: "--font-jakarta",
+  subsets: ["latin"],
+  display: "swap",
+});
+
+const karla = Karla({
+  variable: "--font-karla",
+  subsets: ["latin"],
+  display: "swap",
+});
+
 /** Dipasang pada elemen pembungkus agar variabel font undangan tersedia. */
 export const invitationFontVars = [
   playfair.variable,
   cormorant.variable,
   greatVibes.variable,
+  marcellus.variable,
+  italiana.variable,
+  fraunces.variable,
+  josefin.variable,
   inter.variable,
   lato.variable,
   nunito.variable,
+  jakarta.variable,
+  karla.variable,
 ].join(" ");

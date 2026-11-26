@@ -4,79 +4,78 @@ loadEnv();
 
 import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
+import {
+  TEMPLATE_CATALOG,
+  assertCatalogSehat,
+  toTemplateRow,
+} from "./templates";
 
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
 const prisma = new PrismaClient({ adapter });
 
-const defaultSections = [
-  { key: "cover", enabled: true, order: 0 },
-  { key: "opening", enabled: true, order: 1 },
-  { key: "couple", enabled: true, order: 2 },
-  { key: "countdown", enabled: true, order: 3 },
-  { key: "gallery", enabled: true, order: 4 },
-  { key: "location", enabled: true, order: 5 },
-  { key: "rsvp", enabled: true, order: 6 },
-  { key: "greetings", enabled: true, order: 7 },
-  { key: "gift", enabled: true, order: 8 },
-  { key: "closing", enabled: true, order: 9 },
-];
-
-const defaultTheme = {
-  palette: {
-    primary: "#8B5E3C",
-    secondary: "#D9B99B",
-    background: "#FAF6F0",
-    text: "#3A2E26",
-  },
-  font: { heading: "Playfair Display", body: "Inter" },
-};
-
-const defaultContent = {
-  subject: { groomName: "Mempelai Pria", brideName: "Mempelai Wanita" },
-  event: {
-    date: "2026-12-31",
-    time: "10:00",
-    timezone: "WIB",
-    venueName: "Gedung Serbaguna",
-    address: "Jl. Contoh No. 1, Kota",
-  },
-  gallery: [],
-};
-
 async function main() {
-  const templates = [
-    {
-      name: "Klasik Elegan",
-      slug: "klasik-elegan",
-      category: "pernikahan",
-      previewImage: "/templates/klasik-elegan.jpg",
-    },
-    {
-      name: "Floral Lembut",
-      slug: "floral-lembut",
-      category: "pernikahan",
-      previewImage: "/templates/floral-lembut.jpg",
-    },
-    {
-      name: "Ceria Aqiqah",
-      slug: "ceria-aqiqah",
-      category: "aqiqah",
-      previewImage: "/templates/ceria-aqiqah.jpg",
-    },
-  ];
+  assertCatalogSehat();
 
-  for (const t of templates) {
+  let dibuat = 0;
+  let diperbarui = 0;
+
+  for (const t of TEMPLATE_CATALOG) {
+    const row = toTemplateRow(t);
+    const ada = await prisma.template.findUnique({
+      where: { slug: t.slug },
+      select: { id: true },
+    });
+
     await prisma.template.upsert({
       where: { slug: t.slug },
-      update: {},
-      create: {
-        ...t,
-        defaultContent,
-        defaultTheme,
-        defaultSections,
+      // `isActive` sengaja TIDAK ikut diperbarui: admin mungkin sudah
+      // mematikan sebuah template, dan seed ulang tidak boleh menyalakannya
+      // kembali diam-diam.
+      update: {
+        name: row.name,
+        category: row.category,
+        previewImage: row.previewImage,
+        defaultContent: row.defaultContent,
+        defaultTheme: row.defaultTheme,
+        defaultSections: row.defaultSections,
       },
+      create: row,
     });
-    console.log(`✓ template: ${t.slug}`);
+
+    if (ada) diperbarui++;
+    else dibuat++;
+  }
+
+  const perKategori = await prisma.template.groupBy({
+    by: ["category"],
+    _count: true,
+    orderBy: { category: "asc" },
+  });
+
+  console.log(`✓ template: ${dibuat} dibuat, ${diperbarui} diperbarui`);
+  for (const k of perKategori) {
+    console.log(`  ${k.category}: ${k._count}`);
+  }
+
+  const adminEmail = process.env.SEED_ADMIN_EMAIL;
+  if (adminEmail) {
+    const user = await prisma.user.findUnique({
+      where: { email: adminEmail },
+      select: { id: true, role: true },
+    });
+    if (!user) {
+      console.log(
+        `! SEED_ADMIN_EMAIL=${adminEmail} belum pernah masuk — jalankan lagi setelah login pertamanya.`,
+      );
+    } else if (user.role === "ADMIN") {
+      console.log(`✓ admin: ${adminEmail} (sudah admin)`);
+    } else {
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { role: "ADMIN" },
+      });
+      console.log(`✓ admin: ${adminEmail} diangkat jadi ADMIN`);
+    }
   }
 }
 

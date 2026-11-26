@@ -13,9 +13,16 @@ const FONT_STACK: Record<string, string> = {
   "Playfair Display": "var(--font-playfair), ui-serif, Georgia, serif",
   "Cormorant Garamond": "var(--font-cormorant), ui-serif, Georgia, serif",
   "Great Vibes": "var(--font-great-vibes), ui-serif, cursive",
+  Marcellus: "var(--font-marcellus), ui-serif, Georgia, serif",
+  Italiana: "var(--font-italiana), ui-serif, Georgia, serif",
+  Fraunces: "var(--font-fraunces), ui-serif, Georgia, serif",
+  "Josefin Sans": "var(--font-josefin), ui-sans-serif, system-ui, sans-serif",
   Inter: "var(--font-inter), ui-sans-serif, system-ui, sans-serif",
   Lato: "var(--font-lato), ui-sans-serif, system-ui, sans-serif",
   Nunito: "var(--font-nunito), ui-sans-serif, system-ui, sans-serif",
+  "Plus Jakarta Sans":
+    "var(--font-jakarta), ui-sans-serif, system-ui, sans-serif",
+  Karla: "var(--font-karla), ui-sans-serif, system-ui, sans-serif",
 };
 
 /** Pilihan font judul yang tersedia di editor tema. */
@@ -23,11 +30,21 @@ export const HEADING_FONTS = [
   "Playfair Display",
   "Cormorant Garamond",
   "Great Vibes",
+  "Marcellus",
+  "Italiana",
+  "Fraunces",
+  "Josefin Sans",
   "Inter",
 ];
 
 /** Pilihan font isi yang tersedia di editor tema. */
-export const BODY_FONTS = ["Inter", "Lato", "Nunito"];
+export const BODY_FONTS = [
+  "Inter",
+  "Lato",
+  "Nunito",
+  "Plus Jakarta Sans",
+  "Karla",
+];
 
 /** Terjemahkan nama font jadi stack CSS; nama asing jatuh ke serif/sans aman. */
 export function fontStack(name: string, fallback: "serif" | "sans"): string {

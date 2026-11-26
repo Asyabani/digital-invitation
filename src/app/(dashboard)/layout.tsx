@@ -1,6 +1,7 @@
 import { auth, signOut } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import { isAdmin } from "@/lib/admin";
 import { Button } from "@/components/ui/button";
 import { Toaster } from "@/components/ui/sonner";
 
@@ -16,6 +17,10 @@ export default async function DashboardLayout({
   const session = await auth();
   if (!session?.user) redirect("/masuk");
 
+  // Tautan ke panel operator hanya muncul untuk admin. Ini kenyamanan, bukan
+  // pengamanan — penjaganya ada di `/admin/*` sendiri.
+  const admin = await isAdmin();
+
   return (
     <div className="flex min-h-full flex-col">
       <header className="pinggiran-bawah sticky top-0 z-30 bg-background/90 backdrop-blur supports-[backdrop-filter]:bg-background/75">
@@ -27,6 +32,11 @@ export default async function DashboardLayout({
             Lungsin
           </Link>
           <div className="flex items-center gap-3">
+            {admin && (
+              <Button render={<Link href="/admin" />} variant="ghost" size="sm">
+                Admin
+              </Button>
+            )}
             <span className="hidden max-w-[24ch] truncate text-sm text-muted-foreground sm:inline">
               {session.user.email}
             </span>

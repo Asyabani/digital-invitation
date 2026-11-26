@@ -402,7 +402,14 @@
     width: 100%;
     border: 1px solid color-mix(in oklab, var(--inv-text) 20%, transparent);
     border-radius: 2px;
-    background: color-mix(in oklab, var(--inv-bg) 70%, white);
+    /*
+      Beda tipis dari latar halaman, bukan dicampur `white`. Mencampur dengan
+      putih membuat isian jadi terang di tema berlatar gelap, sementara
+      teksnya tetap terang — tidak terbaca. Bergeser 6% ke arah warna teks
+      selalu menghasilkan kontras ke arah yang benar: sedikit lebih gelap di
+      tema terang, sedikit lebih terang di tema gelap.
+    */
+    background: color-mix(in oklab, var(--inv-bg) 94%, var(--inv-text));
     color: var(--inv-text);
     padding: 0.625rem 0.875rem;
     font-size: 0.875rem;

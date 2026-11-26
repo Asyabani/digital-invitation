@@ -60,7 +60,28 @@ enum GiftMethod {
   TRANSFER
   QRIS
 }
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum TemplateCategory {
+  PERNIKAHAN
+  AQIQAH
+  ULANG_TAHUN
+  KORPORAT
+}
 ```
+
+`Role` memisahkan pemilik acara biasa dari operator platform. `ADMIN` hanya
+dipakai untuk route `/admin/*`; ia **tidak** memberi akses ke undangan milik
+orang lain lewat jalur pemilik (`ownInvitation`/`ownGuest` tetap mencocokkan
+`userId`). Lihat §5 untuk batas data yang boleh dilihat admin.
+
+`TemplateCategory` sebelumnya `String` bebas. Dijadikan enum karena galeri
+template memetakan kategori ke label tampilan; nilai yang tidak cocok jatuh
+diam-diam ke string mentah dan muncul sebagai `pernikahan` di UI.
 
 ## 3. Skema Prisma
 
@@ -72,6 +93,7 @@ model User {
   email         String       @unique
   emailVerified DateTime?
   image         String?
+  role          Role         @default(USER)
   accounts      Account[]
   sessions      Session[]
   invitations   Invitation[]
@@ -117,7 +139,7 @@ model Template {
   id           String       @id @default(cuid())
   name         String
   slug         String       @unique
-  category     String       // "pernikahan" | "aqiqah" | "ulang-tahun" | "korporat"
+  category     TemplateCategory
   previewImage String
   // struktur default section + nilai awal content/theme
   defaultContent  Json
@@ -300,3 +322,12 @@ Array<{ key: "cover"|"opening"|"couple"|"countdown"|"gallery"
   `src/lib/slug.ts` menambahkan suffix bila bentrok.
 - Hapus `User` → cascade ke undangan & turunannya. Hapus `Guest` → `Rsvp`/
   `Greeting`/`Gift` di-`SetNull` (data tetap ada sebagai anonim).
+- **Batas data admin (`Role.ADMIN`).** Admin adalah operator platform, bukan
+  pemilik acara. Yang boleh dibaca: `Template` (semua kolom), `User` (identitas
+  + agregat), `Invitation` (metadata: slug, judul, status, paket, masa aktif,
+  pemilik), dan `Payment` (pendapatan Lungsin). Yang **tidak boleh** dibaca
+  lewat jalur admin: isi `Invitation.content`, daftar `Guest`, isi `Rsvp` dan
+  `Greeting`, `Invitation.giftConfig`, serta seluruh `GiftConfirmation` —
+  termasuk `amount`. Amplop digital adalah uang antara tamu dan pemilik acara;
+  Lungsin tidak berkepentingan atasnya. Yang boleh hanyalah **cacah** amplop
+  bila memang dibutuhkan untuk dukungan, tidak pernah nominalnya.
