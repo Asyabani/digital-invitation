@@ -292,7 +292,9 @@ Kolom `Json` punya kontrak yang divalidasi di `src/lib/validation/`:
 {
   palette: { primary: string, secondary: string, background: string, text: string },
   font: { heading: string, body: string },
-  layout: "klasik" | "sampul" | "pias" | "bingkai" | "pita" | "lugas",
+  layout: "klasik" | "sampul" | "lugas"          // tingkat Basic
+        | "pias" | "pita" | "galeri"             // tingkat Premium
+        | "bingkai" | "naskah",                  // tingkat Eksklusif
   openingGate: boolean,
   music?: { url: string, autoplay: boolean },
 }
@@ -318,6 +320,11 @@ URL tetap diputar ke tamu.
 susunan, bukan warna: bentuk sampul, perataan, lebar ukur, cara judul bagian
 mengumumkan diri, dan ada tidaknya kartu. Spesifikasinya di
 `src/lib/invitation-layouts.ts`, penjelasan tiap arketipe di docs/06 §4a.
+
+**`layout` juga menentukan harga.** Tiap arketipe punya `minPackage`, yaitu
+paket paling ringkas yang boleh menerbitkannya. Tidak ada kolom harga di
+`Template` — tingkatnya dibaca dari arketipe, jadi tidak ada dua sumber
+kebenaran yang bisa saling bertentangan. Lihat docs/05 §2b.
 
 Zod memberinya `.default("klasik")`. Itu disengaja: undangan yang dibuat
 sebelum kolom ini ada tidak punya `layout` di JSON-nya, dan tanpa default

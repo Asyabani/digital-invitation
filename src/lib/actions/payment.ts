@@ -5,7 +5,12 @@ import { revalidatePath } from "next/cache";
 import type { Package } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { ownInvitation } from "@/lib/owner";
-import { getPackage } from "@/lib/packages";
+import { getPackage, packageAtLeast } from "@/lib/packages";
+import {
+  layoutSpec,
+  minPackageForLayout,
+} from "@/lib/invitation-layouts";
+import { themeSchema } from "@/lib/validation/invitation";
 import { createInvoice } from "@/lib/xendit";
 
 /**
@@ -26,6 +31,23 @@ async function startPayment(
 
   if (mode === "publish" && inv.status === "PUBLISHED") {
     throw new Error("Undangan sudah aktif. Gunakan perpanjangan.");
+  }
+
+  /*
+    Tingkat harga melekat pada arketipe tata letak (docs/06 §4a). Pemeriksaan
+    ini ada di server, bukan hanya di tombol: tanpa ini, siapa pun bisa
+    memanggil action dengan paket Basic sambil memakai tata letak Eksklusif
+    dan membayar sepertiga harganya.
+  */
+  const theme = themeSchema.safeParse(inv.themeConfig);
+  const perlu = minPackageForLayout(
+    theme.success ? theme.data.layout : undefined,
+  );
+  if (!packageAtLeast(pkg, perlu)) {
+    const spec = layoutSpec(theme.success ? theme.data.layout : undefined);
+    throw new Error(
+      `Tata letak ${spec.label} tersedia mulai paket ${getPackage(perlu).name}. Pilih paket itu, atau ganti tata letak di tab Tema.`,
+    );
   }
 
   // Idempoten dari sisi pemilik: kalau sudah ada invoice PENDING untuk paket

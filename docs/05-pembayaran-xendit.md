@@ -31,6 +31,49 @@ Mendeskripsikan alur **trial → bayar → publish** dan masa aktif. Model
 Harga & fitur per paket disimpan sebagai **konfigurasi** (feature flags), bukan
 hardcode di banyak tempat — satu sumber di `src/lib/packages.ts`.
 
+## 2b. Tingkat Template
+
+Katalog berisi **30 template: 10 Basic, 10 Premium, 10 Eksklusif.**
+
+Tingkatnya **tidak** disimpan sebagai kolom di `Template`. Ia dibaca dari
+`minPackage` milik arketipe tata letak yang dipakai template itu
+(`src/lib/invitation-layouts.ts`):
+
+| Tingkat | Arketipe | Harga |
+|---|---|---|
+| `BASIC` | Klasik, Sampul, Lugas | Rp99.000 |
+| `PREMIUM` | Pias, Pita, Galeri | Rp199.000 |
+| `EXCLUSIVE` | Bingkai, Naskah | Rp349.000 |
+
+**Kenapa melekat pada gaya, bukan pada tiap template.** Riset pasar
+undangan digital Indonesia (Nov 2026): mayoritas vendor menjual per **paket
+fitur**; yang menjual per tema pun memakai **kelompok tema**, bukan harga
+unik tiap tema — Naravitation dua tingkat, Weddingku per kelompok desain,
+Kipa per gaya desain. Tidak ada yang memasang dua puluh harga berbeda, karena
+galeri jadi tidak bisa dibandingkan. Mengikat tingkat ke arketipe membuat
+yang dibayar memang hal yang benar-benar berbeda — susunan halamannya,
+gerak masuknya, dan cara fotonya dipakai — bukan sekadar label pada palet.
+
+Yang didapat tingkat berbayar, di luar fitur paket yang sudah ada:
+
+- **Tata letak eksklusif.** Pias, Pita, Galeri (Premium); Bingkai, Naskah
+  (Eksklusif). Tiga arketipe Basic tetap lengkap, bukan versi lumpuh.
+- **Gerak masuk.** Tiap bagian naik dan memudar saat pertama terlihat
+  (`motion: "masuk"`). Selalu dimatikan oleh `prefers-reduced-motion`.
+- **Foto lebih kaya.** `Galeri` menyisipkan pita foto selebar layar di antara
+  bagian; `Naskah` membuat fotonya melewati tepi kolom teks.
+
+**Penegakan.** `startPayment` menolak paket yang lebih ringkas dari
+`minPackage` tata letak yang sedang dipakai. Pemeriksaan ini **wajib di
+server** — tanpa itu, siapa pun bisa memanggil Server Action dengan paket
+Basic sambil memakai tata letak Eksklusif dan membayar sepertiga harganya.
+`PublishPanel` menonaktifkan paket yang tidak memenuhi syarat beserta
+alasannya, tapi itu kenyamanan, bukan pengamanan.
+
+Saat masih trial (`package = null`) **semua** arketipe boleh dicoba, sama
+seperti `canUse()`. Yang menolak adalah pembayaran, bukan editor — pemilik
+harus bisa melihat apa yang ia beli.
+
 ## 3. Alur End-to-End
 
 ```

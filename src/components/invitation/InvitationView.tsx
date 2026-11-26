@@ -167,6 +167,28 @@ function Judul({
         </div>
       );
 
+    /*
+      Judul editorial: teks rata kiri, lalu garis rambut mengisi sisa lebar
+      sampai tepi ukur. Bukan penanda bernomor — bagian undangan adalah
+      topik, bukan urutan langkah.
+    */
+    case "panjang":
+      return (
+        <div className="flex w-full items-baseline gap-4">
+          <h2 className="inv-heading shrink-0 text-xl font-medium italic sm:text-2xl">
+            {children}
+          </h2>
+          <span
+            aria-hidden
+            className="h-px min-w-0 flex-1"
+            style={{
+              background:
+                "color-mix(in oklab, var(--inv-secondary) 70%, transparent)",
+            }}
+          />
+        </div>
+      );
+
     case "besar":
       return (
         <h2 className="inv-heading w-full text-3xl font-semibold leading-[1.04] sm:text-4xl">
@@ -414,6 +436,36 @@ function Sampul({
             )}
             <p className="text-lg">{prettyDate}</p>
           </div>
+        </section>
+      );
+
+    /*
+      Sampul editorial: judul memenuhi lebar ukur, fotonya melewati tepi
+      kolom teks (bleed) supaya halamannya terbaca seperti halaman majalah,
+      bukan seperti kartu.
+    */
+    case "naskah":
+      return (
+        <section className={`px-6 ${spec.pad.first}`}>
+          <div className={`mx-auto w-full ${spec.measure}`}>
+            {kepada}
+            <h1 className="inv-heading mt-3 text-[2.5rem] font-semibold leading-[1.04] sm:text-6xl">
+              {title}
+            </h1>
+            <div className="mt-6 flex flex-wrap items-baseline gap-x-6 gap-y-1">
+              <p className="text-lg">{prettyDate}</p>
+              <p className="inv-note">{content.event.venueName}</p>
+            </div>
+          </div>
+          {content.coverImage && (
+            <div className="mt-10 sm:-mx-6">
+              <FotoSampul
+                spec={spec}
+                src={content.coverImage}
+                alt={`Foto ${title}`}
+              />
+            </div>
+          )}
         </section>
       );
 
@@ -814,6 +866,7 @@ export function InvitationView(props: InvitationViewProps) {
         prettyDate={prettyDate}
         musicUrl={allowMusic ? theme.music?.url : undefined}
         embedded={embedded}
+        motion={spec.motion === "masuk" && interactive}
       >
       {showWatermark && watermarkVariant === "preview" && (
         <div
@@ -827,7 +880,34 @@ export function InvitationView(props: InvitationViewProps) {
         </div>
       )}
 
-      {ordered.map((s, i) => render(s.key, i))}
+      {/*
+        Arketipe `galeri` menyisipkan pita foto selebar layar di antara
+        bagian. Fotonya diambil dari galeri yang sudah diunggah pemilik —
+        bukan foto tambahan yang harus ia siapkan lagi. Tanpa galeri, pita
+        ini tidak muncul dan halamannya tetap utuh.
+      */}
+      {ordered.map((s, i) => {
+        const bagian = render(s.key, i);
+        if (spec.band !== "foto" || content.gallery.length === 0) return bagian;
+        // Sisipkan setelah bagian ganjil saja, supaya tidak tiap jeda berfoto.
+        const pasangFoto = i > 0 && i % 2 === 1;
+        if (!pasangFoto) return bagian;
+        const foto = content.gallery[Math.floor(i / 2) % content.gallery.length];
+        return (
+          <div key={`${s.key}-pita`}>
+            {bagian}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={foto}
+              alt=""
+              aria-hidden
+              loading="lazy"
+              decoding="async"
+              className="block h-56 w-full object-cover sm:h-72"
+            />
+          </div>
+        );
+      })}
 
       {showWatermark && watermarkVariant === "brand" && (
         <p

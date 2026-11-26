@@ -1,6 +1,10 @@
 import { themeSchema, contentSchema } from "@/lib/validation/invitation";
 import { fontStack } from "@/lib/font-stacks";
-import { layoutSpec } from "@/lib/invitation-layouts";
+import type { Package } from "@prisma/client";
+import {
+  layoutSpec,
+  minPackageForLayout,
+} from "@/lib/invitation-layouts";
 
 /** Palet cadangan bila `defaultTheme` tidak lolos validasi. */
 const CADANGAN = {
@@ -34,6 +38,18 @@ const CADANGAN = {
 export function coverOf(defaultContent: unknown): string | undefined {
   const parsed = contentSchema.safeParse(defaultContent);
   return parsed.success ? parsed.data.coverImage : undefined;
+}
+
+/**
+ * Tingkat harga sebuah template.
+ *
+ * Dibaca dari arketipe tata letaknya, bukan dari kolom tersendiri: yang
+ * dibayar memang gayanya (lihat `minPackage` di `invitation-layouts.ts`),
+ * jadi satu sumber kebenaran sudah cukup dan tidak bisa saling bertentangan.
+ */
+export function tingkatOf(theme: unknown): Package {
+  const parsed = themeSchema.safeParse(theme);
+  return minPackageForLayout(parsed.success ? parsed.data.layout : undefined);
 }
 
 export function TemplateSwatch({

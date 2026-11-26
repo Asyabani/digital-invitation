@@ -51,10 +51,12 @@ export const contentSchema = z.object({
 export const layoutKey = z.enum([
   "klasik",
   "sampul",
-  "pias",
-  "bingkai",
-  "pita",
   "lugas",
+  "pias",
+  "pita",
+  "galeri",
+  "bingkai",
+  "naskah",
 ]);
 
 export const themeSchema = z.object({

@@ -205,6 +205,12 @@ tersebar di komponen. Menambah arketipe = menambah satu entri di sana.
 | `bingkai` | tengah | panel berbingkai ganda | persegi di dalam bingkai | di antara dua garis | bingkai ganda | paragraf |
 | `pita` | kiri | nama dipisah pita tebal | pita selebar layar | besar, rata kiri | bidang terisi | daftar |
 | `lugas` | kiri | nama, tanggal, tempat | panel lebar | seukuran teks, tanpa ornamen | tanpa wadah | daftar |
+| `galeri` | tengah | setinggi layar penuh | latar penuh + pita foto antar bagian | kecil, berjarak huruf | tanpa wadah | paragraf |
+| `naskah` | kiri | judul selebar halaman | panel melewati tepi teks | miring + garis rambut memanjang | garis bawah | daftar |
+
+**Arketipe menentukan tingkat harga** (lihat docs/05 §2b): Klasik, Sampul,
+Lugas = Basic; Pias, Pita, Galeri = Premium; Bingkai, Naskah = Eksklusif.
+Arketipe berbayar juga mendapat gerak masuk (`motion: "masuk"`).
 
 Catatan yang mudah terlewat:
 
@@ -224,6 +230,16 @@ Catatan yang mudah terlewat:
 - Editor tema (`/dashboard/[id]/tema`) menaruh pilihan tata letak **paling
   atas**, sebelum warna: ia menentukan bentuk, jadi memilihnya belakangan
   berarti pemilik menyetel warna untuk susunan yang lalu ia ganti.
+- **Tidak ada varian judul bernomor** (01 / 02 / 03). Penanda urut hanya
+  benar bila isinya memang urutan; bagian undangan adalah topik, bukan
+  langkah. `naskah` memakai garis rambut memanjang, bukan nomor.
+- **Gerak masuk tidak boleh menyembunyikan isi secara permanen.** Keadaan
+  tersembunyinya hanya dipasang setelah JavaScript jalan (`html.js`) dan
+  hanya bila `IntersectionObserver` ada. Tanpa salah satunya, undangan tampil
+  penuh tanpa gerak — bukan halaman kosong.
+- Saat menangkap layar untuk review, paksa `.inv-terlihat` lebih dulu:
+  tangkapan halaman penuh tidak menggulir, jadi bagian di bawah layar
+  terekam kosong dan terbaca sebagai bug yang sebenarnya tidak ada.
 - Tiap sampul harus tetap utuh **tanpa** `coverImage`. Foto adalah tambahan,
   bukan syarat; undangan yang fotonya belum diunggah tidak boleh tampil rusak.
 

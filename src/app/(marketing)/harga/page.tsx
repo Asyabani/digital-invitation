@@ -1,5 +1,7 @@
 import Link from "next/link";
+import type { Package } from "@prisma/client";
 import { PACKAGES, ACTIVE_MONTHS } from "@/lib/packages";
+import { LAYOUTS, LAYOUT_KEYS } from "@/lib/invitation-layouts";
 import { Button } from "@/components/ui/button";
 
 export const metadata = {
@@ -34,11 +36,26 @@ const BARIS_FITUR = [
 ] as const;
 
 const DASAR = [
-  "Semua template",
   "Editor isi & pratinjau langsung",
   "RSVP & buku tamu bermoderasi",
   "Galeri, peta, hitung mundur, tambah ke kalender",
+  "Foto sampul & layar “Buka Undangan”",
+  "Backsound pilihan Lungsin",
 ];
+
+/**
+ * Tata letak yang termasuk tiap paket.
+ *
+ * Harga melekat pada gaya halaman, bukan pada tiap template: ini yang
+ * benar-benar berbeda antar tingkat. Daftar di sini harus sama dengan
+ * `minPackage` di `src/lib/invitation-layouts.ts`; kalau meleset, pembeli
+ * membaca janji yang tidak ditepati saat checkout.
+ */
+function layoutUntuk(pkg: Package): string[] {
+  return LAYOUT_KEYS.filter((k) => LAYOUTS[k].minPackage === pkg).map(
+    (k) => LAYOUTS[k].label,
+  );
+}
 
 export default function HargaPage() {
   const paket = Object.values(PACKAGES);
@@ -76,6 +93,14 @@ export default function HargaPage() {
                     {p.guestQuota === null
                       ? "Tamu tanpa batas"
                       : `Sampai ${p.guestQuota} tamu`}
+                  </p>
+                  {/*
+                    Yang membedakan harga adalah gaya halamannya, jadi itu
+                    yang disebut paling awal — bukan daftar fitur yang
+                    sama-sama sulit dibandingkan antar paket.
+                  */}
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Tata letak {layoutUntuk(p.key).join(", ")}
                   </p>
                 </div>
 

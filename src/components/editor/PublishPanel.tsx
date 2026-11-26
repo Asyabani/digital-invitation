@@ -2,7 +2,12 @@
 
 import { useState, useTransition } from "react";
 import type { Package } from "@prisma/client";
-import { PACKAGES, ACTIVE_MONTHS, getPackage } from "@/lib/packages";
+import {
+  PACKAGES,
+  ACTIVE_MONTHS,
+  getPackage,
+  packageAtLeast,
+} from "@/lib/packages";
 import { createPayment, extendInvitation } from "@/lib/actions/payment";
 import {
   unpublishInvitation,
@@ -22,6 +27,10 @@ type Props = {
   pendingInvoiceUrl: string | null;
   pendingPackage: Package | null;
   payResult: "success" | "failed" | null;
+  /** Paket paling ringkas yang boleh menerbitkan tata letak yang dipakai. */
+  minPackage: Package;
+  /** Nama tata letaknya, untuk menjelaskan kenapa sebuah paket terkunci. */
+  layoutLabel: string;
 };
 
 const rupiah = new Intl.NumberFormat("id-ID", {
@@ -54,10 +63,13 @@ export function PublishPanel({
   pendingInvoiceUrl,
   pendingPackage,
   payResult,
+  minPackage,
+  layoutLabel,
 }: Props) {
   const paket = Object.values(PACKAGES);
+  // Pilihan awal tidak boleh jatuh ke paket yang terkunci tata letaknya.
   const [selected, setSelected] = useState<Package>(
-    pendingPackage ?? pkg ?? "BASIC",
+    pendingPackage ?? pkg ?? minPackage,
   );
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
@@ -205,6 +217,18 @@ export function PublishPanel({
               : `Pilih paket untuk menerbitkan. Sekali bayar, aktif ${ACTIVE_MONTHS} bulan.`}
           </p>
 
+          {minPackage !== "BASIC" && (
+            <p className="text-sm text-muted-foreground">
+              Tata letak <span className="text-foreground">{layoutLabel}</span>{" "}
+              termasuk tingkat{" "}
+              <span className="text-foreground">
+                {getPackage(minPackage).name}
+              </span>
+              . Untuk memakai paket yang lebih ringkas, ganti tata letak di tab
+              Tema.
+            </p>
+          )}
+
           {/* Tiga pita paket; yang dipilih ditarik benang mengkudu di tepinya. */}
           <div
             role="radiogroup"
@@ -213,17 +237,23 @@ export function PublishPanel({
           >
             {paket.map((p) => {
               const aktif = selected === p.key;
+              // Paket yang lebih ringkas dari syarat tata letak dimatikan,
+              // dengan alasannya tertulis di barisnya sendiri.
+              const terkunci = !packageAtLeast(p.key, minPackage);
               return (
                 <button
                   key={p.key}
                   type="button"
                   role="radio"
                   aria-checked={aktif}
+                  disabled={terkunci}
                   onClick={() => setSelected(p.key)}
                   className={`flex w-full flex-wrap items-baseline gap-x-5 gap-y-1 border-l-2 py-4 pl-4 pr-2 text-left transition-colors ${
-                    aktif
-                      ? "border-l-mengkudu bg-accent/50"
-                      : "border-l-transparent hover:bg-accent/30"
+                    terkunci
+                      ? "cursor-not-allowed border-l-transparent opacity-45"
+                      : aktif
+                        ? "border-l-mengkudu bg-accent/50"
+                        : "border-l-transparent hover:bg-accent/30"
                   }`}
                 >
                   <span className="font-display w-24 text-lg font-medium">
@@ -238,10 +268,12 @@ export function PublishPanel({
                       : `s/d ${p.guestQuota} tamu`}
                   </span>
                   <span className="flex-1 text-sm text-muted-foreground">
-                    {Object.entries(p.features)
-                      .filter(([, on]) => on)
-                      .map(([k]) => FITUR_LABEL[k] ?? k)
-                      .join(" · ") || "Fitur dasar"}
+                    {terkunci
+                      ? `Tidak termasuk tata letak ${layoutLabel}`
+                      : Object.entries(p.features)
+                          .filter(([, on]) => on)
+                          .map(([k]) => FITUR_LABEL[k] ?? k)
+                          .join(" · ") || "Fitur dasar"}
                   </span>
                 </button>
               );

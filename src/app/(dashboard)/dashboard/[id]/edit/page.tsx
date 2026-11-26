@@ -11,6 +11,10 @@ import {
 } from "@/lib/validation/invitation";
 import { ContentEditor } from "@/components/editor/ContentEditor";
 import { PublishPanel } from "@/components/editor/PublishPanel";
+import {
+  layoutSpec,
+  minPackageForLayout,
+} from "@/lib/invitation-layouts";
 import { InvitationNav } from "@/components/dashboard/InvitationNav";
 import { SummaryCards } from "@/components/dashboard/SummaryCards";
 import { invitationFontVars } from "@/lib/fonts-invitation";
@@ -76,6 +80,11 @@ export default async function EditInvitationPage({
         pendingInvoiceUrl={pendingPayment?.invoiceUrl ?? null}
         pendingPackage={pendingPayment?.package ?? null}
         payResult={pay === "success" || pay === "failed" ? pay : null}
+        // Tingkat harga melekat pada arketipe tata letak; panel memakai ini
+        // untuk menonaktifkan paket yang tidak memenuhi syarat beserta
+        // alasannya, bukan membiarkan pembeli menabrak error saat membayar.
+        minPackage={minPackageForLayout(theme.data.layout)}
+        layoutLabel={layoutSpec(theme.data.layout).label}
       />
 
       <ContentEditor

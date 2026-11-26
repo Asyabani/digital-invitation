@@ -13,6 +13,8 @@ type Props = {
   musicUrl?: string;
   /** Dirender di dalam bingkai (editor/galeri), bukan halaman penuh. */
   embedded: boolean;
+  /** Arketipe berbayar: tiap bagian naik dan memudar saat pertama terlihat. */
+  motion: boolean;
   children: React.ReactNode;
 };
 
@@ -33,12 +35,54 @@ export function InvitationShell({
   prettyDate,
   musicUrl,
   embedded,
+  motion,
   children,
 }: Props) {
   const [terbuka, setTerbuka] = useState(!gate);
   const [memutar, setMemutar] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const isiRef = useRef<HTMLDivElement | null>(null);
+
+  /*
+    Gerak masuk.
+
+    Kelas `js` dipasang dari sini, bukan dari CSS: tanpa JavaScript, aturan
+    `html.js .inv-masuk` tidak pernah berlaku dan seluruh isi undangan tetap
+    terlihat. Menyembunyikan dulu lewat CSS murni berarti tamu yang
+    JavaScript-nya gagal akan melihat halaman kosong.
+
+    IntersectionObserver dipakai sekali per elemen lalu dilepas — tidak ada
+    pendengar scroll yang terus hidup di halaman yang dibuka dari HP.
+  */
+  useEffect(() => {
+    if (!motion || !terbuka) return;
+    const akar = isiRef.current;
+    if (!akar) return;
+
+    const target = akar.querySelectorAll("section");
+
+    // Browser tanpa IntersectionObserver tidak akan pernah memicu kelas
+    // `inv-terlihat`. Jangan pasang keadaan tersembunyinya sama sekali di
+    // sana — lebih baik tanpa gerak daripada undangan kosong.
+    if (!("IntersectionObserver" in window)) return;
+
+    document.documentElement.classList.add("js");
+    for (const el of target) el.classList.add("inv-masuk");
+
+    const pengamat = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (!e.isIntersecting) continue;
+          e.target.classList.add("inv-terlihat");
+          pengamat.unobserve(e.target);
+        }
+      },
+      { rootMargin: "0px 0px -8% 0px", threshold: 0.05 },
+    );
+    for (const el of target) pengamat.observe(el);
+
+    return () => pengamat.disconnect();
+  }, [motion, terbuka]);
 
   // Setelah gerbang dibuka, fokus pindah ke isi. Tanpa ini pengguna keyboard
   // dan pembaca layar tertinggal di tombol yang sudah hilang.

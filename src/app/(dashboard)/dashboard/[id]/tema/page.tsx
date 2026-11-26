@@ -56,6 +56,7 @@ export default async function TemaPage({
         initialSections={sections.data}
         showWatermark={!canUse(inv.package, "removeWatermark")}
         canUseMusic={canUse(inv.package, "customMusic")}
+        paket={inv.package}
       />
     </div>
   );

@@ -1,3 +1,5 @@
+import type { Package } from "@prisma/client";
+import { packageAtLeast } from "@/lib/packages";
 import type { LayoutKey } from "@/lib/validation/invitation";
 
 /*
@@ -36,8 +38,9 @@ export type LayoutSpec = {
    * - `bingkai`: panel berbingkai ganda seperti kartu undangan
    * - `pita`   : nama dan tanggal dipisah satu pita tebal
    * - `lugas`  : nama, tanggal, tempat — tanpa ornamen apa pun
+   * - `naskah` : judul rata kiri selebar halaman, foto melewati tepi teks
    */
-  cover: "tumpuk" | "portal" | "pias" | "bingkai" | "pita" | "lugas";
+  cover: "tumpuk" | "portal" | "pias" | "bingkai" | "pita" | "lugas" | "naskah";
 
   /**
    * Cara judul bagian mengumumkan diri.
@@ -47,8 +50,19 @@ export type LayoutSpec = {
    * - `ganda`  : rata tengah di antara dua garis rambut
    * - `besar`  : besar, rata kiri, tanpa ornamen
    * - `polos`  : seukuran teks biasa, hanya lebih tebal
+   * - `panjang`: judul rata kiri, garis rambut memanjang ke sisa lebar
+   *
+   * Sengaja TIDAK ada varian bernomor (01/02/03). Penanda urut hanya benar
+   * bila isinya memang urutan; bagian undangan adalah topik, bukan langkah.
    */
-  heading: "benang" | "halus" | "samping" | "ganda" | "besar" | "polos";
+  heading:
+    | "benang"
+    | "halus"
+    | "samping"
+    | "ganda"
+    | "besar"
+    | "polos"
+    | "panjang";
 
   /**
    * Wadah blok isi (lokasi, cerita, galeri).
@@ -71,8 +85,9 @@ export type LayoutSpec = {
    * - `selang`: bagian genap diberi rona tipis
    * - `tidak` : rata, dibedakan jarak saja
    * - `pita`  : pita penuh lebar berona primer, bergantian
+   * - `foto`  : pita foto selebar layar disisipkan di antara bagian
    */
-  band: "selang" | "tidak" | "pita";
+  band: "selang" | "tidak" | "pita" | "foto";
 
   /** Pemisah antar bagian. */
   divider: "pinggiran" | "halus" | "tidak";
@@ -109,6 +124,29 @@ export type LayoutSpec = {
    * tetap utuh dalam keadaan itu.
    */
   coverMedia: "latar" | "sisip" | "pita" | "bingkai" | "panel";
+
+  /**
+   * Paket paling ringkas yang boleh menerbitkan undangan dengan arketipe ini.
+   *
+   * Harga melekat pada **gaya**, bukan pada tiap template. Ini pola yang
+   * dipakai sebagian vendor undangan digital Indonesia (Kipa menjual per gaya
+   * desain, Naravitation per kelompok tema); mayoritas lain menjual per paket
+   * fitur. Mengikat tingkat ke arketipe berarti yang dibayar memang hal yang
+   * benar-benar berbeda — susunan halamannya — bukan sekadar label.
+   *
+   * Saat masih trial (`package = null`) semua arketipe boleh **dicoba**,
+   * sama seperti `canUse()`. Pemeriksaannya terjadi saat menerbitkan.
+   */
+  minPackage: Package;
+
+  /**
+   * Gerak saat bagian masuk layar.
+   * - `tidak`: tidak ada gerak sama sekali
+   * - `masuk`: tiap bagian naik dan memudar saat pertama terlihat
+   *
+   * `prefers-reduced-motion: reduce` selalu mematikannya, apa pun nilainya.
+   */
+  motion: "tidak" | "masuk";
 };
 
 export const LAYOUTS: Record<LayoutKey, LayoutSpec> = {
@@ -134,6 +172,8 @@ export const LAYOUTS: Record<LayoutKey, LayoutSpec> = {
     gap: "gap-6",
     display: "judul",
     coverMedia: "sisip",
+    minPackage: "BASIC",
+    motion: "tidak",
   },
 
   /*
@@ -158,6 +198,8 @@ export const LAYOUTS: Record<LayoutKey, LayoutSpec> = {
     gap: "gap-7",
     display: "judul",
     coverMedia: "latar",
+    minPackage: "BASIC",
+    motion: "tidak",
   },
 
   /*
@@ -183,6 +225,8 @@ export const LAYOUTS: Record<LayoutKey, LayoutSpec> = {
     gap: "gap-5",
     display: "judul",
     coverMedia: "panel",
+    minPackage: "PREMIUM",
+    motion: "masuk",
   },
 
   /*
@@ -207,6 +251,8 @@ export const LAYOUTS: Record<LayoutKey, LayoutSpec> = {
     gap: "gap-6",
     display: "judul",
     coverMedia: "bingkai",
+    minPackage: "EXCLUSIVE",
+    motion: "masuk",
   },
 
   /*
@@ -231,6 +277,8 @@ export const LAYOUTS: Record<LayoutKey, LayoutSpec> = {
     gap: "gap-6",
     display: "judul",
     coverMedia: "pita",
+    minPackage: "PREMIUM",
+    motion: "masuk",
   },
 
   /*
@@ -256,10 +304,81 @@ export const LAYOUTS: Record<LayoutKey, LayoutSpec> = {
     gap: "gap-5",
     display: "isi",
     coverMedia: "panel",
+    minPackage: "BASIC",
+    motion: "tidak",
+  },
+
+  /*
+    ── Arketipe berbayar ─────────────────────────────────────────────────
+    Dua arketipe di bawah hanya tersedia di tingkat berbayar. Keduanya memang
+    lebih mahal untuk disediakan, bukan sekadar dikunci: `galeri` menjadikan
+    foto sebagai tulang punggung halaman, `naskah` membawa tipografi editorial
+    dengan huruf awal besar dan ukuran yang tidak simetris.
+  */
+
+  /** Premium — foto memimpin: pita foto penuh lebar memisahkan tiap bagian. */
+  galeri: {
+    label: "Galeri",
+    description:
+      "Foto memimpin. Pita foto selebar layar memisahkan tiap bagian, galerinya mozaik.",
+    align: "center",
+    measure: "max-w-xl",
+    cover: "portal",
+    heading: "halus",
+    panel: "polos",
+    fakta: "paragraf",
+    band: "foto",
+    divider: "tidak",
+    eyebrow: false,
+    pad: { first: "", rapat: "py-16", lapang: "py-20" },
+    gap: "gap-6",
+    display: "judul",
+    coverMedia: "latar",
+    minPackage: "PREMIUM",
+    motion: "masuk",
+  },
+
+  /** Eksklusif — editorial: huruf awal besar, ukuran asimetris, bleed foto. */
+  naskah: {
+    label: "Naskah",
+    description:
+      "Tipografi editorial: huruf awal besar pada pembuka, ukuran asimetris, foto melewati tepi teks.",
+    align: "left",
+    measure: "max-w-2xl",
+    cover: "naskah",
+    heading: "panjang",
+    panel: "garis",
+    fakta: "daftar",
+    band: "tidak",
+    divider: "halus",
+    eyebrow: false,
+    pad: { first: "pb-16 pt-16 sm:pt-20", rapat: "py-12", lapang: "py-16" },
+    gap: "gap-6",
+    display: "judul",
+    coverMedia: "panel",
+    minPackage: "EXCLUSIVE",
+    motion: "masuk",
   },
 };
 
 export const LAYOUT_KEYS = Object.keys(LAYOUTS) as LayoutKey[];
+
+/**
+ * Arketipe yang boleh **diterbitkan** dengan paket tertentu.
+ *
+ * `pkg === null` (trial) mengembalikan semuanya: pemilik harus bisa mencoba
+ * gaya yang belum ia beli, sama seperti `canUse()`. Yang menolak adalah
+ * pembayaran, bukan editor.
+ */
+export function layoutsFor(pkg: Package | null): LayoutKey[] {
+  if (pkg === null) return LAYOUT_KEYS;
+  return LAYOUT_KEYS.filter((k) => packageAtLeast(pkg, LAYOUTS[k].minPackage));
+}
+
+/** Paket paling ringkas yang bisa menerbitkan undangan bertata letak ini. */
+export function minPackageForLayout(key: string | undefined): Package {
+  return layoutSpec(key).minPackage;
+}
 
 /** Spesifikasi untuk satu kunci; kunci asing jatuh ke klasik. */
 export function layoutSpec(key: string | undefined): LayoutSpec {

@@ -6,7 +6,9 @@ import { Button } from "@/components/ui/button";
 import {
   TemplateSwatch,
   coverOf,
+  tingkatOf,
 } from "@/components/template/TemplateSwatch";
+import { getPackage } from "@/lib/packages";
 import { invitationFontVars } from "@/lib/fonts-invitation";
 import {
   KATEGORI_LABEL,
@@ -24,6 +26,12 @@ export const metadata = {
 // Membaca template dari DB per-request untuk saat ini.
 // Fase lanjutan: cache dengan "use cache" / ISR (lihat docs/02 ADR-007).
 export const instant = false;
+
+const rupiah = new Intl.NumberFormat("id-ID", {
+  style: "currency",
+  currency: "IDR",
+  maximumFractionDigits: 0,
+});
 
 type Kartu = {
   id: string;
@@ -81,7 +89,21 @@ function Kelompok({
               />
             </Link>
 
-            <div className="flex gap-2 border-t border-border/70 p-4">
+            {/*
+              Harga disebut di kartunya, bukan hanya di halaman harga.
+              Tingkat melekat pada arketipe tata letak, jadi pembeli melihat
+              langsung apa yang membuat satu template lebih mahal.
+            */}
+            <div className="flex items-baseline justify-between gap-3 border-t border-border/70 px-4 pt-3">
+              <span className="text-sm text-muted-foreground">
+                {getPackage(tingkatOf(t.defaultTheme)).name}
+              </span>
+              <span className="tabular text-sm font-semibold">
+                {rupiah.format(getPackage(tingkatOf(t.defaultTheme)).price)}
+              </span>
+            </div>
+
+            <div className="flex gap-2 p-4">
               <Button
                 render={<Link href={`/template/${t.slug}`} />}
                 variant="outline"

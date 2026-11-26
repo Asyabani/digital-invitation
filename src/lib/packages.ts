@@ -69,6 +69,37 @@ export function getPackage(pkg: Package): PackageInfo {
   return PACKAGES[pkg];
 }
 
+/**
+ * Urutan paket dari paling ringkas ke paling lengkap.
+ *
+ * Dipakai untuk membandingkan paket, bukan untuk menampilkan harga — harga
+ * tetap dibaca dari `PACKAGES`. Enum Prisma tidak punya urutan intrinsik, dan
+ * membandingkan string (`"BASIC" < "PREMIUM"`) kebetulan benar secara abjad
+ * tapi akan diam-diam salah begitu ada paket baru.
+ */
+const PERINGKAT: Record<Package, number> = {
+  BASIC: 0,
+  PREMIUM: 1,
+  EXCLUSIVE: 2,
+};
+
+export const PACKAGE_ORDER: Package[] = ["BASIC", "PREMIUM", "EXCLUSIVE"];
+
+/** Apakah `pkg` setara atau lebih lengkap dari `minimum`? */
+export function packageAtLeast(
+  pkg: Package | null,
+  minimum: Package | null,
+): boolean {
+  if (minimum === null) return true;
+  if (pkg === null) return false;
+  return PERINGKAT[pkg] >= PERINGKAT[minimum];
+}
+
+/** Paket termurah yang memenuhi `minimum`. */
+export function cheapestPackageFor(minimum: Package | null): Package {
+  return minimum ?? "BASIC";
+}
+
 export type FeatureKey = keyof PackageInfo["features"];
 
 /**

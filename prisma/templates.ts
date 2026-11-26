@@ -45,66 +45,87 @@ export type TemplateSeed = {
   sebarannya harus bisa dibaca sekaligus. `assertCatalogSehat()` menjaga tidak
   ada slug yang terlewat dan tidak ada arketipe yang tidak terpakai.
 */
-type LayoutKey = "klasik" | "sampul" | "pias" | "bingkai" | "pita" | "lugas";
+type LayoutKey =
+  | "klasik"
+  | "sampul"
+  | "lugas"
+  | "pias"
+  | "pita"
+  | "galeri"
+  | "bingkai"
+  | "naskah";
 
 const SEMUA_LAYOUT: LayoutKey[] = [
   "klasik",
   "sampul",
-  "pias",
-  "bingkai",
-  "pita",
   "lugas",
+  "pias",
+  "pita",
+  "galeri",
+  "bingkai",
+  "naskah",
 ];
 
+/*
+  Tingkat harga tiap arketipe. Harus sama persis dengan `minPackage` di
+  `src/lib/invitation-layouts.ts` — `assertCatalogSehat()` memakai peta ini
+  untuk memastikan sebarannya 10 Basic / 10 Premium / 10 Eksklusif.
+*/
+const TINGKAT_LAYOUT: Record<LayoutKey, "BASIC" | "PREMIUM" | "EXCLUSIVE"> = {
+  klasik: "BASIC",
+  sampul: "BASIC",
+  lugas: "BASIC",
+  pias: "PREMIUM",
+  pita: "PREMIUM",
+  galeri: "PREMIUM",
+  bingkai: "EXCLUSIVE",
+  naskah: "EXCLUSIVE",
+};
+
 const LAYOUT_PER_SLUG: Record<string, LayoutKey> = {
-  // Pernikahan — dua tiap arketipe bergaya undangan, tanpa `lugas`.
+  // Tingkat harga melekat pada arketipe (lihat `minPackage` di
+  // src/lib/invitation-layouts.ts), jadi sebaran di bawah sekaligus
+  // menentukan berapa template per tingkat: 10 Basic, 10 Premium,
+  // 10 Eksklusif. `assertCatalogSehat()` menghitungnya ulang tiap seed.
+
+  // — Pernikahan (12): 4 Basic, 4 Premium, 4 Eksklusif
   "klasik-elegan": "klasik",
   "floral-lembut": "klasik",
   "sage-tenang": "sampul",
   "mutiara-senja": "sampul",
-  "navy-emas": "bingkai",
-  "emas-tulis": "bingkai",
   "terakota-jawa": "pias",
   "biru-laut": "pias",
   "hitam-putih": "pita",
-  "rustic-kayu": "pita",
+  "rustic-kayu": "galeri",
+  "navy-emas": "bingkai",
+  "emas-tulis": "bingkai",
+  "kembang-goyang": "naskah",
+  "langit-senja": "naskah",
 
-  // Aqiqah — sebaran serupa; `lugas` terlalu dingin untuk acara syukuran.
+  // — Aqiqah (6): 2 Basic, 2 Premium, 2 Eksklusif
   "ceria-aqiqah": "klasik",
-  "merah-muda-lembut": "klasik",
-  "biru-langit": "sampul",
   "awan-putih": "sampul",
-  "kuning-hangat": "bingkai",
-  "peach-hangat": "bingkai",
   "hijau-mint": "pias",
-  "hijau-zaitun": "pias",
-  "ungu-lavender": "pita",
-  "jingga-ceria": "pita",
+  "merah-muda-lembut": "galeri",
+  "kuning-hangat": "bingkai",
+  "ungu-lavender": "naskah",
 
-  // Ulang tahun — condong ke `pita`, yang paling kontemporer.
-  "pesta-warna": "pita",
-  "balon-biru": "pita",
-  "hitam-emas": "pita",
+  // — Ulang tahun (6)
   "satu-tahun": "klasik",
-  "permen-kapas": "klasik",
-  "neon-malam": "sampul",
-  "kopi-senja": "sampul",
-  "emas-dewasa": "bingkai",
-  "tropis-segar": "pias",
-  "kebun-pagi": "lugas",
+  "pesta-warna": "sampul",
+  "balon-biru": "pita",
+  "tropis-segar": "galeri",
+  "neon-malam": "bingkai",
+  "hitam-emas": "naskah",
 
-  // Korporat — condong ke `lugas` dan `pias`; tidak ada yang `klasik`,
-  // karena bentuk undangan pernikahan justru salah di acara resmi.
+  // — Korporat (6). Tidak ada yang `klasik`: bentuk undangan pernikahan
+  // justru salah di acara resmi.
   "biru-korporat": "lugas",
   "abu-profesional": "lugas",
-  "jingga-energi": "lugas",
-  "monokrom-tegas": "lugas",
-  "hijau-berkelanjutan": "pias",
-  "ungu-inovasi": "pias",
-  "teal-seminar": "pias",
-  "merah-peluncuran": "pita",
   "teknologi-terang": "pita",
+  "hijau-berkelanjutan": "pias",
   "malam-gala": "bingkai",
+  "ungu-inovasi": "naskah",
 };
 
 /*
@@ -183,46 +204,39 @@ const FOTO_PER_SLUG: Record<string, string> = {
   "klasik-elegan": FOTO.PERNIKAHAN[0],
   "floral-lembut": FOTO.PERNIKAHAN[1],
   "sage-tenang": FOTO.PERNIKAHAN[2],
-  "navy-emas": FOTO.PERNIKAHAN[3],
-  "terakota-jawa": FOTO.PERNIKAHAN[4],
   "mutiara-senja": FOTO.PERNIKAHAN[5],
-  "hitam-putih": FOTO.PERNIKAHAN[6],
+  "terakota-jawa": FOTO.PERNIKAHAN[4],
   "biru-laut": FOTO.PERNIKAHAN[7],
-  "emas-tulis": FOTO.PERNIKAHAN[8],
+  "hitam-putih": FOTO.PERNIKAHAN[6],
   "rustic-kayu": FOTO.PERNIKAHAN[9],
+  "navy-emas": FOTO.PERNIKAHAN[3],
+  "emas-tulis": FOTO.PERNIKAHAN[8],
+  // Dua belas template pernikahan atas sepuluh foto, jadi dua foto terpakai
+  // dua kali. Dipilih yang namanya memang cocok: siger emas untuk Kembang
+  // Goyang, dan pengantin bersalam untuk Langit Senja.
+  "kembang-goyang": FOTO.PERNIKAHAN[8],
+  "langit-senja": FOTO.PERNIKAHAN[1],
 
   "ceria-aqiqah": FOTO.AQIQAH[0],
-  "biru-langit": FOTO.AQIQAH[3],
-  "merah-muda-lembut": FOTO.AQIQAH[4],
+  "awan-putih": FOTO.AQIQAH[3],
   "hijau-mint": FOTO.AQIQAH[2],
+  "merah-muda-lembut": FOTO.AQIQAH[4],
   "kuning-hangat": FOTO.AQIQAH[1],
-  "awan-putih": FOTO.AQIQAH[0],
   "ungu-lavender": FOTO.AQIQAH[4],
-  "jingga-ceria": FOTO.AQIQAH[1],
-  "peach-hangat": FOTO.AQIQAH[3],
-  "hijau-zaitun": FOTO.AQIQAH[2],
 
-  "pesta-warna": FOTO.ULANG_TAHUN[0],
-  "balon-biru": FOTO.ULANG_TAHUN[0],
   "satu-tahun": FOTO.ULANG_TAHUN[5],
-  "neon-malam": FOTO.ULANG_TAHUN[6],
-  "emas-dewasa": FOTO.ULANG_TAHUN[3],
+  "pesta-warna": FOTO.ULANG_TAHUN[0],
+  "balon-biru": FOTO.ULANG_TAHUN[4],
   "tropis-segar": FOTO.ULANG_TAHUN[1],
-  "permen-kapas": FOTO.ULANG_TAHUN[5],
-  "kopi-senja": FOTO.ULANG_TAHUN[2],
+  "neon-malam": FOTO.ULANG_TAHUN[6],
   "hitam-emas": FOTO.ULANG_TAHUN[3],
-  "kebun-pagi": FOTO.ULANG_TAHUN[4],
 
   "biru-korporat": FOTO.KORPORAT[1],
   "abu-profesional": FOTO.KORPORAT[2],
-  "hijau-berkelanjutan": FOTO.KORPORAT[4],
-  "merah-peluncuran": FOTO.KORPORAT[0],
-  "malam-gala": FOTO.KORPORAT[3],
   "teknologi-terang": FOTO.KORPORAT[4],
+  "hijau-berkelanjutan": FOTO.KORPORAT[0],
+  "malam-gala": FOTO.KORPORAT[3],
   "ungu-inovasi": FOTO.KORPORAT[3],
-  "jingga-energi": FOTO.KORPORAT[0],
-  "teal-seminar": FOTO.KORPORAT[1],
-  "monokrom-tegas": FOTO.KORPORAT[2],
 };
 
 /** Foto sampul template. */
@@ -523,6 +537,30 @@ const PERNIKAHAN: TemplateSeed[] = [
     },
     font: { heading: "Fraunces", body: "Nunito" },
   },
+  {
+    name: "Kembang Goyang",
+    slug: "kembang-goyang",
+    category: "PERNIKAHAN",
+    palette: {
+      primary: "#8E2B2B",
+      secondary: "#C9A227",
+      background: "#FBF5EE",
+      text: "#3A241F",
+    },
+    font: { heading: "Marcellus", body: "Plus Jakarta Sans" },
+  },
+  {
+    name: "Langit Senja",
+    slug: "langit-senja",
+    category: "PERNIKAHAN",
+    palette: {
+      primary: "#8A4A6B",
+      secondary: "#E0A66B",
+      background: "#FCF6F3",
+      text: "#3A2733",
+    },
+    font: { heading: "Cormorant Garamond", body: "Karla" },
+  },
 ];
 
 const AQIQAH: TemplateSeed[] = [
@@ -535,18 +573,6 @@ const AQIQAH: TemplateSeed[] = [
       secondary: "#F0D98C",
       background: "#FFFBEF",
       text: "#4A3A1A",
-    },
-    font: { heading: "Josefin Sans", body: "Nunito" },
-  },
-  {
-    name: "Biru Langit",
-    slug: "biru-langit",
-    category: "AQIQAH",
-    palette: {
-      primary: "#3A6EA5",
-      secondary: "#A9CCE8",
-      background: "#F3F8FD",
-      text: "#22384F",
     },
     font: { heading: "Josefin Sans", body: "Nunito" },
   },
@@ -610,42 +636,6 @@ const AQIQAH: TemplateSeed[] = [
     },
     font: { heading: "Josefin Sans", body: "Karla" },
   },
-  {
-    name: "Jingga Ceria",
-    slug: "jingga-ceria",
-    category: "AQIQAH",
-    palette: {
-      primary: "#C85A2B",
-      secondary: "#F3B085",
-      background: "#FFF6F0",
-      text: "#4A2718",
-    },
-    font: { heading: "Fraunces", body: "Nunito" },
-  },
-  {
-    name: "Peach Hangat",
-    slug: "peach-hangat",
-    category: "AQIQAH",
-    palette: {
-      primary: "#C9755B",
-      secondary: "#F2C2AC",
-      background: "#FFF7F3",
-      text: "#46291F",
-    },
-    font: { heading: "Marcellus", body: "Plus Jakarta Sans" },
-  },
-  {
-    name: "Hijau Zaitun",
-    slug: "hijau-zaitun",
-    category: "AQIQAH",
-    palette: {
-      primary: "#5F7138",
-      secondary: "#B6C68D",
-      background: "#F7F9EF",
-      text: "#2F3A1B",
-    },
-    font: { heading: "Josefin Sans", body: "Lato" },
-  },
 ];
 
 const ULANG_TAHUN: TemplateSeed[] = [
@@ -698,18 +688,6 @@ const ULANG_TAHUN: TemplateSeed[] = [
     font: { heading: "Josefin Sans", body: "Plus Jakarta Sans" },
   },
   {
-    name: "Emas Dewasa",
-    slug: "emas-dewasa",
-    category: "ULANG_TAHUN",
-    palette: {
-      primary: "#9C7B2E",
-      secondary: "#D8BE7E",
-      background: "#FBF7EE",
-      text: "#3A3120",
-    },
-    font: { heading: "Playfair Display", body: "Inter" },
-  },
-  {
     name: "Tropis Segar",
     slug: "tropis-segar",
     category: "ULANG_TAHUN",
@@ -722,30 +700,6 @@ const ULANG_TAHUN: TemplateSeed[] = [
     font: { heading: "Fraunces", body: "Nunito" },
   },
   {
-    name: "Permen Kapas",
-    slug: "permen-kapas",
-    category: "ULANG_TAHUN",
-    palette: {
-      primary: "#9A4FBD",
-      secondary: "#F6B8E0",
-      background: "#FDF6FC",
-      text: "#3D2448",
-    },
-    font: { heading: "Josefin Sans", body: "Nunito" },
-  },
-  {
-    name: "Kopi Senja",
-    slug: "kopi-senja",
-    category: "ULANG_TAHUN",
-    palette: {
-      primary: "#6B4430",
-      secondary: "#BE9272",
-      background: "#F7F1EA",
-      text: "#332118",
-    },
-    font: { heading: "Fraunces", body: "Karla" },
-  },
-  {
     name: "Hitam Emas",
     slug: "hitam-emas",
     category: "ULANG_TAHUN",
@@ -756,18 +710,6 @@ const ULANG_TAHUN: TemplateSeed[] = [
       text: "#EFE9DA",
     },
     font: { heading: "Italiana", body: "Inter" },
-  },
-  {
-    name: "Kebun Pagi",
-    slug: "kebun-pagi",
-    category: "ULANG_TAHUN",
-    palette: {
-      primary: "#4C7A3A",
-      secondary: "#AFCC8E",
-      background: "#F5F9F0",
-      text: "#26371C",
-    },
-    font: { heading: "Marcellus", body: "Lato" },
   },
 ];
 
@@ -809,18 +751,6 @@ const KORPORAT: TemplateSeed[] = [
     font: { heading: "Inter", body: "Karla" },
   },
   {
-    name: "Merah Peluncuran",
-    slug: "merah-peluncuran",
-    category: "KORPORAT",
-    palette: {
-      primary: "#A62828",
-      secondary: "#E08A8A",
-      background: "#FCF5F4",
-      text: "#35191A",
-    },
-    font: { heading: "Josefin Sans", body: "Inter" },
-  },
-  {
     name: "Malam Gala",
     slug: "malam-gala",
     category: "KORPORAT",
@@ -855,42 +785,6 @@ const KORPORAT: TemplateSeed[] = [
       text: "#291E47",
     },
     font: { heading: "Inter", body: "Karla" },
-  },
-  {
-    name: "Jingga Energi",
-    slug: "jingga-energi",
-    category: "KORPORAT",
-    palette: {
-      primary: "#B35512",
-      secondary: "#EFA468",
-      background: "#FEF7F0",
-      text: "#3F2411",
-    },
-    font: { heading: "Inter", body: "Lato" },
-  },
-  {
-    name: "Teal Seminar",
-    slug: "teal-seminar",
-    category: "KORPORAT",
-    palette: {
-      primary: "#10646E",
-      secondary: "#7BB4BC",
-      background: "#F2F9FA",
-      text: "#0F2E33",
-    },
-    font: { heading: "Inter", body: "Plus Jakarta Sans" },
-  },
-  {
-    name: "Monokrom Tegas",
-    slug: "monokrom-tegas",
-    category: "KORPORAT",
-    palette: {
-      primary: "#111111",
-      secondary: "#777777",
-      background: "#FAFAFA",
-      text: "#111111",
-    },
-    font: { heading: "Italiana", body: "Inter" },
   },
 ];
 
@@ -965,12 +859,23 @@ export function assertCatalogSehat(): void {
     if (!terpakai.has(l)) masalah.push(`arketipe ${l} tidak dipakai template`);
   }
 
-  const perKategori = new Map<CategoryKey, number>();
-  for (const t of TEMPLATE_CATALOG) {
-    perKategori.set(t.category, (perKategori.get(t.category) ?? 0) + 1);
+  if (TEMPLATE_CATALOG.length !== 30) {
+    masalah.push(`katalog berisi ${TEMPLATE_CATALOG.length} template, bukan 30`);
   }
-  for (const [k, n] of perKategori) {
-    if (n < 10) masalah.push(`kategori ${k} hanya punya ${n} template`);
+
+  // Sebaran tingkat harga: 10 Basic, 10 Premium, 10 Eksklusif. Ini janji
+  // produk ke pembeli, jadi digagalkan di seed kalau meleset — bukan baru
+  // ketahuan dari galeri.
+  const perTingkat = new Map<string, number>();
+  for (const t of TEMPLATE_CATALOG) {
+    const layout = LAYOUT_PER_SLUG[t.slug];
+    if (!layout) continue;
+    const tingkat = TINGKAT_LAYOUT[layout];
+    perTingkat.set(tingkat, (perTingkat.get(tingkat) ?? 0) + 1);
+  }
+  for (const tingkat of ["BASIC", "PREMIUM", "EXCLUSIVE"] as const) {
+    const n = perTingkat.get(tingkat) ?? 0;
+    if (n !== 10) masalah.push(`tingkat ${tingkat} punya ${n} template, bukan 10`);
   }
 
   if (masalah.length > 0) {

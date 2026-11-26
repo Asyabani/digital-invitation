@@ -607,6 +607,36 @@
     opacity: 0.9;
   }
 
+  /*
+    Gerak masuk, hanya untuk arketipe berbayar (`motion: "masuk"`).
+
+    Keadaan awalnya dipasang lewat kelas `.inv-masuk`, dan `InvitationShell`
+    menambahkan `.inv-terlihat` saat bagian itu pertama masuk layar. Kalau
+    JavaScript gagal dimuat, aturan `:where()` di bawah tidak pernah berlaku
+    dan isinya tetap terlihat penuh — bukan halaman kosong.
+  */
+  .inv-masuk {
+    opacity: 1;
+  }
+  html.js .inv-masuk:not(.inv-terlihat) {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  html.js .inv-masuk {
+    transition:
+      opacity 0.55s ease-out,
+      transform 0.55s ease-out;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html.js .inv-masuk,
+    html.js .inv-masuk:not(.inv-terlihat) {
+      opacity: 1;
+      transform: none;
+      transition: none;
+    }
+  }
+
   /* Foto sampul: satu kelas per cara arketipe memakainya. */
   .inv-foto-sisip {
     display: block;

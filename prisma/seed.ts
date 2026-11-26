@@ -52,8 +52,29 @@ async function main() {
     else dibuat++;
   }
 
+  /*
+    Template yang sudah tidak ada di katalog dinonaktifkan, bukan dihapus.
+    Menghapusnya akan memutus undangan yang terlanjur memakainya — relasi
+    `Invitation.templateId` tidak punya cascade, dan memang tidak boleh
+    punya. Nonaktif berarti hilang dari galeri publik, sementara undangan
+    yang sudah jadi tetap tampil seperti semula.
+  */
+  const slugKatalog = TEMPLATE_CATALOG.map((t) => t.slug);
+  const dipensiunkan = await prisma.template.updateMany({
+    where: { slug: { notIn: slugKatalog }, isActive: true },
+    data: { isActive: false },
+  });
+  if (dipensiunkan.count > 0) {
+    console.log(
+      `· ${dipensiunkan.count} template di luar katalog dinonaktifkan (tidak dihapus)`,
+    );
+  }
+
+  // Hanya yang aktif: yang dipensiunkan masih ada di tabel dan akan membuat
+  // cacahnya terbaca lebih besar dari katalog.
   const perKategori = await prisma.template.groupBy({
     by: ["category"],
+    where: { isActive: true },
     _count: true,
     orderBy: { category: "asc" },
   });

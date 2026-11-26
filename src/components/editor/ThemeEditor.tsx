@@ -11,6 +11,14 @@ import type {
 import { HEADING_FONTS, BODY_FONTS, fontStack } from "@/lib/font-stacks";
 import { LAYOUTS, LAYOUT_KEYS } from "@/lib/invitation-layouts";
 import { MUSIC_TRACKS, trackByUrl } from "@/lib/music-tracks";
+import type { Package } from "@prisma/client";
+import { getPackage, packageAtLeast } from "@/lib/packages";
+
+const rupiahTema = new Intl.NumberFormat("id-ID", {
+  style: "currency",
+  currency: "IDR",
+  maximumFractionDigits: 0,
+});
 import { InvitationView } from "@/components/invitation/InvitationView";
 import {
   updateInvitationTheme,
@@ -33,6 +41,8 @@ type Props = {
   showWatermark: boolean;
   /** Paket mengizinkan musik custom? Kalau tidak, field musik dikunci. */
   canUseMusic: boolean;
+  /** Paket undangan saat ini; `null` = masih trial. */
+  paket: Package | null;
 };
 
 const PRESETS: { name: string; palette: Theme["palette"] }[] = [
@@ -111,6 +121,7 @@ export function ThemeEditor({
   initialSections,
   showWatermark,
   canUseMusic,
+  paket,
 }: Props) {
   const [theme, setTheme] = useState<Theme>(initialTheme);
 
@@ -211,6 +222,10 @@ export function ThemeEditor({
               {LAYOUT_KEYS.map((key) => {
                 const l = LAYOUTS[key];
                 const aktif = (theme.layout ?? "klasik") === key;
+                // Saat trial semua gaya boleh dicoba; yang menolak adalah
+                // pembayaran. Label harga tetap ditampilkan agar pemilik tahu
+                // konsekuensinya sebelum terlanjur menyetel warna dan foto.
+                const terjangkau = packageAtLeast(paket, l.minPackage);
                 return (
                   <label
                     key={key}
@@ -235,6 +250,15 @@ export function ThemeEditor({
                       </span>
                       <span className="mt-0.5 block text-xs leading-relaxed text-muted-foreground">
                         {l.description}
+                      </span>
+                      <span
+                        className={`mt-1 block text-xs ${
+                          terjangkau ? "text-muted-foreground" : "text-warning-foreground"
+                        }`}
+                      >
+                        {getPackage(l.minPackage).name} ·{" "}
+                        {rupiahTema.format(getPackage(l.minPackage).price)}
+                        {terjangkau ? "" : " — perlu naik paket saat terbit"}
                       </span>
                     </span>
                   </label>

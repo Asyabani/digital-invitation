@@ -7,13 +7,21 @@ import { TemplateToggle } from "@/components/admin/TemplateToggle";
 import {
   TemplateSwatch,
   coverOf,
+  tingkatOf,
 } from "@/components/template/TemplateSwatch";
+import { getPackage } from "@/lib/packages";
 import { invitationFontVars } from "@/lib/fonts-invitation";
 import { themeSchema } from "@/lib/validation/invitation";
 import { KATEGORI_LABEL, KATEGORI_URUT } from "@/lib/template-category";
 
 export const metadata = { title: "Template — Admin Lungsin" };
 export const instant = false;
+
+const rupiah = new Intl.NumberFormat("id-ID", {
+  style: "currency",
+  currency: "IDR",
+  maximumFractionDigits: 0,
+});
 
 export default async function AdminTemplatePage() {
   await requireAdmin();
@@ -100,6 +108,14 @@ export default async function AdminTemplatePage() {
                         <p className="truncate text-sm font-medium">{t.name}</p>
                         <p className="truncate text-xs text-muted-foreground">
                           {font}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {getPackage(tingkatOf(t.defaultTheme)).name} ·{" "}
+                          <span className="tabular">
+                            {rupiah.format(
+                              getPackage(tingkatOf(t.defaultTheme)).price,
+                            )}
+                          </span>
                         </p>
                         <p className="text-xs text-muted-foreground">
                           dipakai{" "}
