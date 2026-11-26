@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { getInvitationForPublic, findGuest } from "@/lib/public";
 import { canUse } from "@/lib/packages";
+import { trackByUrl } from "@/lib/music-tracks";
 import {
   contentSchema,
   themeSchema,
@@ -102,6 +103,20 @@ export default async function PublicInvitationPage({
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "";
 
+  /*
+    Backsound. Lagu dari daftar bawaan Lungsin (`MUSIC_TRACKS`) bebas dipakai
+    paket apa pun; yang berbayar adalah memakai lagu sendiri — itulah arti
+    fitur `customMusic`, dan nama fiturnya memang "Musik custom".
+
+    Pemeriksaan ini ada di sini, bukan hanya di editor tema. Sebelumnya
+    penguncinya cuma menyembunyikan kolom di editor, sehingga `themeConfig`
+    yang sudah terlanjur berisi URL tetap diputar ke tamu.
+  */
+  const musicUrl = theme.data.music?.url;
+  const musicAllowed = musicUrl
+    ? Boolean(trackByUrl(musicUrl)) || canUse(inv.package, "customMusic")
+    : false;
+
   return (
     // Variabel font tema dipasang di sini; lihat src/lib/fonts-invitation.ts.
     <div className={`${invitationFontVars} min-h-full flex-1`}>
@@ -117,6 +132,7 @@ export default async function PublicInvitationPage({
         giftConfig={gift?.success ? gift.data : null}
         publicUrl={appUrl ? `${appUrl}/u/${inv.slug}` : undefined}
         interactive
+        allowMusic={musicAllowed}
         showWatermark={!canUse(inv.package, "removeWatermark")}
         watermarkVariant="brand"
       />

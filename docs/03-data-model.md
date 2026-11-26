@@ -279,6 +279,7 @@ Kolom `Json` punya kontrak yang divalidasi di `src/lib/validation/`:
   event: { date: string, time: string, timezone: "WIB"|"WITA"|"WIT",
            venueName: string, address: string,
            maps?: { lat: number, lng: number, url?: string } },
+  coverImage?: string,          // foto sampul — layar pertama yang dilihat tamu
   gallery: string[],            // URL Cloudinary
   story?: { title: string, body: string }[],   // timeline/cerita
   quote?: { text: string, source?: string },
@@ -292,9 +293,26 @@ Kolom `Json` punya kontrak yang divalidasi di `src/lib/validation/`:
   palette: { primary: string, secondary: string, background: string, text: string },
   font: { heading: string, body: string },
   layout: "klasik" | "sampul" | "pias" | "bingkai" | "pita" | "lugas",
+  openingGate: boolean,
   music?: { url: string, autoplay: boolean },
 }
 ```
+
+`openingGate` menyalakan layar **“Buka Undangan”**: foto sampul, nama tamu,
+satu tombol. Bukan sekadar gaya — browser HP menolak `audio.play()` yang tidak
+dipicu gerakan pengguna, jadi tanpa gerbang ini backsound tidak pernah jalan
+dan hanya gagal diam-diam. Ketukan tombolnya adalah gerakan yang sah.
+
+`music.autoplay` kini selalu `false` dan tidak lagi ditawarkan di editor:
+pemutaran dipicu gerbang. Kolomnya dipertahankan agar `themeConfig` lama tetap
+tervalidasi.
+
+**Hak pakai backsound.** Lagu dari daftar bawaan (`src/lib/music-tracks.ts`,
+CC0) bebas dipakai paket apa pun; yang berbayar adalah memakai **lagu
+sendiri** — itulah arti fitur `customMusic`. Pemeriksaannya ada di
+`/u/[slug]` (`musicAllowed`), bukan hanya di editor: sebelumnya penguncinya
+cuma menyembunyikan kolom, sehingga `themeConfig` yang sudah terlanjur berisi
+URL tetap diputar ke tamu.
 
 `layout` adalah **arketipe tata letak** halaman undangan — yang menentukan
 susunan, bukan warna: bentuk sampul, perataan, lebar ukur, cara judul bagian

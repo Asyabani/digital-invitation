@@ -159,6 +159,42 @@ export function ContentEditor({
         </Helai>
 
         <Helai>
+          <HelaiKepala
+            title="Foto sampul"
+            description="Foto yang dilihat tamu paling pertama, di layar “Buka Undangan” dan di bagian pembuka. Pilih foto bergaya potret — di HP ia tampil tinggi."
+          />
+          <HelaiIsi className="space-y-4">
+            <Field
+              label="URL foto sampul"
+              htmlFor="coverImage"
+              hint="Satu tautan langsung ke gambar. Unggah langsung via Cloudinary menyusul."
+            >
+              <Input
+                id="coverImage"
+                type="url"
+                placeholder="https://.../pengantin.jpg"
+                value={content.coverImage ?? ""}
+                onChange={(e) =>
+                  setContent((c) => ({
+                    ...c,
+                    coverImage: e.target.value.trim() || undefined,
+                  }))
+                }
+              />
+            </Field>
+
+            {content.coverImage && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={content.coverImage}
+                alt="Pratinjau foto sampul"
+                className="h-40 w-full rounded-sm border object-cover"
+              />
+            )}
+          </HelaiIsi>
+        </Helai>
+
+        <Helai>
           <HelaiKepala title="Galeri" />
           <HelaiIsi>
             <Field

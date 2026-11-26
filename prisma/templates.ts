@@ -13,6 +13,8 @@
   `assertFontsDeclared()` di bawah menjaga itu saat seed dijalankan.
 */
 
+import { trackUrl } from "../src/lib/music-tracks";
+
 export type CategoryKey =
   | "PERNIKAHAN"
   | "AQIQAH"
@@ -105,6 +107,152 @@ const LAYOUT_PER_SLUG: Record<string, LayoutKey> = {
   "malam-gala": "bingkai",
 };
 
+/*
+  ── Foto bawaan ─────────────────────────────────────────────────────────
+
+  Semua dari Unsplash (Unsplash License: bebas dipakai komersial, tanpa izin
+  tertulis, atribusi tidak wajib). Tiap foto sudah dibuka dan dilihat satu per
+  satu sebelum dimasukkan — alt text saja tidak cukup untuk menaruh gambar di
+  halaman pernikahan orang. Dipilih yang bernuansa Indonesia: pengantin Jawa,
+  Bali, dan Muslim, bukan stok pernikahan Barat.
+
+  CATATAN PRODUKSI: ini di-hotlink dari `images.unsplash.com`. Begitu
+  Cloudinary aktif, unggah ulang ke sana dan ganti URL di sini — tidak ada
+  kode lain yang perlu berubah. Parameter `w`/`q` sengaja ditulis agar tamu di
+  jaringan seluler tidak mengunduh foto 4000px.
+*/
+const UNSPLASH = "https://images.unsplash.com/photo-";
+const SAMPUL_Q = "?w=1200&q=72&auto=format&fit=crop";
+const GALERI_Q = "?w=700&q=68&auto=format&fit=crop";
+
+const FOTO: Record<CategoryKey, string[]> = {
+  PERNIKAHAN: [
+    "1650377509454-1bbd8392e122", // pengantin Muslim berkebaya putih
+    "1673073180049-9ef7846f28dd", // pengantin perempuan berhijab, tangan
+    "1541700513212-79f419c0221d", // pengantin adat di taman tropis
+    "1667353931393-7cf46f3d0649", // pengantin dengan seragam kebesaran
+    // Arak-arakan pengantin berpayung di jalan desa. Catatan: alt text
+    // Unsplash untuk foto ini keliru ("woman in white button up shirt"), dan
+    // foto yang alt text-nya tampak cocok justru berisi anak-anak di upacara.
+    // Itulah sebabnya tiap foto dibuka dan dilihat, bukan dipilih dari alt.
+    "1623210412831-e29c8c5b81cf",
+    "1673073220743-ee78b02eb029", // pengantin perempuan bersalam
+    "1650472185090-a8cfdd9a38d3", // pasangan berbusana hitam, studio modern
+    "1525272149490-82288cb110a0", // pengantin Bali duduk bersanding
+    "1650377509428-11e7fe8614a9", // siger emas Sunda
+    "1678782086537-0cefd87257b6", // tukar cincin, tangan berhenna
+  ],
+  AQIQAH: [
+    "1704649917342-a6aaac5a9009", // bayi berselimut putih
+    "1622996061359-0da030a44e6b", // keluarga Muslim menggendong bayi
+    "1537544176619-f79b157c634b", // bayi dibedong
+    "1604807788279-ea778c075cee", // bayi bertopi rajut
+    "1623743360501-ff21ea5e30d7", // bayi berhijab merah muda
+  ],
+  ULANG_TAHUN: [
+    "1530103862676-de8c9debad1d", // balon warna-warni
+    "1513151233558-d860c5398176", // konfeti
+    "1464349153735-7db50ed83c84", // kue dengan lilin
+    "1513546493312-0066d7de3fd2", // kembang api kecil, latar gelap
+    "1531956531700-dc0ee0f1f9a5", // perlengkapan pesta, tampak atas
+    "1578922864601-79dcc7cbcea9", // cupcake merah muda
+    "1607977166054-ba266c446ba3", // papan neon "Happy Birthday"
+  ],
+  KORPORAT: [
+    "1559223694-98ed5e272fef", // pembicara di panggung
+    "1769798643655-e0f10f62c3fd", // audiens menghadap layar
+    "1781029711351-e915512bf69c", // ruang konferensi
+    "1762968274962-20c12e6e8ecd", // pembicara, panggung gelap
+    "1769798643630-194a0fcfa367", // diskusi panel di atas panggung
+  ],
+};
+
+/*
+  Foto sampul dipasangkan ke template satu per satu, bukan diputar menurut
+  urutan. Pasangannya disengaja: "Navy Emas" mendapat pengantin berseragam
+  angkatan laut, "Emas Tulis" mendapat siger emas, "Hitam Putih" mendapat
+  studio hitam-putih, "Neon Malam" mendapat papan neon. Foto yang hanya
+  diputar akan menaruh balon di template pernikahan yang tenang.
+
+  Kategori pernikahan punya sepuluh foto untuk sepuluh template, jadi tidak
+  ada yang berulang. Kategori lain kolamnya lebih kecil dan beberapa foto
+  terpakai dua kali — terlihat, tapi masih jauh lebih baik daripada satu foto
+  untuk sepuluh kartu.
+*/
+const FOTO_PER_SLUG: Record<string, string> = {
+  "klasik-elegan": FOTO.PERNIKAHAN[0],
+  "floral-lembut": FOTO.PERNIKAHAN[1],
+  "sage-tenang": FOTO.PERNIKAHAN[2],
+  "navy-emas": FOTO.PERNIKAHAN[3],
+  "terakota-jawa": FOTO.PERNIKAHAN[4],
+  "mutiara-senja": FOTO.PERNIKAHAN[5],
+  "hitam-putih": FOTO.PERNIKAHAN[6],
+  "biru-laut": FOTO.PERNIKAHAN[7],
+  "emas-tulis": FOTO.PERNIKAHAN[8],
+  "rustic-kayu": FOTO.PERNIKAHAN[9],
+
+  "ceria-aqiqah": FOTO.AQIQAH[0],
+  "biru-langit": FOTO.AQIQAH[3],
+  "merah-muda-lembut": FOTO.AQIQAH[4],
+  "hijau-mint": FOTO.AQIQAH[2],
+  "kuning-hangat": FOTO.AQIQAH[1],
+  "awan-putih": FOTO.AQIQAH[0],
+  "ungu-lavender": FOTO.AQIQAH[4],
+  "jingga-ceria": FOTO.AQIQAH[1],
+  "peach-hangat": FOTO.AQIQAH[3],
+  "hijau-zaitun": FOTO.AQIQAH[2],
+
+  "pesta-warna": FOTO.ULANG_TAHUN[0],
+  "balon-biru": FOTO.ULANG_TAHUN[0],
+  "satu-tahun": FOTO.ULANG_TAHUN[5],
+  "neon-malam": FOTO.ULANG_TAHUN[6],
+  "emas-dewasa": FOTO.ULANG_TAHUN[3],
+  "tropis-segar": FOTO.ULANG_TAHUN[1],
+  "permen-kapas": FOTO.ULANG_TAHUN[5],
+  "kopi-senja": FOTO.ULANG_TAHUN[2],
+  "hitam-emas": FOTO.ULANG_TAHUN[3],
+  "kebun-pagi": FOTO.ULANG_TAHUN[4],
+
+  "biru-korporat": FOTO.KORPORAT[1],
+  "abu-profesional": FOTO.KORPORAT[2],
+  "hijau-berkelanjutan": FOTO.KORPORAT[4],
+  "merah-peluncuran": FOTO.KORPORAT[0],
+  "malam-gala": FOTO.KORPORAT[3],
+  "teknologi-terang": FOTO.KORPORAT[4],
+  "ungu-inovasi": FOTO.KORPORAT[3],
+  "jingga-energi": FOTO.KORPORAT[0],
+  "teal-seminar": FOTO.KORPORAT[1],
+  "monokrom-tegas": FOTO.KORPORAT[2],
+};
+
+/** Foto sampul template. */
+function coverFor(slug: string): string {
+  return `${UNSPLASH}${FOTO_PER_SLUG[slug]}${SAMPUL_Q}`;
+}
+
+/** Galeri contoh: kolam kategori, digeser agar tidak mulai dari foto sampul. */
+function galleryFor(category: CategoryKey, urutan: number): string[] {
+  const pool = FOTO[category];
+  return pool
+    .slice(0, 6)
+    .map((_, i) => `${UNSPLASH}${pool[(urutan + 1 + i) % pool.length]}${GALERI_Q}`);
+}
+
+/*
+  Backsound bawaan per kategori. Diambil dari daftar CC0 di
+  `src/lib/music-tracks.ts` — bukan URL yang ditulis ulang di sini, supaya
+  mengganti sumber berkas cukup di satu tempat.
+
+  Korporat sengaja tanpa musik: backsound di undangan rapat atau peluncuran
+  justru terdengar tidak profesional.
+*/
+const MUSIK_PER_KATEGORI: Record<CategoryKey, string | null> = {
+  PERNIKAHAN: "nocturne-9-2",
+  AQIQAH: "prelude-23",
+  ULANG_TAHUN: "valse-18",
+  KORPORAT: null,
+};
+
 // Harus sama persis dengan src/lib/font-stacks.ts.
 const HEADING_FONTS = [
   "Playfair Display",
@@ -170,9 +318,12 @@ function contohTanggal(): string {
   return d.toISOString().slice(0, 10);
 }
 
-function contentFor(category: CategoryKey) {
+function contentFor(category: CategoryKey, slug: string, urutan: number) {
   const date = contohTanggal();
-  const base = { gallery: [] as string[] };
+  const base = {
+    coverImage: coverFor(slug),
+    gallery: galleryFor(category, urutan),
+  };
 
   switch (category) {
     case "PERNIKAHAN":
@@ -751,7 +902,8 @@ export const TEMPLATE_CATALOG: TemplateSeed[] = [
 ];
 
 /** Baris Prisma lengkap untuk satu entri katalog. */
-export function toTemplateRow(t: TemplateSeed) {
+export function toTemplateRow(t: TemplateSeed, urutan: number) {
+  const musik = MUSIK_PER_KATEGORI[t.category];
   return {
     name: t.name,
     slug: t.slug,
@@ -759,11 +911,13 @@ export function toTemplateRow(t: TemplateSeed) {
     // Gambar pratinjau belum ada; galeri menenun paletnya sendiri jadi swatch.
     // Path ini mengikuti konvensi docs/03 untuk saat gambar aslinya menyusul.
     previewImage: `/templates/${t.slug}.jpg`,
-    defaultContent: contentFor(t.category),
+    defaultContent: contentFor(t.category, t.slug, urutan),
     defaultTheme: {
       palette: t.palette,
       font: t.font,
       layout: LAYOUT_PER_SLUG[t.slug],
+      openingGate: true,
+      ...(musik ? { music: { url: trackUrl(musik), autoplay: false } } : {}),
     },
     defaultSections: sectionsFor(t.category),
   };
@@ -793,6 +947,8 @@ export function assertCatalogSehat(): void {
       masalah.push(`${t.slug}: font isi "${t.font.body}" tidak terdaftar`);
     if (!LAYOUT_PER_SLUG[t.slug])
       masalah.push(`${t.slug}: belum punya arketipe tata letak`);
+    if (!FOTO_PER_SLUG[t.slug])
+      masalah.push(`${t.slug}: belum punya foto sampul`);
   }
 
   // Slug di peta arketipe yang tidak ada di katalog = salah ketik yang tidak

@@ -95,6 +95,20 @@ export type LayoutSpec = {
    * membatalkannya.
    */
   display: "judul" | "isi";
+
+  /**
+   * Cara arketipe memakai `content.coverImage`.
+   * - `latar`  : latar penuh di balik nama, dengan scrim supaya teks terbaca
+   * - `sisip`  : sisipan berbingkai di atas nama, foto tetap utuh
+   * - `pita`   : pita selebar layar di antara nama dan tanggal
+   * - `bingkai`: di dalam bingkai ganda, di atas nama
+   * - `panel`  : panel lebar tanpa teks di atasnya
+   *
+   * Tidak ada `tidak`: undangan tanpa foto sampul bukan pilihan arketipe,
+   * melainkan keadaan ketika `coverImage` kosong — dan tiap sampul harus
+   * tetap utuh dalam keadaan itu.
+   */
+  coverMedia: "latar" | "sisip" | "pita" | "bingkai" | "panel";
 };
 
 export const LAYOUTS: Record<LayoutKey, LayoutSpec> = {
@@ -119,6 +133,7 @@ export const LAYOUTS: Record<LayoutKey, LayoutSpec> = {
     pad: { first: "pb-16 pt-20 sm:pt-28", rapat: "py-14", lapang: "py-20 sm:py-24" },
     gap: "gap-6",
     display: "judul",
+    coverMedia: "sisip",
   },
 
   /*
@@ -142,6 +157,7 @@ export const LAYOUTS: Record<LayoutKey, LayoutSpec> = {
     pad: { first: "", rapat: "py-20", lapang: "py-24 sm:py-28" },
     gap: "gap-7",
     display: "judul",
+    coverMedia: "latar",
   },
 
   /*
@@ -166,6 +182,7 @@ export const LAYOUTS: Record<LayoutKey, LayoutSpec> = {
     pad: { first: "pb-14 pt-16 sm:pt-20", rapat: "py-10", lapang: "py-12" },
     gap: "gap-5",
     display: "judul",
+    coverMedia: "panel",
   },
 
   /*
@@ -189,6 +206,7 @@ export const LAYOUTS: Record<LayoutKey, LayoutSpec> = {
     pad: { first: "py-10 sm:py-14", rapat: "py-5", lapang: "py-5" },
     gap: "gap-6",
     display: "judul",
+    coverMedia: "bingkai",
   },
 
   /*
@@ -212,6 +230,7 @@ export const LAYOUTS: Record<LayoutKey, LayoutSpec> = {
     pad: { first: "pb-14 pt-16 sm:pt-24", rapat: "py-14", lapang: "py-14" },
     gap: "gap-6",
     display: "judul",
+    coverMedia: "pita",
   },
 
   /*
@@ -236,6 +255,7 @@ export const LAYOUTS: Record<LayoutKey, LayoutSpec> = {
     pad: { first: "pb-12 pt-16", rapat: "py-10", lapang: "py-10" },
     gap: "gap-5",
     display: "isi",
+    coverMedia: "panel",
   },
 };
 

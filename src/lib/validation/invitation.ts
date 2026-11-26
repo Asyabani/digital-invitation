@@ -23,6 +23,13 @@ export const contentSchema = z.object({
       })
       .optional(),
   }),
+  /**
+   * Foto sampul — latar layar pertama yang dilihat tamu. Tiap arketipe tata
+   * letak memakainya dengan caranya sendiri (latar penuh, sisipan, pita, atau
+   * di dalam bingkai); lihat `coverMedia` di `src/lib/invitation-layouts.ts`.
+   * Tanpa foto, sampulnya tetap utuh — hanya tanpa gambar.
+   */
+  coverImage: z.string().url().optional(),
   gallery: z.array(z.string().url()).default([]),
   story: z
     .array(z.object({ title: z.string(), body: z.string() }))
@@ -62,6 +69,15 @@ export const themeSchema = z.object({
     body: z.string(),
   }),
   layout: layoutKey.default("klasik"),
+  /**
+   * Gerbang "Buka Undangan": layar pembuka berisi nama tamu dan satu tombol.
+   *
+   * Bukan sekadar gaya. Browser HP menolak `audio.play()` yang tidak dipicu
+   * gerakan pengguna, jadi tanpa gerbang ini backsound praktis tidak pernah
+   * jalan — ia hanya gagal diam-diam. Ketukan "Buka Undangan" adalah gerakan
+   * pengguna yang sah, sehingga musik mulai tepat saat undangan terbuka.
+   */
+  openingGate: z.boolean().default(true),
   music: z
     .object({ url: z.string().url(), autoplay: z.boolean().default(false) })
     .optional(),

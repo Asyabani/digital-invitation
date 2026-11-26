@@ -197,14 +197,14 @@ Spesifikasi tiap arketipe ada sebagai data di `src/lib/invitation-layouts.ts`
 dan dibaca `InvitationView`; tidak ada rantai `if (layout === ...)` yang
 tersebar di komponen. Menambah arketipe = menambah satu entri di sana.
 
-| Arketipe | Perataan | Sampul | Judul bagian | Wadah isi | Fakta acara |
-|---|---|---|---|---|---|
-| `klasik` | tengah | nama, ornamen, tanggal | benang putus-putus | kotak berbingkai | paragraf |
-| `sampul` | tengah | setinggi layar penuh, benang tegak | kecil, berjarak huruf | tanpa wadah | paragraf |
-| `pias` | kiri | rata kiri di balik garis tegak | di kolom kiri sendiri | garis bawah | daftar |
-| `bingkai` | tengah | panel berbingkai ganda | di antara dua garis | bingkai ganda | paragraf |
-| `pita` | kiri | nama dipisah pita tebal | besar, rata kiri | bidang terisi | daftar |
-| `lugas` | kiri | nama, tanggal, tempat | seukuran teks, tanpa ornamen | tanpa wadah | daftar |
+| Arketipe | Perataan | Sampul | Foto sampul | Judul bagian | Wadah isi | Fakta acara |
+|---|---|---|---|---|---|---|
+| `klasik` | tengah | nama, ornamen, tanggal | sisipan berbingkai | benang putus-putus | kotak berbingkai | paragraf |
+| `sampul` | tengah | setinggi layar penuh, benang tegak | latar penuh + scrim | kecil, berjarak huruf | tanpa wadah | paragraf |
+| `pias` | kiri | rata kiri di balik garis tegak | panel lebar | di kolom kiri sendiri | garis bawah | daftar |
+| `bingkai` | tengah | panel berbingkai ganda | persegi di dalam bingkai | di antara dua garis | bingkai ganda | paragraf |
+| `pita` | kiri | nama dipisah pita tebal | pita selebar layar | besar, rata kiri | bidang terisi | daftar |
+| `lugas` | kiri | nama, tanggal, tempat | panel lebar | seukuran teks, tanpa ornamen | tanpa wadah | daftar |
 
 Catatan yang mudah terlewat:
 
@@ -224,6 +224,39 @@ Catatan yang mudah terlewat:
 - Editor tema (`/dashboard/[id]/tema`) menaruh pilihan tata letak **paling
   atas**, sebelum warna: ia menentukan bentuk, jadi memilihnya belakangan
   berarti pemilik menyetel warna untuk susunan yang lalu ia ganti.
+- Tiap sampul harus tetap utuh **tanpa** `coverImage`. Foto adalah tambahan,
+  bukan syarat; undangan yang fotonya belum diunggah tidak boleh tampil rusak.
+
+## 4b. Gerbang “Buka Undangan” & Backsound
+
+Layar pertama yang dilihat tamu dari WhatsApp: foto sampul memenuhi layar,
+scrim di atasnya, nama mempelai, tanggal, nama tamu (bila dibuka dari link
+personal), dan satu tombol **Buka Undangan**.
+
+**Alasan teknisnya, bukan hanya gaya.** Browser HP menolak `audio.play()`
+yang tidak dipicu gerakan pengguna. Sebelum gerbang ini ada, `music.autoplay`
+selalu gagal diam-diam dan backsound praktis tidak pernah terdengar. Ketukan
+tombol adalah gerakan yang sah, jadi musik mulai tepat saat undangan terbuka.
+
+Hal yang mudah salah saat menyentuh bagian ini:
+
+- **Elemen `<audio>` harus sudah ada sebelum tombol ditekan.** Kalau ia baru
+  dirender setelah gerbang terbuka, `play()` berjalan di luar gerakan
+  pengguna dan ditolak. `InvitationShell` merendernya sejak awal.
+- **Gerbang dan pemutar satu komponen** (`InvitationShell`). Dipisah, pemutar
+  tidak tahu kapan boleh mulai.
+- **Gerbang dimatikan saat `interactive={false}`** — di galeri template dan
+  hero beranda tidak ada yang perlu dibuka; isinya justru yang ingin dilihat.
+- Tombol musik memakai `absolute` saat `embedded`, bukan `fixed`: di dalam
+  bingkai pratinjau, `fixed` menempel ke viewport halaman dan tombolnya
+  mengambang di luar bingkai.
+- Setelah gerbang dibuka, fokus dipindahkan ke isi. Tanpa itu pengguna
+  keyboard dan pembaca layar tertinggal di tombol yang sudah hilang.
+
+**Daftar backsound** ada di `src/lib/music-tracks.ts` — rekaman Chopin dari
+koleksi Musopen di Internet Archive, berlisensi CC0. Editor menampilkan
+suasana, judul, **ukuran berkas**, dan tombol “Dengar”. Ukuran ditampilkan
+dengan sengaja: tamu membuka undangan dari HP dengan kuota.
 
 ## 4. Halaman Undangan Publik `/u/[slug]`
 

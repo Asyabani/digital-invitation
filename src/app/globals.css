@@ -553,6 +553,91 @@
   }
 
   /*
+    ── Gerbang pembuka & foto sampul ───────────────────────────────────
+
+    Teks gerbang punya dua keadaan. Tanpa foto ia memakai warna pemilik;
+    di atas foto ia harus putih apa pun paletnya, karena foto pengantin
+    tidak bisa diasumsikan terang maupun gelap.
+  */
+  .inv-sampul {
+    --inv-sampul-fg: var(--inv-text);
+    --inv-sampul-judul-fg: var(--inv-primary);
+  }
+  .inv-sampul-foto {
+    --inv-sampul-fg: #ffffff;
+    --inv-sampul-judul-fg: #ffffff;
+  }
+  .inv-sampul-teks {
+    color: color-mix(in oklab, var(--inv-sampul-fg) 85%, transparent);
+  }
+  .inv-sampul-judul {
+    font-family: var(--inv-heading);
+    color: var(--inv-sampul-judul-fg);
+  }
+
+  /*
+    Scrim gerbang.
+
+    Pernah dibuat terang di tengah dengan alasan "wajah biasanya di tengah" —
+    itu keliru: teksnya juga di tengah, dan nama serta tanggal jadi tipis di
+    atas kebaya putih. Sekarang bagian tengahnya tetap cukup gelap untuk
+    menahan teks, dengan tepi atas-bawah lebih pekat supaya fotonya tetap
+    terbaca sebagai foto, bukan bidang abu-abu rata.
+  */
+  .inv-scrim {
+    background: linear-gradient(
+      to bottom,
+      rgb(0 0 0 / 0.6),
+      rgb(0 0 0 / 0.46) 45%,
+      rgb(0 0 0 / 0.72)
+    );
+  }
+
+  /* Tombol musik mengambang. */
+  .inv-musik {
+    background: color-mix(in oklab, var(--inv-bg) 88%, var(--inv-text));
+    border-color: color-mix(in oklab, var(--inv-primary) 35%, transparent);
+    color: var(--inv-primary);
+    box-shadow: 0 6px 20px -8px
+      color-mix(in oklab, var(--inv-text) 45%, transparent);
+    backdrop-filter: blur(6px);
+    transition: opacity 0.15s ease;
+  }
+  .inv-musik:hover {
+    opacity: 0.9;
+  }
+
+  /* Foto sampul: satu kelas per cara arketipe memakainya. */
+  .inv-foto-sisip {
+    display: block;
+    width: 100%;
+    aspect-ratio: 4 / 5;
+    object-fit: cover;
+    border: 1px solid color-mix(in oklab, var(--inv-secondary) 60%, transparent);
+    padding: 5px;
+    background: var(--inv-bg);
+  }
+  .inv-foto-pita {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+  }
+  .inv-foto-panel {
+    display: block;
+    width: 100%;
+    aspect-ratio: 3 / 2;
+    object-fit: cover;
+    border-radius: 2px;
+  }
+  .inv-foto-bingkai {
+    display: block;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+  }
+
+  /*
     Judul di pias kiri. Di layar sempit kolomnya tidak muat, jadi judulnya
     naik ke atas dan garis tegaknya pindah ke kiri sebagai penanda yang sama.
   */

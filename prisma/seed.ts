@@ -19,8 +19,14 @@ async function main() {
   let dibuat = 0;
   let diperbarui = 0;
 
+  // Urutan dalam kategori menentukan foto sampul mana yang dipakai, supaya
+  // sepuluh template satu kategori tidak semuanya memakai foto yang sama.
+  const urutanKategori = new Map<string, number>();
+
   for (const t of TEMPLATE_CATALOG) {
-    const row = toTemplateRow(t);
+    const urutan = urutanKategori.get(t.category) ?? 0;
+    urutanKategori.set(t.category, urutan + 1);
+    const row = toTemplateRow(t, urutan);
     const ada = await prisma.template.findUnique({
       where: { slug: t.slug },
       select: { id: true },

@@ -3,7 +3,10 @@ import type { TemplateCategory } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { createInvitation } from "@/lib/actions/invitation";
 import { Button } from "@/components/ui/button";
-import { TemplateSwatch } from "@/components/template/TemplateSwatch";
+import {
+  TemplateSwatch,
+  coverOf,
+} from "@/components/template/TemplateSwatch";
 import { invitationFontVars } from "@/lib/fonts-invitation";
 import {
   KATEGORI_LABEL,
@@ -28,6 +31,7 @@ type Kartu = {
   slug: string;
   category: TemplateCategory;
   defaultTheme: unknown;
+  defaultContent: unknown;
 };
 
 /** Satu kelompok kategori: judul + gridnya. */
@@ -73,6 +77,7 @@ function Kelompok({
               <TemplateSwatch
                 theme={t.defaultTheme}
                 name={t.name}
+                coverImage={coverOf(t.defaultContent)}
               />
             </Link>
 
@@ -118,6 +123,7 @@ export default async function TemplateGaleriPage({
       slug: true,
       category: true,
       defaultTheme: true,
+      defaultContent: true,
     },
   })) satisfies Kartu[];
 

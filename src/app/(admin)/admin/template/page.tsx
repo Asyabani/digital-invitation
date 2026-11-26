@@ -4,7 +4,10 @@ import { prisma } from "@/lib/db";
 import { AdminNav } from "@/components/admin/AdminNav";
 import { Helai, HelaiKepala } from "@/components/dashboard/Helai";
 import { TemplateToggle } from "@/components/admin/TemplateToggle";
-import { TemplateSwatch } from "@/components/template/TemplateSwatch";
+import {
+  TemplateSwatch,
+  coverOf,
+} from "@/components/template/TemplateSwatch";
 import { invitationFontVars } from "@/lib/fonts-invitation";
 import { themeSchema } from "@/lib/validation/invitation";
 import { KATEGORI_LABEL, KATEGORI_URUT } from "@/lib/template-category";
@@ -24,6 +27,7 @@ export default async function AdminTemplatePage() {
       category: true,
       isActive: true,
       defaultTheme: true,
+      defaultContent: true,
       _count: { select: { invitations: true } },
     },
   });
@@ -85,6 +89,7 @@ export default async function AdminTemplatePage() {
                       <TemplateSwatch
                         theme={t.defaultTheme}
                         name={t.name}
+                        coverImage={coverOf(t.defaultContent)}
                         caption={t.isActive ? "aktif" : "nonaktif"}
                         ratio="aspect-[5/3]"
                       />

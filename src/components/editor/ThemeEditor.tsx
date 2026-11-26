@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useRef } from "react";
 import { ChevronDown, ChevronUp, Loader2, Smartphone } from "lucide-react";
 import { toast } from "sonner";
 import type {
@@ -10,6 +10,7 @@ import type {
 } from "@/lib/validation/invitation";
 import { HEADING_FONTS, BODY_FONTS, fontStack } from "@/lib/font-stacks";
 import { LAYOUTS, LAYOUT_KEYS } from "@/lib/invitation-layouts";
+import { MUSIC_TRACKS, trackByUrl } from "@/lib/music-tracks";
 import { InvitationView } from "@/components/invitation/InvitationView";
 import {
   updateInvitationTheme,
@@ -112,6 +113,42 @@ export function ThemeEditor({
   canUseMusic,
 }: Props) {
   const [theme, setTheme] = useState<Theme>(initialTheme);
+
+  /*
+    Contoh dengar di editor. Satu elemen audio dipakai bergantian supaya dua
+    lagu tidak pernah berbunyi bersamaan, dan supaya pratinjau di sebelah
+    kanan tidak ikut berbunyi saat pemilik sedang memilih.
+  */
+  const [dengar, setDengar] = useState<string | null>(null);
+  const contohRef = useRef<HTMLAudioElement | null>(null);
+
+  function coba(url: string) {
+    const audio = contohRef.current;
+    if (!audio) return;
+    if (dengar === url) {
+      audio.pause();
+      setDengar(null);
+      return;
+    }
+    audio.src = url;
+    audio.play().then(
+      () => setDengar(url),
+      () => setDengar(null),
+    );
+  }
+
+  function pilihLagu(url: string | undefined) {
+    setTheme((t) => ({
+      ...t,
+      // `autoplay` selalu false: pemutaran dipicu ketukan "Buka Undangan",
+      // satu-satunya cara browser HP mengizinkannya.
+      music: url ? { url, autoplay: false } : undefined,
+    }));
+  }
+
+  // Kolom "lagu sendiri" hanya menampilkan URL yang bukan dari daftar bawaan,
+  // supaya memilih lagu bawaan tidak membuat URL panjang muncul di kolom itu.
+  const lagusendiri = trackByUrl(theme.music?.url) ? "" : (theme.music?.url ?? "");
   const [sections, setSections] = useState<SectionsOrder>(
     [...initialSections].sort((a, b) => a.order - b.order),
   );
@@ -156,6 +193,7 @@ export function ThemeEditor({
 
   return (
     <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,24rem)]">
+      <audio ref={contohRef} preload="none" onEnded={() => setDengar(null)} />
       <div className="space-y-5">
         {/*
           Tata letak didahulukan karena ia menentukan bentuk halaman; warna
@@ -203,6 +241,24 @@ export function ThemeEditor({
                 );
               })}
             </fieldset>
+
+            <div className="mt-5 flex items-start justify-between gap-4 rounded-lg border p-3">
+              <div className="space-y-0.5">
+                <Label htmlFor="gerbang">Layar “Buka Undangan”</Label>
+                <p className="max-w-[48ch] text-xs leading-relaxed text-muted-foreground">
+                  Tamu melihat foto sampul dan namanya dulu, lalu menekan
+                  tombol untuk membuka. Ketukan itu juga yang memulai
+                  backsound — tanpa layar ini, HP memblokir musiknya.
+                </p>
+              </div>
+              <Switch
+                id="gerbang"
+                checked={theme.openingGate ?? true}
+                onCheckedChange={(checked) =>
+                  setTheme((t) => ({ ...t, openingGate: checked }))
+                }
+              />
+            </div>
           </HelaiIsi>
         </Helai>
 
@@ -324,54 +380,114 @@ export function ThemeEditor({
         </Helai>
 
         <Helai>
-          <HelaiKepala title="Musik latar" />
+          <HelaiKepala
+            title="Backsound"
+            description="Mulai berbunyi saat tamu menekan “Buka Undangan”. Tamu bisa menjedanya kapan saja lewat tombol di pojok."
+          />
           <HelaiIsi className="space-y-4">
-            {!canUseMusic && (
-              <Alert>
-                <AlertDescription>
-                  Musik custom tersedia mulai paket <strong>Premium</strong>.
-                </AlertDescription>
-              </Alert>
-            )}
-            <div className="space-y-1.5">
-              <Label htmlFor="music-url">URL audio (mp3)</Label>
+            <fieldset className="space-y-2">
+              <legend className="sr-only">Pilih backsound</legend>
+
+              <label
+                className={`flex cursor-pointer items-center gap-3 rounded-lg border px-3 py-2.5 transition-colors ${
+                  !theme.music?.url
+                    ? "border-foreground/30 bg-accent/50"
+                    : "hover:border-foreground/20"
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="backsound"
+                  className="shrink-0"
+                  checked={!theme.music?.url}
+                  onChange={() => pilihLagu(undefined)}
+                />
+                <span className="text-sm">Tanpa musik</span>
+              </label>
+
+              {MUSIC_TRACKS.map((t) => {
+                const aktif = theme.music?.url === t.url;
+                return (
+                  <label
+                    key={t.key}
+                    /*
+                      Judul lagu dibiarkan membungkus, bukan `truncate`.
+                      `truncate` memasang `white-space: nowrap`, sehingga
+                      min-content baris ini menjadi selebar judul penuh — dan
+                      itu melebarkan seluruh kolom editor sampai halaman
+                      meluber di layar HP.
+                    */
+                    className={`flex cursor-pointer flex-wrap items-center gap-x-3 gap-y-2 rounded-lg border px-3 py-2.5 transition-colors ${
+                      aktif
+                        ? "border-foreground/30 bg-accent/50"
+                        : "hover:border-foreground/20"
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="backsound"
+                      className="shrink-0"
+                      checked={aktif}
+                      onChange={() => pilihLagu(t.url)}
+                    />
+                    <span className="min-w-0 flex-1 basis-32">
+                      <span className="block text-sm font-medium">
+                        {t.mood}
+                      </span>
+                      <span className="block text-xs leading-snug text-muted-foreground">
+                        {t.title}
+                      </span>
+                    </span>
+                    {/*
+                      Ukuran berkas ditampilkan apa adanya: tamu membuka
+                      undangan dari HP dengan kuota, dan pemilik berhak tahu
+                      lagu mana yang membuat undangannya lebih berat.
+                    */}
+                    <span className="tabular shrink-0 text-xs text-muted-foreground">
+                      {t.sizeMb} MB
+                    </span>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      aria-label={
+                        dengar === t.url
+                          ? `Hentikan contoh ${t.title}`
+                          : `Dengarkan contoh ${t.title}`
+                      }
+                      onClick={(e) => {
+                        e.preventDefault();
+                        coba(t.url);
+                      }}
+                    >
+                      {dengar === t.url ? "Stop" : "Dengar"}
+                    </Button>
+                  </label>
+                );
+              })}
+            </fieldset>
+
+            <div className="space-y-1.5 border-t pt-4">
+              <Label htmlFor="music-url">Atau pakai lagu sendiri</Label>
+              {!canUseMusic && (
+                <Alert>
+                  <AlertDescription>
+                    Lagu sendiri tersedia mulai paket <strong>Premium</strong>.
+                    Pilihan di atas bebas dipakai paket apa pun.
+                  </AlertDescription>
+                </Alert>
+              )}
               <Input
                 id="music-url"
                 type="url"
                 disabled={!canUseMusic}
                 placeholder="https://.../lagu.mp3"
-                value={theme.music?.url ?? ""}
-                onChange={(e) =>
-                  setTheme((t) => ({
-                    ...t,
-                    music: e.target.value
-                      ? {
-                          url: e.target.value,
-                          autoplay: t.music?.autoplay ?? false,
-                        }
-                      : undefined,
-                  }))
-                }
+                value={lagusendiri}
+                onChange={(e) => pilihLagu(e.target.value || undefined)}
               />
-            </div>
-            <div className="flex items-start justify-between gap-4 rounded-lg border p-3">
-              <div className="space-y-0.5">
-                <Label htmlFor="autoplay">Coba putar otomatis</Label>
-                <p className="text-xs text-muted-foreground">
-                  Browser HP sering memblokirnya; tombol putar tetap tersedia
-                  untuk tamu.
-                </p>
-              </div>
-              <Switch
-                id="autoplay"
-                disabled={!canUseMusic || !theme.music?.url}
-                checked={theme.music?.autoplay ?? false}
-                onCheckedChange={(checked) =>
-                  setTheme((t) =>
-                    t.music ? { ...t, music: { ...t.music, autoplay: checked } } : t,
-                  )
-                }
-              />
+              <p className="text-xs text-muted-foreground">
+                Tautan langsung ke berkas .mp3 yang bisa dibuka umum.
+              </p>
             </div>
           </HelaiIsi>
         </Helai>

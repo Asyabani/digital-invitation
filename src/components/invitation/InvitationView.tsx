@@ -12,7 +12,7 @@ import { Countdown } from "./Countdown";
 import { RsvpForm } from "./RsvpForm";
 import { GreetingForm } from "./GreetingForm";
 import { GiftForm } from "./GiftForm";
-import { MusicPlayer } from "./MusicPlayer";
+import { InvitationShell } from "./InvitationShell";
 
 type Greeting = { id: string; name: string; message: string };
 
@@ -37,6 +37,11 @@ export type InvitationViewProps = {
    * harus menebak ada isi di bawahnya.
    */
   embedded?: boolean;
+  /**
+   * Boleh memutar backsound. Pemanggil yang memutuskan, karena hanya ia yang
+   * tahu paket undangannya — lihat `musicAllowed` di `/u/[slug]`.
+   */
+  allowMusic?: boolean;
   showWatermark?: boolean;
   /**
    * `preview` = bilah "mode pratinjau" untuk pemilik di editor.
@@ -249,6 +254,40 @@ function Fakta({
 
 /* ─── Sampul ──────────────────────────────────────────────────────────── */
 
+/**
+ * Foto sampul, dipasang menurut cara arketipenya. `latar` ditangani terpisah
+ * di masing-masing sampul karena ia butuh scrim dan penempatan absolut.
+ */
+function FotoSampul({
+  spec,
+  src,
+  alt,
+  className = "",
+}: {
+  spec: LayoutSpec;
+  src?: string;
+  alt: string;
+  className?: string;
+}) {
+  if (!src || spec.coverMedia === "latar") return null;
+  const kelas: Record<Exclude<LayoutSpec["coverMedia"], "latar">, string> = {
+    sisip: "inv-foto-sisip",
+    pita: "inv-foto-pita",
+    bingkai: "inv-foto-bingkai",
+    panel: "inv-foto-panel",
+  };
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={src}
+      alt={alt}
+      loading="eager"
+      decoding="async"
+      className={`${kelas[spec.coverMedia]} ${className}`}
+    />
+  );
+}
+
 function Sampul({
   spec,
   title,
@@ -280,12 +319,27 @@ function Sampul({
     case "portal":
       return (
         <section
-          className={`flex flex-col items-center justify-center px-6 py-16 text-center ${
+          className={`inv-sampul ${
+            content.coverImage ? "inv-sampul-foto" : ""
+          } relative flex flex-col items-center justify-center overflow-hidden px-6 py-16 text-center ${
             embedded ? "min-h-[26rem]" : "min-h-[100svh]"
           }`}
         >
+          {content.coverImage && (
+            <>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={content.coverImage}
+                alt=""
+                aria-hidden
+                className="absolute inset-0 size-full object-cover"
+              />
+              <span aria-hidden className="inv-scrim absolute inset-0" />
+            </>
+          )}
+          <div className="relative z-[1] flex flex-col items-center">
           {kepada && <div className="mb-10">{kepada}</div>}
-          <h1 className="inv-heading text-[3.25rem] font-semibold leading-[1.02] sm:text-7xl">
+          <h1 className="inv-sampul-judul text-[3.25rem] font-semibold leading-[1.02] sm:text-7xl">
             {title}
           </h1>
           <span
@@ -296,7 +350,10 @@ function Sampul({
                 "linear-gradient(to bottom, var(--inv-secondary), transparent)",
             }}
           />
-          <p className="text-sm tracking-[0.2em]">{prettyDate}</p>
+          <p className="inv-sampul-teks text-sm tracking-[0.2em]">
+            {prettyDate}
+          </p>
+          </div>
         </section>
       );
 
@@ -304,6 +361,12 @@ function Sampul({
       return (
         <section className={`px-6 ${spec.pad.first}`}>
           <div className={`mx-auto w-full ${spec.measure}`}>
+            <FotoSampul
+              spec={spec}
+              src={content.coverImage}
+              alt={`Foto ${title}`}
+              className="mb-8"
+            />
             <div
               className="border-l-2 pl-6"
               style={{ borderColor: "var(--inv-secondary)" }}
@@ -329,11 +392,26 @@ function Sampul({
             <h1 className="inv-heading mt-3 text-[2.75rem] font-semibold leading-[1.02] sm:text-6xl">
               {title}
             </h1>
-            <span
-              aria-hidden
-              className="my-7 block h-2 w-full"
-              style={{ background: "var(--inv-primary)" }}
-            />
+            {content.coverImage ? (
+              <div className="my-7">
+                <FotoSampul
+                  spec={spec}
+                  src={content.coverImage}
+                  alt={`Foto ${title}`}
+                />
+                <span
+                  aria-hidden
+                  className="block h-2 w-full"
+                  style={{ background: "var(--inv-primary)" }}
+                />
+              </div>
+            ) : (
+              <span
+                aria-hidden
+                className="my-7 block h-2 w-full"
+                style={{ background: "var(--inv-primary)" }}
+              />
+            )}
             <p className="text-lg">{prettyDate}</p>
           </div>
         </section>
@@ -343,6 +421,12 @@ function Sampul({
       return (
         <section className={`px-6 ${spec.pad.first}`}>
           <div className={`mx-auto w-full ${spec.measure}`}>
+            <FotoSampul
+              spec={spec}
+              src={content.coverImage}
+              alt={`Foto ${title}`}
+              className="mb-8"
+            />
             {kepada}
             <h1 className="mt-2 text-3xl font-semibold leading-tight sm:text-4xl">
               {title}
@@ -361,6 +445,12 @@ function Sampul({
         <section className={`px-6 ${spec.pad.first}`}>
           <div className={`mx-auto w-full ${spec.measure}`}>
             <div className="inv-bingkai px-6 py-12 text-center sm:px-10 sm:py-16">
+              <FotoSampul
+                spec={spec}
+                src={content.coverImage}
+                alt={`Foto ${title}`}
+                className="mb-8"
+              />
               {kepada && <div className="mb-6">{kepada}</div>}
               {spec.eyebrow && (
                 <p className="text-xs tracking-[0.25em] opacity-60">Undangan</p>
@@ -392,6 +482,12 @@ function Sampul({
                 <span className="font-medium">{guestName}</span>
               </p>
             )}
+            <FotoSampul
+              spec={spec}
+              src={content.coverImage}
+              alt={`Foto ${title}`}
+              className="max-w-[17rem]"
+            />
             {spec.eyebrow && (
               <p className="text-xs tracking-[0.25em] opacity-60">Undangan</p>
             )}
@@ -421,6 +517,7 @@ export function InvitationView(props: InvitationViewProps) {
     publicUrl,
     interactive = true,
     embedded = false,
+    allowMusic = true,
     showWatermark = false,
     watermarkVariant = "preview",
     watermarkLabel = "Mode pratinjau — terbitkan untuk membagikan ke tamu.",
@@ -706,6 +803,18 @@ export function InvitationView(props: InvitationViewProps) {
         spec.panel === "bingkai" ? "inv-dasar" : ""
       }`}
     >
+      <InvitationShell
+        // Gerbang dimatikan di pratinjau yang tidak interaktif (galeri, hero):
+        // di sana tidak ada yang perlu dibuka, dan isi template justru yang
+        // ingin dilihat.
+        gate={(theme.openingGate ?? true) && interactive}
+        coverImage={content.coverImage}
+        title={title}
+        guestName={guestName}
+        prettyDate={prettyDate}
+        musicUrl={allowMusic ? theme.music?.url : undefined}
+        embedded={embedded}
+      >
       {showWatermark && watermarkVariant === "preview" && (
         <div
           className="sticky top-0 z-10 px-4 py-2 text-center text-xs"
@@ -731,13 +840,7 @@ export function InvitationView(props: InvitationViewProps) {
           Dibuat dengan Lungsin
         </p>
       )}
-
-      {theme.music?.url && (
-        <MusicPlayer
-          url={theme.music.url}
-          autoplay={interactive && theme.music.autoplay}
-        />
-      )}
+      </InvitationShell>
     </div>
   );
 }

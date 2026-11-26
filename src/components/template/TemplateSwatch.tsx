@@ -1,4 +1,4 @@
-import { themeSchema } from "@/lib/validation/invitation";
+import { themeSchema, contentSchema } from "@/lib/validation/invitation";
 import { fontStack } from "@/lib/font-stacks";
 import { layoutSpec } from "@/lib/invitation-layouts";
 
@@ -23,14 +23,30 @@ const CADANGAN = {
  * template dari yang lain, dan swatch yang semuanya memakai satu font membuat
  * empat puluh template terlihat seperti empat puluh kotak warna.
  */
+/**
+ * Ambil `coverImage` dari kolom `defaultContent` sebuah template.
+ *
+ * Dipakai galeri publik dan panel admin. Sengaja longgar: `defaultContent`
+ * bertipe `Json` dari Prisma, dan template lama bisa saja belum punya foto.
+ * Yang tidak cocok mengembalikan `undefined`, dan kartunya jatuh ke kain
+ * berpalet — bukan gambar rusak.
+ */
+export function coverOf(defaultContent: unknown): string | undefined {
+  const parsed = contentSchema.safeParse(defaultContent);
+  return parsed.success ? parsed.data.coverImage : undefined;
+}
+
 export function TemplateSwatch({
   theme,
   name,
+  coverImage,
   caption,
   ratio = "aspect-[4/5]",
 }: {
   theme: unknown;
   name: string;
+  /** Foto sampul template; tanpa ini kartunya jatuh ke kain berpalet. */
+  coverImage?: string;
   /** Baris tambahan di bawah tata letak; kosongkan bila tidak perlu. */
   caption?: string;
   ratio?: string;
@@ -39,27 +55,69 @@ export function TemplateSwatch({
   const t = parsed.success ? parsed.data : CADANGAN;
   const p = t.palette;
 
+  const adaFoto = Boolean(coverImage);
+
   return (
     <span
-      className={`flex ${ratio} flex-col justify-between p-7`}
+      className={`relative flex ${ratio} flex-col justify-between overflow-hidden p-7`}
       style={{
         backgroundColor: p.background,
-        color: p.text,
-        backgroundImage: `repeating-linear-gradient(to right, ${p.text}14 0 1px, transparent 1px 2.25rem)`,
+        color: adaFoto ? "#fff" : p.text,
+        backgroundImage: adaFoto
+          ? undefined
+          : `repeating-linear-gradient(to right, ${p.text}14 0 1px, transparent 1px 2.25rem)`,
       }}
     >
+      {/*
+        Kalau template punya foto sampul, fotonya yang jadi kartunya — itu
+        yang sebenarnya dilihat calon pemilik. Paletnya tetap disebut lewat
+        pita benang di atas, jadi dua sinyalnya tidak saling menghapus.
+      */}
+      {coverImage && (
+        <>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={coverImage}
+            alt=""
+            aria-hidden
+            loading="lazy"
+            decoding="async"
+            className="absolute inset-0 size-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+          />
+          <span
+            aria-hidden
+            className="absolute inset-0"
+            style={{
+              background:
+                "linear-gradient(to bottom, rgb(0 0 0 / .30), rgb(0 0 0 / .12) 38%, rgb(0 0 0 / .78))",
+            }}
+          />
+        </>
+      )}
+
       <span
         aria-hidden
-        className="block h-1.5 w-full"
+        className="relative block h-1.5 w-full"
         style={{
           background: `repeating-linear-gradient(to right, ${p.primary} 0 14px, ${p.secondary} 14px 20px)`,
         }}
       />
-      <span className="block">
+      {/*
+        Nama duduk di bawah, bukan di tengah. Di tengah ia jatuh tepat di
+        bagian foto yang paling terang dan scrim-nya paling tipis — "Sage
+        Tenang" di atas kebaya putih praktis hilang. Di bawah, scrim selalu
+        paling pekat.
+      */}
+      <span className="relative block">
+        <span
+          aria-hidden
+          className="mb-4 block h-px w-16"
+          style={{ backgroundColor: adaFoto ? "#ffffff99" : p.secondary }}
+        />
         <span
           className="block text-3xl leading-tight transition-opacity group-hover:opacity-80"
           style={{
-            color: p.primary,
+            color: adaFoto ? "#fff" : p.primary,
             fontFamily: fontStack(t.font.heading, "serif"),
           }}
         >
@@ -78,11 +136,6 @@ export function TemplateSwatch({
           <span className="mt-0.5 block text-xs opacity-55">{caption}</span>
         )}
       </span>
-      <span
-        aria-hidden
-        className="block h-px w-16"
-        style={{ backgroundColor: p.secondary }}
-      />
     </span>
   );
 }
