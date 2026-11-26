@@ -147,6 +147,36 @@ export type LayoutSpec = {
    * `prefers-reduced-motion: reduce` selalu mematikannya, apa pun nilainya.
    */
   motion: "tidak" | "masuk";
+
+  /*
+    ── Bentuk tiap bagian ────────────────────────────────────────────────
+    Tanpa ini, arketipe hanya mengganti kulit: perataan, judul, bingkai.
+    Hitung mundur tetap empat kotak yang sama, galeri tetap kisi yang sama,
+    dan dua template berbeda terbaca sebagai "beda font doang".
+  */
+
+  /**
+   * - `kotak`  : empat kotak berbingkai
+   * - `lingkar`: empat lingkaran bergaris tepi
+   * - `baris`  : satu baris angka mengalir, tanpa wadah
+   * - `besar`  : angka besar rata kiri, label kecil di bawahnya
+   */
+  countdown: "kotak" | "lingkar" | "baris" | "besar";
+
+  /**
+   * - `kisi`  : kisi persegi seragam
+   * - `mozaik`: sel pertama dua kali lipat, sisanya mengelilingi
+   * - `pita`  : satu baris memanjang yang digeser mendatar
+   * - `tumpuk`: satu kolom, foto tinggi, berjarak lapang
+   */
+  gallery: "kisi" | "mozaik" | "pita" | "tumpuk";
+
+  /**
+   * - `tumpuk` : nama gabungan, lalu cerita di bawahnya
+   * - `sanding`: nama mempelai berdampingan dipisah penghubung
+   * - `kartu`  : tiap mempelai dalam bloknya sendiri
+   */
+  couple: "tumpuk" | "sanding" | "kartu";
 };
 
 export const LAYOUTS: Record<LayoutKey, LayoutSpec> = {
@@ -174,6 +204,9 @@ export const LAYOUTS: Record<LayoutKey, LayoutSpec> = {
     coverMedia: "sisip",
     minPackage: "BASIC",
     motion: "tidak",
+    countdown: "kotak",
+    gallery: "kisi",
+    couple: "tumpuk",
   },
 
   /*
@@ -200,6 +233,9 @@ export const LAYOUTS: Record<LayoutKey, LayoutSpec> = {
     coverMedia: "latar",
     minPackage: "BASIC",
     motion: "tidak",
+    countdown: "baris",
+    gallery: "tumpuk",
+    couple: "sanding",
   },
 
   /*
@@ -227,6 +263,9 @@ export const LAYOUTS: Record<LayoutKey, LayoutSpec> = {
     coverMedia: "panel",
     minPackage: "PREMIUM",
     motion: "masuk",
+    countdown: "besar",
+    gallery: "mozaik",
+    couple: "sanding",
   },
 
   /*
@@ -253,6 +292,9 @@ export const LAYOUTS: Record<LayoutKey, LayoutSpec> = {
     coverMedia: "bingkai",
     minPackage: "EXCLUSIVE",
     motion: "masuk",
+    countdown: "lingkar",
+    gallery: "kisi",
+    couple: "kartu",
   },
 
   /*
@@ -279,6 +321,9 @@ export const LAYOUTS: Record<LayoutKey, LayoutSpec> = {
     coverMedia: "pita",
     minPackage: "PREMIUM",
     motion: "masuk",
+    countdown: "besar",
+    gallery: "pita",
+    couple: "kartu",
   },
 
   /*
@@ -306,6 +351,9 @@ export const LAYOUTS: Record<LayoutKey, LayoutSpec> = {
     coverMedia: "panel",
     minPackage: "BASIC",
     motion: "tidak",
+    countdown: "baris",
+    gallery: "kisi",
+    couple: "tumpuk",
   },
 
   /*
@@ -336,6 +384,9 @@ export const LAYOUTS: Record<LayoutKey, LayoutSpec> = {
     coverMedia: "latar",
     minPackage: "PREMIUM",
     motion: "masuk",
+    countdown: "lingkar",
+    gallery: "mozaik",
+    couple: "kartu",
   },
 
   /** Eksklusif — editorial: huruf awal besar, ukuran asimetris, bleed foto. */
@@ -358,6 +409,9 @@ export const LAYOUTS: Record<LayoutKey, LayoutSpec> = {
     coverMedia: "panel",
     minPackage: "EXCLUSIVE",
     motion: "masuk",
+    countdown: "baris",
+    gallery: "tumpuk",
+    couple: "sanding",
   },
 };
 

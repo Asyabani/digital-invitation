@@ -208,6 +208,33 @@ tersebar di komponen. Menambah arketipe = menambah satu entri di sana.
 | `galeri` | tengah | setinggi layar penuh | latar penuh + pita foto antar bagian | kecil, berjarak huruf | tanpa wadah | paragraf |
 | `naskah` | kiri | judul selebar halaman | panel melewati tepi teks | miring + garis rambut memanjang | garis bawah | daftar |
 
+Arketipe juga menentukan **bentuk tiap bagian**, bukan hanya kulitnya:
+
+| Arketipe | Hitung mundur | Galeri | Mempelai |
+|---|---|---|---|
+| `klasik` | empat kotak | kisi persegi | nama gabungan |
+| `sampul` | satu baris mengalir | satu kolom, foto tinggi | nama berdampingan |
+| `lugas` | satu baris mengalir | kisi persegi | nama gabungan |
+| `pias` | angka besar rata kiri | mozaik | nama berdampingan |
+| `pita` | angka besar rata kiri | pita geser mendatar | blok per mempelai |
+| `galeri` | empat lingkaran | mozaik | blok per mempelai |
+| `bingkai` | empat lingkaran | kisi persegi | blok per mempelai |
+| `naskah` | satu baris mengalir | satu kolom, foto tinggi | nama berdampingan |
+
+Tanpa tabel ini arketipe hanya mengganti perataan dan bingkai; hitung mundur
+tetap empat kotak yang sama di tiga puluh template, dan dua template berbeda
+terbaca sebagai "beda font doang". `sanding` dan `kartu` otomatis jatuh ke
+nama gabungan bila subjeknya hanya satu (aqiqah, ulang tahun, korporat).
+
+**Susunan bagian berbeda per template**, bukan per kategori. Lima resep di
+`prisma/templates.ts` (`lengkap`, `foto-dulu`, `ringkas`, `acara-dulu`,
+`tanpa-cerita`) menentukan bagian mana yang menyala dan urutannya — misalnya
+`ringkas` mematikan kutipan pembuka, hitung mundur, dan galeri, sementara
+`acara-dulu` menaruh lokasi sebelum hitung mundur. Aturan kategori tetap
+menang: korporat tidak pernah punya bagian mempelai walau resepnya
+menyebutnya. `assertCatalogSehat()` menolak bila semua template satu kategori
+berakhir dengan susunan identik.
+
 **Arketipe menentukan tingkat harga** (lihat docs/05 §2b): Klasik, Sampul,
 Lugas = Basic; Pias, Pita, Galeri = Premium; Bingkai, Naskah = Eksklusif.
 Arketipe berbayar juga mendapat gerak masuk (`motion: "masuk"`).

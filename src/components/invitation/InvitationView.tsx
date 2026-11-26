@@ -274,6 +274,152 @@ function Fakta({
   );
 }
 
+/**
+ * Bagian mempelai / yang diundangkan.
+ *
+ * `sanding` hanya berlaku bila memang ada dua nama. Aqiqah, ulang tahun, dan
+ * acara korporat cuma punya satu subjek, jadi di sana ia jatuh ke `tumpuk`
+ * dengan sendirinya — bukan menampilkan satu nama di satu kolom kosong.
+ */
+function Mempelai({
+  spec,
+  content,
+  display,
+}: {
+  spec: LayoutSpec;
+  content: Content;
+  display: string;
+}) {
+  const { groomName, brideName } = content.subject;
+  const berdua = Boolean(groomName && brideName);
+
+  const cerita =
+    content.story && content.story.length > 0 ? (
+      <div className="w-full space-y-4 text-left">
+        {content.story.map((item, i) => (
+          <Panel key={i} spec={spec}>
+            <h3 className={`${display} text-base font-medium`}>{item.title}</h3>
+            <p className="inv-note mt-1 leading-relaxed">{item.body}</p>
+          </Panel>
+        ))}
+      </div>
+    ) : null;
+
+  if (berdua && spec.couple === "sanding") {
+    return (
+      <>
+        <div className="grid w-full grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-4 text-center">
+          <p className={`${display} text-2xl font-medium leading-tight`}>
+            {groomName}
+          </p>
+          <span
+            aria-hidden
+            className="h-8 w-px"
+            style={{ background: "var(--inv-secondary)" }}
+          />
+          <p className={`${display} text-2xl font-medium leading-tight`}>
+            {brideName}
+          </p>
+        </div>
+        {cerita}
+      </>
+    );
+  }
+
+  if (berdua && spec.couple === "kartu") {
+    return (
+      <>
+        <div className="grid w-full gap-3 sm:grid-cols-2">
+          {[groomName, brideName].map((nama) => (
+            <Panel key={nama} spec={spec} className="text-center">
+              <p className={`${display} text-xl font-medium`}>{nama}</p>
+            </Panel>
+          ))}
+        </div>
+        {cerita}
+      </>
+    );
+  }
+
+  return <>{cerita}</>;
+}
+
+/**
+ * Galeri foto. Bentuknya ikut arketipe — kisi seragam di semua template
+ * adalah salah satu alasan template terbaca sama.
+ *
+ * Tiap sel bergaris tenun: kalau fotonya gagal dimuat, yang tampak adalah
+ * kain yang belum ditenun, bukan kotak abu-abu yang terbaca rusak.
+ */
+function Galeri({
+  spec,
+  urls,
+  title,
+}: {
+  spec: LayoutSpec;
+  urls: string[];
+  title: string;
+}) {
+  const sel = (url: string, i: number, extra = "", rasio = "aspect-square") => (
+    <span
+      key={i}
+      className={`inv-card block w-full overflow-hidden rounded-sm ${rasio} ${extra}`}
+      style={{
+        backgroundImage:
+          "repeating-linear-gradient(45deg, color-mix(in oklab, var(--inv-text) 7%, transparent) 0 1px, transparent 1px 7px)",
+      }}
+    >
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={url}
+        alt={`Foto ${i + 1} dari ${title}`}
+        loading="lazy"
+        decoding="async"
+        className="h-full w-full object-cover"
+      />
+    </span>
+  );
+
+  if (spec.gallery === "tumpuk") {
+    return (
+      <div className="flex w-full flex-col gap-5">
+        {urls.map((u, i) => sel(u, i, "", "aspect-[4/5]"))}
+      </div>
+    );
+  }
+
+  if (spec.gallery === "pita") {
+    return (
+      <div className="-mx-6 w-[calc(100%+3rem)] overflow-x-auto px-6 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div className="flex w-max gap-3">
+          {urls.map((u, i) => (
+            <span key={i} className="block w-56 shrink-0">
+              {sel(u, i, "", "aspect-[3/4]")}
+            </span>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (spec.gallery === "mozaik") {
+    // Sel pertama dua kali lipat; sisanya mengelilinginya.
+    return (
+      <div className="grid w-full grid-cols-2 gap-2.5 sm:grid-cols-3">
+        {urls.map((u, i) =>
+          sel(u, i, i === 0 ? "col-span-2 row-span-2" : "", "aspect-square"),
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid w-full grid-cols-2 gap-2.5 sm:grid-cols-3">
+      {urls.map((u, i) => sel(u, i))}
+    </div>
+  );
+}
+
 /* ─── Sampul ──────────────────────────────────────────────────────────── */
 
 /**
@@ -668,18 +814,7 @@ export function InvitationView(props: InvitationViewProps) {
       case "couple":
         return (
           <Section key={key} spec={spec} index={index} title={title}>
-            {content.story && content.story.length > 0 && (
-              <div className="w-full space-y-4 text-left">
-                {content.story.map((item, i) => (
-                  <Panel key={i} spec={spec}>
-                    <h3 className={`${display} text-base font-medium`}>
-                      {item.title}
-                    </h3>
-                    <p className="inv-note mt-1 leading-relaxed">{item.body}</p>
-                  </Panel>
-                ))}
-              </div>
-            )}
+            <Mempelai spec={spec} content={content} display={display} />
           </Section>
         );
 
@@ -691,41 +826,14 @@ export function InvitationView(props: InvitationViewProps) {
             index={index}
             title="Menuju Hari Bahagia"
           >
-            <Countdown target={eventDateTime} />
+            <Countdown target={eventDateTime} variant={spec.countdown} />
           </Section>
         );
 
       case "gallery":
         return content.gallery.length > 0 ? (
           <Section key={key} spec={spec} index={index} title="Galeri">
-            {/*
-              Tiap sel bergaris tenun. Kalau fotonya belum ada atau gagal
-              dimuat, yang tampak adalah kain yang belum ditenun — bukan kotak
-              abu-abu yang terbaca rusak.
-            */}
-            <div className="grid w-full grid-cols-2 gap-2.5 sm:grid-cols-3">
-              {content.gallery.map((url, i) => (
-                <span
-                  key={i}
-                  className="inv-card block aspect-square w-full overflow-hidden rounded-sm"
-                  style={{
-                    backgroundImage:
-                      "repeating-linear-gradient(45deg, color-mix(in oklab, var(--inv-text) 7%, transparent) 0 1px, transparent 1px 7px)",
-                  }}
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={url}
-                    alt={`Foto ${i + 1} dari ${title}`}
-                    loading="lazy"
-                    decoding="async"
-                    width={400}
-                    height={400}
-                    className="h-full w-full object-cover"
-                  />
-                </span>
-              ))}
-            </div>
+            <Galeri spec={spec} urls={content.gallery} title={title} />
           </Section>
         ) : null;
 

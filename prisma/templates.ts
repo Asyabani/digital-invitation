@@ -309,13 +309,95 @@ const DISABLED: Record<CategoryKey, readonly string[]> = {
   KORPORAT: ["couple", "gift"],
 };
 
-function sectionsFor(category: CategoryKey) {
+/*
+  Susunan bagian. Sebelumnya semua template satu kategori memakai susunan yang
+  persis sama — dua belas template pernikahan punya `defaultSections` dengan
+  sidik jari identik, dan itu salah satu alasan terbesar template terbaca
+  "beda font doang" meski palet, foto, dan tata letaknya berbeda.
+
+  Tiap resep adalah urutan bagian yang DINYALAKAN. Bagian yang tidak disebut
+  tetap ada di `sectionsOrder` dengan `enabled: false`, jadi pemilik tinggal
+  menyalakannya di editor — bukan hilang.
+*/
+type Resep = "lengkap" | "foto-dulu" | "ringkas" | "acara-dulu" | "tanpa-cerita";
+
+const RESEP: Record<Resep, string[]> = {
+  // Urutan paling umum di undangan Indonesia.
+  lengkap: [
+    "cover", "opening", "couple", "countdown",
+    "gallery", "location", "rsvp", "greetings", "gift", "closing",
+  ],
+  // Foto dulu, cerita menyusul — untuk template yang kekuatannya di gambar.
+  "foto-dulu": [
+    "cover", "gallery", "opening", "couple",
+    "location", "countdown", "rsvp", "greetings", "gift", "closing",
+  ],
+  // Tanpa kutipan pembuka, hitung mundur, dan galeri. Pendek dan langsung.
+  ringkas: [
+    "cover", "couple", "location", "rsvp", "greetings", "gift", "closing",
+  ],
+  // Tempat dan waktu didahulukan; cocok untuk acara yang tamunya perlu
+  // segera tahu ke mana harus datang.
+  "acara-dulu": [
+    "cover", "opening", "location", "countdown", "couple",
+    "gallery", "rsvp", "gift", "greetings", "closing",
+  ],
+  // Tanpa bagian mempelai/cerita.
+  "tanpa-cerita": [
+    "cover", "opening", "countdown", "gallery",
+    "location", "rsvp", "greetings", "gift", "closing",
+  ],
+};
+
+const RESEP_PER_SLUG: Record<string, Resep> = {
+  "klasik-elegan": "lengkap",
+  "floral-lembut": "foto-dulu",
+  "sage-tenang": "ringkas",
+  "mutiara-senja": "acara-dulu",
+  "terakota-jawa": "foto-dulu",
+  "biru-laut": "lengkap",
+  "hitam-putih": "ringkas",
+  "rustic-kayu": "foto-dulu",
+  "navy-emas": "acara-dulu",
+  "emas-tulis": "lengkap",
+  "kembang-goyang": "tanpa-cerita",
+  "langit-senja": "acara-dulu",
+
+  "ceria-aqiqah": "lengkap",
+  "awan-putih": "ringkas",
+  "hijau-mint": "foto-dulu",
+  "merah-muda-lembut": "foto-dulu",
+  "kuning-hangat": "acara-dulu",
+  "ungu-lavender": "lengkap",
+
+  "satu-tahun": "lengkap",
+  "pesta-warna": "foto-dulu",
+  "balon-biru": "ringkas",
+  "tropis-segar": "foto-dulu",
+  "neon-malam": "acara-dulu",
+  "hitam-emas": "lengkap",
+
+  "biru-korporat": "acara-dulu",
+  "abu-profesional": "ringkas",
+  "teknologi-terang": "foto-dulu",
+  "hijau-berkelanjutan": "lengkap",
+  "malam-gala": "acara-dulu",
+  "ungu-inovasi": "ringkas",
+};
+
+function sectionsFor(category: CategoryKey, slug: string) {
   const off = new Set(DISABLED[category]);
-  return ALL_SECTIONS.map((key, order) => ({
-    key,
-    enabled: !off.has(key),
-    order,
-  }));
+  // Resep menyalakan; aturan kategori tetap menang. Korporat tidak pernah
+  // punya bagian mempelai walau resepnya menyebutnya.
+  const nyala = (RESEP[RESEP_PER_SLUG[slug]] ?? RESEP.lengkap).filter(
+    (k) => !off.has(k),
+  );
+  const sisa = ALL_SECTIONS.filter((k) => !nyala.includes(k));
+
+  return [
+    ...nyala.map((key, order) => ({ key, enabled: true, order })),
+    ...sisa.map((key, i) => ({ key, enabled: false, order: nyala.length + i })),
+  ];
 }
 
 // ─── Isi bawaan per kategori ─────────────────────────────────────────────
@@ -813,7 +895,7 @@ export function toTemplateRow(t: TemplateSeed, urutan: number) {
       openingGate: true,
       ...(musik ? { music: { url: trackUrl(musik), autoplay: false } } : {}),
     },
-    defaultSections: sectionsFor(t.category),
+    defaultSections: sectionsFor(t.category, t.slug),
   };
 }
 
@@ -843,6 +925,26 @@ export function assertCatalogSehat(): void {
       masalah.push(`${t.slug}: belum punya arketipe tata letak`);
     if (!FOTO_PER_SLUG[t.slug])
       masalah.push(`${t.slug}: belum punya foto sampul`);
+    if (!RESEP_PER_SLUG[t.slug])
+      masalah.push(`${t.slug}: belum punya resep susunan bagian`);
+  }
+
+  /*
+    Susunan bagian yang sama persis untuk semua template satu kategori adalah
+    kegagalan diam-diam: build hijau, seed hijau, tapi semua template terbaca
+    sama. Dijaga di sini supaya ketahuan saat seed, bukan dari galeri.
+  */
+  for (const kategori of ["PERNIKAHAN", "AQIQAH", "ULANG_TAHUN", "KORPORAT"] as const) {
+    const anggota = TEMPLATE_CATALOG.filter((t) => t.category === kategori);
+    if (anggota.length < 2) continue;
+    const bentuk = new Set(
+      anggota.map((t) => JSON.stringify(sectionsFor(t.category, t.slug))),
+    );
+    if (bentuk.size < 2) {
+      masalah.push(
+        `semua template ${kategori} punya susunan bagian yang identik`,
+      );
+    }
   }
 
   // Slug di peta arketipe yang tidak ada di katalog = salah ketik yang tidak

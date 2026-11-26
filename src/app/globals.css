@@ -547,6 +547,12 @@
     border-bottom: 1px solid color-mix(in oklab, var(--inv-text) 14%, transparent);
   }
 
+  /* Lingkaran hitung mundur (arketipe galeri & bingkai). */
+  .inv-lingkar {
+    border: 1px solid color-mix(in oklab, var(--inv-secondary) 70%, transparent);
+    background: color-mix(in oklab, var(--inv-text) 4%, transparent);
+  }
+
   /* Bidang terisi tanpa garis (arketipe pita). */
   .inv-blok {
     background: color-mix(in oklab, var(--inv-text) 7%, transparent);
