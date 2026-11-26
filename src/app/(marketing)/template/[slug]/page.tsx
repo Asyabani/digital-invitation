@@ -105,6 +105,7 @@ export default async function TemplatePreviewPage({
           <div>
             <div className="kain pinggiran-atas pinggiran-bawah h-[38rem] overflow-y-auto lg:h-[calc(100vh-12rem)]">
               <InvitationView
+            embedded
                 invitationId="preview"
                 slug={t.slug}
                 content={content.data}

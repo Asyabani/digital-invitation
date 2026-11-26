@@ -1,5 +1,6 @@
 import { themeSchema } from "@/lib/validation/invitation";
 import { fontStack } from "@/lib/font-stacks";
+import { layoutSpec } from "@/lib/invitation-layouts";
 
 /** Palet cadangan bila `defaultTheme` tidak lolos validasi. */
 const CADANGAN = {
@@ -10,6 +11,7 @@ const CADANGAN = {
     text: "#16213a",
   },
   font: { heading: "Playfair Display", body: "Inter" },
+  layout: "klasik" as const,
 };
 
 /**
@@ -29,7 +31,8 @@ export function TemplateSwatch({
 }: {
   theme: unknown;
   name: string;
-  caption: string;
+  /** Baris tambahan di bawah tata letak; kosongkan bila tidak perlu. */
+  caption?: string;
   ratio?: string;
 }) {
   const parsed = themeSchema.safeParse(theme);
@@ -62,9 +65,18 @@ export function TemplateSwatch({
         >
           {name}
         </span>
-        <span className="mt-2 block text-xs uppercase tracking-widest opacity-60">
-          {caption}
+        {/*
+          Yang disebut di sini adalah arketipe tata letak, bukan kategori:
+          kartu sudah dikelompokkan per kategori, sementara susunan halaman
+          justru yang paling membedakan satu template dari yang lain dan
+          paling sulit ditebak dari sepetak warna.
+        */}
+        <span className="mt-2 block text-sm opacity-70">
+          Tata letak {layoutSpec(t.layout).label}
         </span>
+        {caption && (
+          <span className="mt-0.5 block text-xs opacity-55">{caption}</span>
+        )}
       </span>
       <span
         aria-hidden

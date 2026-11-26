@@ -34,6 +34,77 @@ export type TemplateSeed = {
   font: { heading: string; body: string };
 };
 
+/*
+  Arketipe tata letak — harus sama persis dengan kunci di
+  `src/lib/invitation-layouts.ts`. Inilah yang benar-benar membedakan satu
+  template dari yang lain; palet dan font menumpang di atasnya.
+
+  Sengaja dipetakan dari slug dalam satu blok, bukan ditempel di tiap entri:
+  sebarannya harus bisa dibaca sekaligus. `assertCatalogSehat()` menjaga tidak
+  ada slug yang terlewat dan tidak ada arketipe yang tidak terpakai.
+*/
+type LayoutKey = "klasik" | "sampul" | "pias" | "bingkai" | "pita" | "lugas";
+
+const SEMUA_LAYOUT: LayoutKey[] = [
+  "klasik",
+  "sampul",
+  "pias",
+  "bingkai",
+  "pita",
+  "lugas",
+];
+
+const LAYOUT_PER_SLUG: Record<string, LayoutKey> = {
+  // Pernikahan — dua tiap arketipe bergaya undangan, tanpa `lugas`.
+  "klasik-elegan": "klasik",
+  "floral-lembut": "klasik",
+  "sage-tenang": "sampul",
+  "mutiara-senja": "sampul",
+  "navy-emas": "bingkai",
+  "emas-tulis": "bingkai",
+  "terakota-jawa": "pias",
+  "biru-laut": "pias",
+  "hitam-putih": "pita",
+  "rustic-kayu": "pita",
+
+  // Aqiqah — sebaran serupa; `lugas` terlalu dingin untuk acara syukuran.
+  "ceria-aqiqah": "klasik",
+  "merah-muda-lembut": "klasik",
+  "biru-langit": "sampul",
+  "awan-putih": "sampul",
+  "kuning-hangat": "bingkai",
+  "peach-hangat": "bingkai",
+  "hijau-mint": "pias",
+  "hijau-zaitun": "pias",
+  "ungu-lavender": "pita",
+  "jingga-ceria": "pita",
+
+  // Ulang tahun — condong ke `pita`, yang paling kontemporer.
+  "pesta-warna": "pita",
+  "balon-biru": "pita",
+  "hitam-emas": "pita",
+  "satu-tahun": "klasik",
+  "permen-kapas": "klasik",
+  "neon-malam": "sampul",
+  "kopi-senja": "sampul",
+  "emas-dewasa": "bingkai",
+  "tropis-segar": "pias",
+  "kebun-pagi": "lugas",
+
+  // Korporat — condong ke `lugas` dan `pias`; tidak ada yang `klasik`,
+  // karena bentuk undangan pernikahan justru salah di acara resmi.
+  "biru-korporat": "lugas",
+  "abu-profesional": "lugas",
+  "jingga-energi": "lugas",
+  "monokrom-tegas": "lugas",
+  "hijau-berkelanjutan": "pias",
+  "ungu-inovasi": "pias",
+  "teal-seminar": "pias",
+  "merah-peluncuran": "pita",
+  "teknologi-terang": "pita",
+  "malam-gala": "bingkai",
+};
+
 // Harus sama persis dengan src/lib/font-stacks.ts.
 const HEADING_FONTS = [
   "Playfair Display",
@@ -689,9 +760,18 @@ export function toTemplateRow(t: TemplateSeed) {
     // Path ini mengikuti konvensi docs/03 untuk saat gambar aslinya menyusul.
     previewImage: `/templates/${t.slug}.jpg`,
     defaultContent: contentFor(t.category),
-    defaultTheme: { palette: t.palette, font: t.font },
+    defaultTheme: {
+      palette: t.palette,
+      font: t.font,
+      layout: LAYOUT_PER_SLUG[t.slug],
+    },
     defaultSections: sectionsFor(t.category),
   };
+}
+
+/** Arketipe satu template, untuk ditampilkan di galeri dan panel admin. */
+export function layoutOf(slug: string): LayoutKey | undefined {
+  return LAYOUT_PER_SLUG[slug];
 }
 
 /**
@@ -711,6 +791,22 @@ export function assertCatalogSehat(): void {
       masalah.push(`${t.slug}: font judul "${t.font.heading}" tidak terdaftar`);
     if (!BODY_FONTS.includes(t.font.body))
       masalah.push(`${t.slug}: font isi "${t.font.body}" tidak terdaftar`);
+    if (!LAYOUT_PER_SLUG[t.slug])
+      masalah.push(`${t.slug}: belum punya arketipe tata letak`);
+  }
+
+  // Slug di peta arketipe yang tidak ada di katalog = salah ketik yang tidak
+  // akan ketahuan dari sisi sebaliknya.
+  for (const slug of Object.keys(LAYOUT_PER_SLUG)) {
+    if (!terlihat.has(slug))
+      masalah.push(`peta arketipe menyebut slug asing: ${slug}`);
+  }
+
+  // Arketipe yang tidak dipakai satu template pun berarti kerja desainnya
+  // tidak pernah terlihat pemilik.
+  const terpakai = new Set(Object.values(LAYOUT_PER_SLUG));
+  for (const l of SEMUA_LAYOUT) {
+    if (!terpakai.has(l)) masalah.push(`arketipe ${l} tidak dipakai template`);
   }
 
   const perKategori = new Map<CategoryKey, number>();

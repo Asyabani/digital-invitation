@@ -186,6 +186,45 @@ daftar tamu, jawaban RSVP, ucapan, dan **nominal amplop** tidak pernah dibaca
 dari jalur admin — lihat docs/03 §5. Amplop digital adalah uang antara tamu
 dan pemilik acara; Lungsin tidak berkepentingan atasnya.
 
+## 4a. Arketipe Tata Letak Undangan
+
+Template dibedakan oleh **susunan**, bukan oleh warna. Palet dan font yang
+berbeda di atas satu kerangka yang sama menghasilkan empat puluh template yang
+terbaca sebagai satu template dengan empat puluh palet — itu kondisi sebelum
+arketipe ada.
+
+Spesifikasi tiap arketipe ada sebagai data di `src/lib/invitation-layouts.ts`
+dan dibaca `InvitationView`; tidak ada rantai `if (layout === ...)` yang
+tersebar di komponen. Menambah arketipe = menambah satu entri di sana.
+
+| Arketipe | Perataan | Sampul | Judul bagian | Wadah isi | Fakta acara |
+|---|---|---|---|---|---|
+| `klasik` | tengah | nama, ornamen, tanggal | benang putus-putus | kotak berbingkai | paragraf |
+| `sampul` | tengah | setinggi layar penuh, benang tegak | kecil, berjarak huruf | tanpa wadah | paragraf |
+| `pias` | kiri | rata kiri di balik garis tegak | di kolom kiri sendiri | garis bawah | daftar |
+| `bingkai` | tengah | panel berbingkai ganda | di antara dua garis | bingkai ganda | paragraf |
+| `pita` | kiri | nama dipisah pita tebal | besar, rata kiri | bidang terisi | daftar |
+| `lugas` | kiri | nama, tanggal, tempat | seukuran teks, tanpa ornamen | tanpa wadah | daftar |
+
+Catatan yang mudah terlewat:
+
+- **`lugas` tidak memakai font judul sama sekali** (`display: "isi"` di
+  spesifikasi). Tidak adanya font display adalah seluruh pembedanya; satu
+  baris serif besar di penutup cukup untuk membatalkannya.
+- **`sampul` memakai `100svh`.** Di dalam bingkai pratinjau (editor, galeri,
+  hero) itu berarti tamu hanya melihat sampul, jadi `InvitationView` menerima
+  prop `embedded` yang menurunkannya ke `26rem`.
+- **`pias` menaruh judul di kolom kiri** hanya mulai lebar 40rem. Di layar
+  sempit judulnya naik ke atas, dan garis tegaknya pindah ke kiri sebagai
+  penanda yang sama — bukan hilang.
+- Sebaran arketipe ke 40 template ada di `LAYOUT_PER_SLUG`
+  (`prisma/templates.ts`), satu blok supaya bisa dibaca sekaligus.
+  `assertCatalogSehat()` menolak slug yang terlewat dan arketipe yang tidak
+  terpakai satu template pun.
+- Editor tema (`/dashboard/[id]/tema`) menaruh pilihan tata letak **paling
+  atas**, sebelum warna: ia menentukan bentuk, jadi memilihnya belakangan
+  berarti pemilik menyetel warna untuk susunan yang lalu ia ganti.
+
 ## 4. Halaman Undangan Publik `/u/[slug]`
 
 Urutan section mengikuti `sectionsOrder` (default):

@@ -31,6 +31,25 @@ export const contentSchema = z.object({
   protocol: z.string().optional(),
 });
 
+/**
+ * Arketipe tata letak halaman undangan (docs/06 §4a).
+ *
+ * Ini yang benar-benar membedakan satu template dari yang lain: perataan,
+ * lebar ukur, bentuk sampul, cara judul bagian mengumumkan diri, dan ada
+ * tidaknya kartu. Palet dan font menumpang di atasnya.
+ *
+ * `default("klasik")` penting untuk kompatibilitas: undangan yang dibuat
+ * sebelum kolom ini ada tetap tervalidasi dan tetap tampil seperti semula.
+ */
+export const layoutKey = z.enum([
+  "klasik",
+  "sampul",
+  "pias",
+  "bingkai",
+  "pita",
+  "lugas",
+]);
+
 export const themeSchema = z.object({
   palette: z.object({
     primary: z.string(),
@@ -42,6 +61,7 @@ export const themeSchema = z.object({
     heading: z.string(),
     body: z.string(),
   }),
+  layout: layoutKey.default("klasik"),
   music: z
     .object({ url: z.string().url(), autoplay: z.boolean().default(false) })
     .optional(),
@@ -84,5 +104,6 @@ export const giftConfigSchema = z.object({
 
 export type Content = z.infer<typeof contentSchema>;
 export type Theme = z.infer<typeof themeSchema>;
+export type LayoutKey = z.infer<typeof layoutKey>;
 export type SectionsOrder = z.infer<typeof sectionsOrderSchema>;
 export type GiftConfig = z.infer<typeof giftConfigSchema>;

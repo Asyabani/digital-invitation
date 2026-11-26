@@ -481,4 +481,97 @@
     font-size: 0.875rem;
     color: color-mix(in oklab, var(--inv-text) 75%, transparent);
   }
+
+  /*
+    ── Perkakas arketipe tata letak ────────────────────────────────────
+    Dipakai `src/lib/invitation-layouts.ts` lewat `InvitationView`. Semuanya
+    memakai warna pemilik (`--inv-*`), tidak satu pun memakai token dashboard
+    — halaman undangan adalah dunianya pemilik.
+  */
+
+  /* Benang putus-putus di bawah judul (arketipe klasik). */
+  .inv-benang {
+    display: block;
+    height: 3px;
+    width: 3.5rem;
+    background: repeating-linear-gradient(
+      to right,
+      var(--inv-secondary) 0 5px,
+      transparent 5px 8px
+    );
+  }
+  .inv-benang-lebar {
+    width: 5rem;
+  }
+
+  /* Sepasang garis rambut mengapit judul (arketipe bingkai). */
+  .inv-ganda {
+    border-top: 1px solid color-mix(in oklab, var(--inv-secondary) 60%, transparent);
+    border-bottom: 1px solid color-mix(in oklab, var(--inv-secondary) 60%, transparent);
+  }
+
+  /*
+    Bingkai ganda meniru garis emboss di kartu undangan cetak: satu garis
+    tegas di tepi, satu garis lebih redup sedikit di dalamnya. Garis dalamnya
+    pseudo-element supaya tidak menambah elemen di markup.
+  */
+  .inv-bingkai {
+    position: relative;
+    background: var(--inv-bg);
+    border: 1px solid color-mix(in oklab, var(--inv-secondary) 75%, transparent);
+  }
+  .inv-bingkai::before {
+    content: "";
+    position: absolute;
+    inset: 5px;
+    border: 1px solid color-mix(in oklab, var(--inv-secondary) 32%, transparent);
+    pointer-events: none;
+  }
+
+  /* Dasar berona untuk arketipe bingkai, supaya panelnya terbaca mengambang. */
+  .inv-dasar {
+    background-image: linear-gradient(
+      color-mix(in oklab, var(--inv-text) 5%, transparent),
+      color-mix(in oklab, var(--inv-text) 5%, transparent)
+    );
+  }
+
+  /* Pemisah tipis antar bagian (arketipe sampul & lugas). */
+  .inv-garis {
+    border-top: 1px solid color-mix(in oklab, var(--inv-text) 12%, transparent);
+  }
+  .inv-garis-atas {
+    border-top: 1px solid color-mix(in oklab, var(--inv-text) 14%, transparent);
+  }
+  .inv-garis-bawah {
+    border-bottom: 1px solid color-mix(in oklab, var(--inv-text) 14%, transparent);
+  }
+
+  /* Bidang terisi tanpa garis (arketipe pita). */
+  .inv-blok {
+    background: color-mix(in oklab, var(--inv-text) 7%, transparent);
+  }
+
+  /*
+    Judul di pias kiri. Di layar sempit kolomnya tidak muat, jadi judulnya
+    naik ke atas dan garis tegaknya pindah ke kiri sebagai penanda yang sama.
+  */
+  .inv-pias-judul {
+    font-family: var(--inv-heading);
+    color: var(--inv-primary);
+    font-size: 0.9375rem;
+    font-weight: 500;
+    line-height: 1.35;
+    border-left: 2px solid var(--inv-secondary);
+    padding-left: 0.75rem;
+  }
+  @media (width >= 40rem) {
+    .inv-pias-judul {
+      border-left: 0;
+      padding-left: 0;
+      text-align: right;
+      border-right: 2px solid var(--inv-secondary);
+      padding-right: 0.75rem;
+    }
+  }
 }

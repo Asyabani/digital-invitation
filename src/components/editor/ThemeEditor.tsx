@@ -9,6 +9,7 @@ import type {
   SectionsOrder,
 } from "@/lib/validation/invitation";
 import { HEADING_FONTS, BODY_FONTS, fontStack } from "@/lib/font-stacks";
+import { LAYOUTS, LAYOUT_KEYS } from "@/lib/invitation-layouts";
 import { InvitationView } from "@/components/invitation/InvitationView";
 import {
   updateInvitationTheme,
@@ -156,6 +157,55 @@ export function ThemeEditor({
   return (
     <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,24rem)]">
       <div className="space-y-5">
+        {/*
+          Tata letak didahulukan karena ia menentukan bentuk halaman; warna
+          dan font menumpang di atasnya. Memilihnya belakangan berarti
+          pemilik menyetel warna untuk susunan yang lalu ia ganti.
+        */}
+        <Helai>
+          <HelaiKepala
+            title="Tata letak"
+            description="Menentukan susunan halaman: bentuk sampul, posisi judul tiap bagian, dan ada tidaknya kotak. Warna dan font tetap milik Anda."
+          />
+          <HelaiIsi>
+            <fieldset className="grid gap-2 sm:grid-cols-2">
+              <legend className="sr-only">Pilih tata letak undangan</legend>
+              {LAYOUT_KEYS.map((key) => {
+                const l = LAYOUTS[key];
+                const aktif = (theme.layout ?? "klasik") === key;
+                return (
+                  <label
+                    key={key}
+                    className={`flex cursor-pointer gap-3 rounded-lg border p-3 transition-colors ${
+                      aktif
+                        ? "border-foreground/30 bg-accent/50"
+                        : "hover:border-foreground/20"
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="layout"
+                      className="mt-1 shrink-0"
+                      checked={aktif}
+                      onChange={() =>
+                        setTheme((t) => ({ ...t, layout: key }))
+                      }
+                    />
+                    <span className="min-w-0">
+                      <span className="block text-sm font-medium">
+                        {l.label}
+                      </span>
+                      <span className="mt-0.5 block text-xs leading-relaxed text-muted-foreground">
+                        {l.description}
+                      </span>
+                    </span>
+                  </label>
+                );
+              })}
+            </fieldset>
+          </HelaiIsi>
+        </Helai>
+
         <Helai>
           <HelaiKepala title="Palet warna" />
           <HelaiIsi className="space-y-5">
@@ -387,6 +437,7 @@ export function ThemeEditor({
         </div>
         <div className="h-[32rem] overflow-y-auto rounded-xl border bg-card shadow-sm lg:h-[calc(100vh-14rem)]">
           <InvitationView
+            embedded
             invitationId={invitationId}
             slug={slug}
             content={content}

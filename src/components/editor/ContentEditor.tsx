@@ -215,6 +215,7 @@ export function ContentEditor({
         </div>
         <div className="h-[32rem] overflow-y-auto rounded-xl border bg-card shadow-sm lg:h-[calc(100vh-14rem)]">
           <InvitationView
+            embedded
             invitationId={invitationId}
             slug={slug}
             content={content}

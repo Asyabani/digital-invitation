@@ -291,9 +291,20 @@ Kolom `Json` punya kontrak yang divalidasi di `src/lib/validation/`:
 {
   palette: { primary: string, secondary: string, background: string, text: string },
   font: { heading: string, body: string },
+  layout: "klasik" | "sampul" | "pias" | "bingkai" | "pita" | "lugas",
   music?: { url: string, autoplay: boolean },
 }
 ```
+
+`layout` adalah **arketipe tata letak** halaman undangan — yang menentukan
+susunan, bukan warna: bentuk sampul, perataan, lebar ukur, cara judul bagian
+mengumumkan diri, dan ada tidaknya kartu. Spesifikasinya di
+`src/lib/invitation-layouts.ts`, penjelasan tiap arketipe di docs/06 §4a.
+
+Zod memberinya `.default("klasik")`. Itu disengaja: undangan yang dibuat
+sebelum kolom ini ada tidak punya `layout` di JSON-nya, dan tanpa default
+validasinya akan gagal dan halaman tamu ikut mati. Dengan default, undangan
+lama tetap tampil persis seperti semula.
 
 ### `Invitation.sectionsOrder`
 ```ts

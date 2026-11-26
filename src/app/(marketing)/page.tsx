@@ -38,6 +38,7 @@ async function HelaiPratinjau() {
     <div className={`${invitationFontVars} h-full overflow-hidden`}>
       <div className="h-full overflow-y-auto">
         <InvitationView
+            embedded
           invitationId="pratinjau-beranda"
           slug={t.slug}
           content={content.data}

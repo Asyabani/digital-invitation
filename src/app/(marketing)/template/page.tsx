@@ -73,7 +73,6 @@ function Kelompok({
               <TemplateSwatch
                 theme={t.defaultTheme}
                 name={t.name}
-                caption={KATEGORI_LABEL[t.category]}
               />
             </Link>
 
