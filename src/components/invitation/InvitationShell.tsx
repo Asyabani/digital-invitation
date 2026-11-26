@@ -15,6 +15,8 @@ type Props = {
   embedded: boolean;
   /** Arketipe berbayar: tiap bagian naik dan memudar saat pertama terlihat. */
   motion: boolean;
+  /** Gerak penuh (Eksklusif): juga memasang kelas `js` untuk Ken Burns. */
+  motionPenuh?: boolean;
   children: React.ReactNode;
 };
 
@@ -36,6 +38,7 @@ export function InvitationShell({
   musicUrl,
   embedded,
   motion,
+  motionPenuh = false,
   children,
 }: Props) {
   const [terbuka, setTerbuka] = useState(!gate);
@@ -54,6 +57,14 @@ export function InvitationShell({
     IntersectionObserver dipakai sekali per elemen lalu dilepas — tidak ada
     pendengar scroll yang terus hidup di halaman yang dibuka dari HP.
   */
+  // Ken Burns pada sampul dipasang lewat kelas `js` juga, dan sampul bisa
+  // tampil sebelum isi (gerbang). Jadi kelasnya dipasang terpisah dari
+  // pengamat bagian.
+  useEffect(() => {
+    if (!motionPenuh) return;
+    document.documentElement.classList.add("js");
+  }, [motionPenuh]);
+
   useEffect(() => {
     if (!motion || !terbuka) return;
     const akar = isiRef.current;
@@ -139,12 +150,20 @@ export function InvitationShell({
         >
         {coverImage && (
           <>
+            {/*
+              Ken Burns dipasang di gerbang, bukan hanya di sampul berlatar
+              foto. Gerbang adalah satu-satunya layar yang pasti penuh foto
+              di semua arketipe — arketipe berbingkai memakai foto kecil, dan
+              memperbesarnya di sana justru memotong wajah.
+            */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={coverImage}
               alt=""
               aria-hidden
-              className="absolute inset-0 size-full object-cover"
+              className={`absolute inset-0 size-full object-cover ${
+                motionPenuh ? "inv-kenburns" : ""
+              }`}
             />
             {/*
               Scrim dua arah, bukan satu lapisan rata: gelap di atas dan

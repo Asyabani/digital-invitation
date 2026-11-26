@@ -9,6 +9,7 @@ import { fontStack } from "@/lib/font-stacks";
 import { invitationTitle, prettyEventDate } from "@/lib/invitation-title";
 import { layoutSpec, type LayoutSpec } from "@/lib/invitation-layouts";
 import { Countdown } from "./Countdown";
+import { Salindia } from "./Salindia";
 import { RsvpForm } from "./RsvpForm";
 import { GreetingForm } from "./GreetingForm";
 import { GiftForm } from "./GiftForm";
@@ -117,7 +118,11 @@ function Section({
               </div>
             </div>
           ) : (
-            <div className={`flex flex-col ${sumbu} ${spec.gap}`}>
+            <div
+              className={`flex flex-col ${sumbu} ${spec.gap} ${
+                spec.motion === "penuh" ? "inv-bertahap" : ""
+              }`}
+            >
               {title && <Judul spec={spec}>{title}</Judul>}
               {children}
             </div>
@@ -380,6 +385,10 @@ function Galeri({
     </span>
   );
 
+  if (spec.gallery === "salindia") {
+    return <Salindia urls={urls} title={title} />;
+  }
+
   if (spec.gallery === "tumpuk") {
     return (
       <div className="flex w-full flex-col gap-5">
@@ -500,7 +509,9 @@ function Sampul({
                 src={content.coverImage}
                 alt=""
                 aria-hidden
-                className="absolute inset-0 size-full object-cover"
+                className={`absolute inset-0 size-full object-cover ${
+                  spec.motion === "penuh" ? "inv-kenburns" : ""
+                }`}
               />
               <span aria-hidden className="inv-scrim absolute inset-0" />
             </>
@@ -974,7 +985,8 @@ export function InvitationView(props: InvitationViewProps) {
         prettyDate={prettyDate}
         musicUrl={allowMusic ? theme.music?.url : undefined}
         embedded={embedded}
-        motion={spec.motion === "masuk" && interactive}
+        motion={spec.motion !== "tidak" && interactive}
+        motionPenuh={spec.motion === "penuh" && interactive}
       >
       {showWatermark && watermarkVariant === "preview" && (
         <div

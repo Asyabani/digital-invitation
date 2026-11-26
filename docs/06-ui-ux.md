@@ -100,6 +100,15 @@ Aturan yang mengikat:
 - Selalu `interactive={false}`: form RSVP/ucapan/amplop di dalamnya tidak
   mengirim apa pun. Bilah pratinjau menjelaskan bahwa isinya bisa diganti.
 - CTA "Pakai Template Ini" → login bila belum masuk.
+- **Undangan dirender selebar HP sungguhan (390px) dan ikut guliran
+  halaman** — bukan di dalam kotak `h-[38rem] overflow-y-auto`. Kotak itu
+  hanya menampilkan sampul, sehingga ketiga puluh template terlihat sama
+  persis di tempat orang justru sedang membandingkan; lebarnya pun hanya
+  ~200px, lebih sempit dari HP mana pun, dan nama mempelai patah empat baris.
+- **Kolom kiri menyebut yang khusus template itu**: tingkat + harga, nama dan
+  penjelasan tata letaknya, daftar bagian yang menyala beserta urutannya,
+  pasangan font, dan palet. Paragraf umum yang sama untuk semua template
+  membuat halaman ini terbaca identik walau isinya tidak.
 
 ### `/harga` Harga
 - Tabel 3 paket (Basic/Premium/Exclusive) dengan perbandingan fitur.
@@ -217,8 +226,8 @@ Arketipe juga menentukan **bentuk tiap bagian**, bukan hanya kulitnya:
 | `lugas` | satu baris mengalir | kisi persegi | nama gabungan |
 | `pias` | angka besar rata kiri | mozaik | nama berdampingan |
 | `pita` | angka besar rata kiri | pita geser mendatar | blok per mempelai |
-| `galeri` | empat lingkaran | mozaik | blok per mempelai |
-| `bingkai` | empat lingkaran | kisi persegi | blok per mempelai |
+| `galeri` | empat lingkaran | **salindia** | blok per mempelai |
+| `bingkai` | empat lingkaran | **salindia** | blok per mempelai |
 | `naskah` | satu baris mengalir | satu kolom, foto tinggi | nama berdampingan |
 
 Tanpa tabel ini arketipe hanya mengganti perataan dan bingkai; hitung mundur
@@ -234,6 +243,24 @@ nama gabungan bila subjeknya hanya satu (aqiqah, ulang tahun, korporat).
 menang: korporat tidak pernah punya bagian mempelai walau resepnya
 menyebutnya. `assertCatalogSehat()` menolak bila semua template satu kategori
 berakhir dengan susunan identik.
+
+### Gerak
+
+| Tingkat | `motion` | Yang didapat |
+|---|---|---|
+| Basic | `tidak` | tidak ada gerak sama sekali |
+| Premium | `masuk` | tiap bagian naik dan memudar saat pertama terlihat |
+| Eksklusif | `penuh` | `masuk` + foto sampul bergerak perlahan (Ken Burns, 6% selama 20 detik) + isi tiap bagian muncul bertahap satu demi satu |
+
+**Salindia** (`gallery: "salindia"`) berganti sendiri tiap 4 detik, berhenti
+saat disentuh atau difokus, dan bisa digeser lewat tombol, titik, atau panah
+keyboard. Tiga aturan yang tidak boleh dilanggar:
+
+- `prefers-reduced-motion: reduce` mematikan pergantian otomatis; tamu tetap
+  bisa menggeser sendiri.
+- Sebelum hidrasi ia merender **daftar foto biasa**, bukan kotak kosong.
+  Galeri tidak boleh hilang kalau JavaScript gagal.
+- Pergantian otomatis berhenti permanen begitu tamu menggeser sendiri.
 
 **Arketipe menentukan tingkat harga** (lihat docs/05 §2b): Klasik, Sampul,
 Lugas = Basic; Pias, Pita, Galeri = Premium; Bingkai, Naskah = Eksklusif.

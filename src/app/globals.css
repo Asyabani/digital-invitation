@@ -547,6 +547,94 @@
     border-bottom: 1px solid color-mix(in oklab, var(--inv-text) 14%, transparent);
   }
 
+  /* ── Salindia (slideshow) ─────────────────────────────────────────── */
+  .inv-salindia-foto {
+    opacity: 0;
+    transition: opacity 0.7s ease;
+  }
+  .inv-salindia-foto[data-aktif] {
+    opacity: 1;
+  }
+  .inv-salindia-titik {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 9999px;
+    background: color-mix(in oklab, var(--inv-text) 25%, transparent);
+    transition: background 0.2s ease, width 0.2s ease;
+  }
+  .inv-salindia-titik[data-aktif] {
+    width: 1.25rem;
+    background: var(--inv-primary);
+  }
+  .inv-salindia-tombol {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 9999px;
+    border: 1px solid color-mix(in oklab, var(--inv-text) 18%, transparent);
+    color: var(--inv-primary);
+    transition: background 0.15s ease;
+  }
+  .inv-salindia-tombol:hover {
+    background: color-mix(in oklab, var(--inv-primary) 8%, transparent);
+  }
+
+  /*
+    Foto sampul bergerak perlahan (Ken Burns) untuk arketipe `motion: penuh`.
+    Hanya memperbesar 6% selama 20 detik — cukup untuk terasa hidup, tidak
+    cukup untuk mengganggu membaca nama di atasnya.
+  */
+  @keyframes inv-kenburns {
+    from {
+      transform: scale(1);
+    }
+    to {
+      transform: scale(1.06);
+    }
+  }
+  html.js .inv-kenburns {
+    animation: inv-kenburns 20s ease-out forwards;
+  }
+
+  /* Isi bagian muncul bertahap, satu demi satu. */
+  html.js .inv-bertahap > * {
+    opacity: 0;
+    transform: translateY(8px);
+    transition:
+      opacity 0.5s ease-out,
+      transform 0.5s ease-out;
+  }
+  html.js .inv-terlihat .inv-bertahap > *,
+  html.js .inv-bertahap.inv-terlihat > * {
+    opacity: 1;
+    transform: none;
+  }
+  html.js .inv-bertahap > *:nth-child(2) {
+    transition-delay: 90ms;
+  }
+  html.js .inv-bertahap > *:nth-child(3) {
+    transition-delay: 180ms;
+  }
+  html.js .inv-bertahap > *:nth-child(4) {
+    transition-delay: 270ms;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html.js .inv-kenburns {
+      animation: none;
+    }
+    html.js .inv-bertahap > * {
+      opacity: 1;
+      transform: none;
+      transition: none;
+    }
+    .inv-salindia-foto {
+      transition: none;
+    }
+  }
+
   /* Lingkaran hitung mundur (arketipe galeri & bingkai). */
   .inv-lingkar {
     border: 1px solid color-mix(in oklab, var(--inv-secondary) 70%, transparent);

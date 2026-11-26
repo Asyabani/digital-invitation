@@ -141,12 +141,15 @@ export type LayoutSpec = {
 
   /**
    * Gerak saat bagian masuk layar.
-   * - `tidak`: tidak ada gerak sama sekali
-   * - `masuk`: tiap bagian naik dan memudar saat pertama terlihat
+   * - `tidak`: tidak ada gerak sama sekali (tingkat Basic)
+   * - `masuk`: tiap bagian naik dan memudar saat pertama terlihat (Premium)
+   * - `penuh`: `masuk` + foto sampul bergerak perlahan (Ken Burns) + isi
+   *   tiap bagian muncul bertahap, satu demi satu (Eksklusif)
    *
-   * `prefers-reduced-motion: reduce` selalu mematikannya, apa pun nilainya.
+   * `prefers-reduced-motion: reduce` selalu mematikan semuanya, apa pun
+   * nilainya — termasuk `penuh`.
    */
-  motion: "tidak" | "masuk";
+  motion: "tidak" | "masuk" | "penuh";
 
   /*
     ── Bentuk tiap bagian ────────────────────────────────────────────────
@@ -166,10 +169,11 @@ export type LayoutSpec = {
   /**
    * - `kisi`  : kisi persegi seragam
    * - `mozaik`: sel pertama dua kali lipat, sisanya mengelilingi
+   * - `salindia`: slideshow otomatis, satu foto penuh bergantian
    * - `pita`  : satu baris memanjang yang digeser mendatar
    * - `tumpuk`: satu kolom, foto tinggi, berjarak lapang
    */
-  gallery: "kisi" | "mozaik" | "pita" | "tumpuk";
+  gallery: "kisi" | "mozaik" | "pita" | "tumpuk" | "salindia";
 
   /**
    * - `tumpuk` : nama gabungan, lalu cerita di bawahnya
@@ -291,9 +295,9 @@ export const LAYOUTS: Record<LayoutKey, LayoutSpec> = {
     display: "judul",
     coverMedia: "bingkai",
     minPackage: "EXCLUSIVE",
-    motion: "masuk",
+    motion: "penuh",
     countdown: "lingkar",
-    gallery: "kisi",
+    gallery: "salindia",
     couple: "kartu",
   },
 
@@ -385,7 +389,7 @@ export const LAYOUTS: Record<LayoutKey, LayoutSpec> = {
     minPackage: "PREMIUM",
     motion: "masuk",
     countdown: "lingkar",
-    gallery: "mozaik",
+    gallery: "salindia",
     couple: "kartu",
   },
 
@@ -408,7 +412,7 @@ export const LAYOUTS: Record<LayoutKey, LayoutSpec> = {
     display: "judul",
     coverMedia: "panel",
     minPackage: "EXCLUSIVE",
-    motion: "masuk",
+    motion: "penuh",
     countdown: "baris",
     gallery: "tumpuk",
     couple: "sanding",
