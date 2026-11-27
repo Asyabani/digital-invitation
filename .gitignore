@@ -41,6 +41,9 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# Membuat sesi login dengan token yang bisa ditebak; lokal saja, jangan di-commit.
+/scripts/demo.ts
+
 # Artefak sementara proses desain: tangkapan layar review & komp.
 # Sidecar sistem desain (.impeccable/design.json) TETAP di-commit, begitu pula
 # DESIGN.md dan PRODUCT.md di root.
